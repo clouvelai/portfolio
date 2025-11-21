@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { motion } from 'framer-motion'
-import { Activity, Users, Bot } from 'lucide-react'
+import { Activity, Users, Bot, RefreshCw } from 'lucide-react'
 
 export default function AnalyticsDashboard() {
     const [visits, setVisits] = useState([])
     const [loading, setLoading] = useState(true)
+    const [lastUpdated, setLastUpdated] = useState(new Date())
+    const [refreshing, setRefreshing] = useState(false)
 
     useEffect(() => {
         fetchVisits()
@@ -14,6 +16,7 @@ export default function AnalyticsDashboard() {
             .channel('visits')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'visits' }, payload => {
                 setVisits(prev => [payload.new, ...prev])
+                setLastUpdated(new Date())
             })
             .subscribe()
 
@@ -23,6 +26,7 @@ export default function AnalyticsDashboard() {
     }, [])
 
     const fetchVisits = async () => {
+        setRefreshing(true)
         try {
             const { data, error } = await supabase
                 .from('visits')
@@ -32,11 +36,17 @@ export default function AnalyticsDashboard() {
 
             if (error) throw error
             setVisits(data || [])
+            setLastUpdated(new Date())
         } catch (error) {
             console.error('Error fetching visits:', error)
         } finally {
             setLoading(false)
+            setRefreshing(false)
         }
+    }
+
+    const handleRefresh = () => {
+        fetchVisits()
     }
 
     const botCount = visits.filter(v => v.is_bot).length
@@ -49,15 +59,30 @@ export default function AnalyticsDashboard() {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="mb-12 flex items-center justify-between"
+                    className="mb-12"
                 >
-                    <div>
-                        <h2 className="text-4xl font-bold mb-2 text-gray-900">Live Analytics</h2>
-                        <p className="text-gray-600">Real-time visitor tracking.</p>
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <h2 className="text-4xl font-bold mb-2 text-gray-900">Live Analytics</h2>
+                            <p className="text-gray-600">Real-time visitor tracking.</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 text-green-600 bg-green-100 px-4 py-2 rounded-full text-sm animate-pulse">
+                                <Activity size={16} /> Live
+                            </div>
+                            <button
+                                onClick={handleRefresh}
+                                disabled={refreshing}
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            >
+                                <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+                                Refresh
+                            </button>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2 text-green-600 bg-green-100 px-4 py-2 rounded-full text-sm animate-pulse">
-                        <Activity size={16} /> Live
-                    </div>
+                    <p className="text-sm text-gray-500">
+                        Last updated: {lastUpdated.toLocaleTimeString()}
+                    </p>
                 </motion.div>
 
                 <div className="grid md:grid-cols-3 gap-6 mb-8">

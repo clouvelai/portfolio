@@ -17,7 +17,7 @@ export default function Contact() {
                         Let's work together.
                     </h2>
                     <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
-                        I'm currently available for freelance work and open to new opportunities.
+                        I'm currently open to new opportunities.
                     </p>
 
                     <div className="flex flex-wrap justify-center gap-6">
