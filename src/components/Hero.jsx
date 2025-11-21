@@ -12,7 +12,8 @@ const focusAreas = [
         items: [
             "Observability & Performance",
             "Governance & Guardrails",
-            "Production Systems"
+            "Scale and Security",
+            "Evaluations & Explainability"
         ]
     },
     {
@@ -24,7 +25,8 @@ const focusAreas = [
         items: [
             "Multi-agent Coordination",
             "Coding Agents",
-            "Chaos Management"
+            "Chaos Management",
+            "Efficient Tests + Cost Management"
         ]
     },
     {
@@ -36,7 +38,8 @@ const focusAreas = [
         items: [
             "CUA Workflow",
             "MCP Discovery Protocols",
-            "CI/CD Optimization"
+            "CI/CD Optimization",
+            "ML Pipelines/Automation"
         ]
     },
     {
@@ -49,10 +52,10 @@ const focusAreas = [
             "Running",
             "Painting",
             "Vibe Coding",
-            "RL Agents + Gym",
-            "Bot Building",
+            "RL Agents, Gym & Bot Building",
             "Cooking",
-            "French"
+            "French",
+            "Golf"
         ]
     }
 ]

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 
 const hobbies = [
-    "Running", "Painting", "Vibe Coding", "RL Agents + Gym", "Bot Building", "Cooking", "French"
+    "Running", "Painting", "Vibe Coding", "RL Agents, Gym & Bot Building", "Cooking", "French", "Golf"
 ]
 
 export default function About() {
