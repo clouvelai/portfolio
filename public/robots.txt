@@ -1,2 +1,8 @@
 User-agent: *
 Allow: /
+
+# Honeypot traps - these paths don't exist but attract bots
+# Legitimate crawlers respect Disallow, malicious bots often target them
+Disallow: /admin-login
+Disallow: /wp-admin
+Disallow: /api/internal/

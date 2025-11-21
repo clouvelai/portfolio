@@ -6,4 +6,18 @@
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+  
+  <!-- Honeypot URLs - low priority to attract bots that parse sitemaps -->
+  <url>
+    <loc>https://yourdomain.com/admin-login</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.1</priority>
+  </url>
+  <url>
+    <loc>https://yourdomain.com/sitemap-hidden.xml</loc>
+    <lastmod>2025-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.1</priority>
+  </url>
 </urlset>
