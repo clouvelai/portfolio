@@ -130,15 +130,16 @@ export default function AnalyticsDashboard() {
                                 <tr>
                                     <th className="p-4 text-gray-500 font-medium">Time</th>
                                     <th className="p-4 text-gray-500 font-medium">Type</th>
+                                    <th className="p-4 text-gray-500 font-medium">Details</th>
                                     <th className="p-4 text-gray-500 font-medium">Path</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {loading ? (
-                                    <tr><td colSpan="3" className="p-8 text-center text-gray-500">Loading data...</td></tr>
+                                    <tr><td colSpan="4" className="p-8 text-center text-gray-500">Loading data...</td></tr>
                                 ) : visits.map((visit) => (
                                     <tr key={visit.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                                        <td className="p-4 text-gray-600 font-mono">
+                                        <td className="p-4 text-gray-600 font-mono text-xs">
                                             {new Date(visit.created_at).toLocaleTimeString()}
                                         </td>
                                         <td className="p-4">
@@ -148,6 +149,17 @@ export default function AnalyticsDashboard() {
                                                 }`}>
                                                 {visit.is_bot ? 'BOT' : 'HUMAN'}
                                             </span>
+                                        </td>
+                                        <td className="p-4 text-gray-700">
+                                            {visit.is_bot ? (
+                                                <span className="text-xs text-red-600 font-medium">
+                                                    {visit.bot_name || 'Unknown Bot'}
+                                                </span>
+                                            ) : (
+                                                <span className="text-xs text-gray-600">
+                                                    {visit.browser && visit.os ? `${visit.browser} on ${visit.os}` : 'Unknown'}
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="p-4 text-gray-700">{visit.path}</td>
                                     </tr>
