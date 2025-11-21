@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+    --font-sans: 'Inter', sans-serif;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    @apply bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50 text-gray-900 font-sans antialiased selection:bg-blue-500/30 min-h-screen;
+}
