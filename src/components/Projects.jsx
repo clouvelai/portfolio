@@ -1,12 +1,12 @@
 import { motion } from 'framer-motion'
-import { ExternalLink, Github, ArrowUpRight, Sparkles, Search, Palette } from 'lucide-react'
+import { ExternalLink, Github, ArrowUpRight, Sparkles, Search, Palette, Activity, Database, BrainCircuit } from 'lucide-react'
 
 const projects = [
     {
         title: "Clouvel",
         subtitle: "AI Illustrator of Reddit",
         description: "A LangChain-based multi-agent system that discovers artistic potential in Reddit conversations and transforms them into impressionist-style illustrations.",
-        tags: ["Python", "LangChain", "OpenAI", "Reddit API"],
+        tags: ["Python", "LangChain", "OpenAI", "Reddit API", "Claude Code", "Cursor"],
         link: "https://clouvel.ai/",
         github: "#",
         gradient: "from-orange-500/10 via-red-500/10 to-pink-500/10",
@@ -31,6 +31,38 @@ const projects = [
                 description: "Creates impressionist-style artwork from refined ideas",
                 color: "text-pink-600",
                 bg: "bg-pink-50"
+            }
+        ]
+    },
+    {
+        title: "KalshiFlow",
+        subtitle: "Realtime Market Analysis Engine",
+        description: "A scalable event-based analysis engine processing realtime market data from the Kalshi Prediction Market to surface trends and insights. The frontend is entirely websocket/event driven.",
+        tags: ["Starlette", "Supabase", "Gymnasium", "SB3", "Claude Code", "Cursor"],
+        link: "https://kalshiflow.io/",
+        github: "#",
+        gradient: "from-blue-500/10 via-cyan-500/10 to-emerald-500/10",
+        workflow: [
+            {
+                icon: <Activity size={20} />,
+                title: "Data Streaming",
+                description: "Stream kalshi data (trades, order books, markets)",
+                color: "text-blue-600",
+                bg: "bg-blue-50"
+            },
+            {
+                icon: <Database size={20} />,
+                title: "Processing & Storage",
+                description: "Process, aggregate, and store",
+                color: "text-cyan-600",
+                bg: "bg-cyan-50"
+            },
+            {
+                icon: <BrainCircuit size={20} />,
+                title: "RL Training",
+                description: "RL Training + Agent actions",
+                color: "text-emerald-600",
+                bg: "bg-emerald-50"
             }
         ]
     }
