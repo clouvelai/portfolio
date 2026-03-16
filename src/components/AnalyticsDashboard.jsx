@@ -1,12 +1,23 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
-import { Activity, Users, Bot, RefreshCw } from 'lucide-react'
+import { Activity, Users, Bot, RefreshCw, ShieldAlert } from 'lucide-react'
+
+function timeAgo(date) {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000)
+    if (seconds < 60) return `${seconds}s ago`
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `${minutes}m ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    return `${days}d ago`
+}
 
 export default function AnalyticsDashboard() {
     const [visits, setVisits] = useState([])
     const [loading, setLoading] = useState(true)
-    const [lastUpdated, setLastUpdated] = useState(new Date())
     const [refreshing, setRefreshing] = useState(false)
 
     useEffect(() => {
@@ -16,7 +27,6 @@ export default function AnalyticsDashboard() {
             .channel('visits')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'visits' }, payload => {
                 setVisits(prev => [payload.new, ...prev])
-                setLastUpdated(new Date())
             })
             .subscribe()
 
@@ -32,11 +42,10 @@ export default function AnalyticsDashboard() {
                 .from('visits')
                 .select('*')
                 .order('created_at', { ascending: false })
-                .limit(100)
+                .limit(10000)
 
             if (error) throw error
             setVisits(data || [])
-            setLastUpdated(new Date())
         } catch (error) {
             console.error('Error fetching visits:', error)
         } finally {
@@ -51,6 +60,66 @@ export default function AnalyticsDashboard() {
 
     const botCount = visits.filter(v => v.is_bot).length
     const humanCount = visits.length - botCount
+    const trappedCount = visits.filter(v => v.trap_type).length
+    const humanPercent = visits.length > 0 ? Math.round((humanCount / visits.length) * 100) : 0
+    const botPercent = visits.length > 0 ? 100 - humanPercent : 0
+
+    const statCards = [
+        {
+            key: 'ratio',
+            render: () => (
+                <div>
+                    <div className="flex items-center gap-3 mb-4 text-gray-600">
+                        <Bot size={20} />
+                        <span className="text-sm font-medium">Human vs Bot Ratio</span>
+                    </div>
+                    <div className="flex items-baseline gap-3 mb-4">
+                        <span className="text-4xl font-bold text-green-600">{humanPercent}%</span>
+                        <span className="text-lg text-gray-400">/</span>
+                        <span className="text-4xl font-bold text-red-500">{botPercent}%</span>
+                    </div>
+                    <div className="h-3 rounded-full bg-red-200 overflow-hidden mb-2">
+                        <div
+                            className="h-full rounded-full bg-green-500 transition-all duration-500"
+                            style={{ width: `${humanPercent}%` }}
+                        />
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500">
+                        <span>{humanCount} humans</span>
+                        <span>{botCount} bots</span>
+                    </div>
+                </div>
+            ),
+            className: 'bg-white border border-gray-200',
+        },
+        {
+            key: 'total',
+            render: () => (
+                <div>
+                    <div className="flex items-center gap-3 mb-4 text-gray-600">
+                        <Users size={20} />
+                        <span className="text-sm font-medium">Total Visits</span>
+                    </div>
+                    <p className="text-5xl font-bold text-gray-900">{visits.length}</p>
+                </div>
+            ),
+            className: 'bg-white border border-gray-200',
+        },
+        {
+            key: 'trapped',
+            render: () => (
+                <div>
+                    <div className="flex items-center gap-3 mb-4 text-red-600">
+                        <ShieldAlert size={20} />
+                        <span className="text-sm font-medium">Bots Trapped</span>
+                    </div>
+                    <p className="text-5xl font-bold text-red-600">{trappedCount}</p>
+                    <p className="text-xs text-red-400 mt-2">via honeypot detection</p>
+                </div>
+            ),
+            className: 'bg-red-50 border border-red-200',
+        },
+    ]
 
     return (
         <section id="analytics" className="py-32 px-6 bg-gray-50/50">
@@ -63,8 +132,8 @@ export default function AnalyticsDashboard() {
                 >
                     <div className="flex items-center justify-between mb-4">
                         <div>
-                            <h2 className="text-4xl font-bold mb-2 text-gray-900">Live Analytics</h2>
-                            <p className="text-gray-600">Real-time visitor tracking.</p>
+                            <h2 className="text-4xl font-bold mb-2 text-gray-900">Who's Visiting?</h2>
+                            <p className="text-gray-600">Real-time bot detection and visitor intelligence.</p>
                         </div>
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2 text-green-600 bg-green-100 px-4 py-2 rounded-full text-sm animate-pulse">
@@ -80,94 +149,69 @@ export default function AnalyticsDashboard() {
                             </button>
                         </div>
                     </div>
-                    <p className="text-sm text-gray-500">
-                        Last updated: {lastUpdated.toLocaleTimeString()}
-                    </p>
                 </motion.div>
 
-                <div className="grid md:grid-cols-3 gap-6 mb-8">
-                    <motion.div
-                        whileHover={{ y: -5 }}
-                        className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all"
-                    >
-                        <div className="flex items-center gap-3 mb-4 text-gray-600">
-                            <Users size={20} />
-                            <span>Total Visits</span>
-                        </div>
-                        <p className="text-5xl font-bold text-gray-900">{visits.length}</p>
-                    </motion.div>
-
-                    <motion.div
-                        whileHover={{ y: -5 }}
-                        className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all"
-                    >
-                        <div className="flex items-center gap-3 mb-4 text-green-600">
-                            <Users size={20} />
-                            <span>Humans</span>
-                        </div>
-                        <p className="text-5xl font-bold text-gray-900">{humanCount}</p>
-                    </motion.div>
-
-                    <motion.div
-                        whileHover={{ y: -5 }}
-                        className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all"
-                    >
-                        <div className="flex items-center gap-3 mb-4 text-red-600">
-                            <Bot size={20} />
-                            <span>Bots</span>
-                        </div>
-                        <p className="text-5xl font-bold text-gray-900">{botCount}</p>
-                    </motion.div>
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                    <div className="p-4 border-b border-gray-200 bg-gray-50">
-                        <h3 className="font-medium text-sm text-gray-600">Recent Activity</h3>
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="bg-white border border-gray-200 rounded-3xl overflow-hidden p-8 md:p-10"
+                >
+                    {/* Row 1: Stat Cards */}
+                    <div className="grid md:grid-cols-3 gap-6 mb-8">
+                        {statCards.map((card, index) => (
+                            <motion.div
+                                key={card.key}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: 0.1 * index }}
+                                whileHover={{ y: -5 }}
+                                className={`p-6 rounded-2xl shadow-sm hover:shadow-md transition-all ${card.className}`}
+                            >
+                                {card.render()}
+                            </motion.div>
+                        ))}
                     </div>
-                    <div className="max-h-[300px] overflow-y-auto">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-gray-50 sticky top-0">
-                                <tr>
-                                    <th className="p-4 text-gray-500 font-medium">Time</th>
-                                    <th className="p-4 text-gray-500 font-medium">Type</th>
-                                    <th className="p-4 text-gray-500 font-medium">Details</th>
-                                    <th className="p-4 text-gray-500 font-medium">Path</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {loading ? (
-                                    <tr><td colSpan="4" className="p-8 text-center text-gray-500">Loading data...</td></tr>
-                                ) : visits.map((visit) => (
-                                    <tr key={visit.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                                        <td className="p-4 text-gray-600 font-mono text-xs">
-                                            {new Date(visit.created_at).toLocaleTimeString()}
-                                        </td>
-                                        <td className="p-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${visit.is_bot
-                                                ? 'bg-red-100 text-red-600 border border-red-200'
-                                                : 'bg-green-100 text-green-600 border border-green-200'
-                                                }`}>
-                                                {visit.is_bot ? 'BOT' : 'HUMAN'}
-                                            </span>
-                                        </td>
-                                        <td className="p-4 text-gray-700">
-                                            {visit.is_bot ? (
-                                                <span className="text-xs text-red-600 font-medium">
-                                                    {visit.bot_name || 'Unknown Bot'}
-                                                </span>
-                                            ) : (
-                                                <span className="text-xs text-gray-600">
-                                                    {visit.browser && visit.os ? `${visit.browser} on ${visit.os}` : 'Unknown'}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="p-4 text-gray-700">{visit.path}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+
+                    {/* Row 2: Activity Feed */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.3 }}
+                    >
+                        <h3 className="text-sm font-medium text-gray-500 mb-3">Recent Activity</h3>
+                        <div className="max-h-[280px] overflow-y-auto space-y-2">
+                            {loading ? (
+                                <div className="text-center text-gray-500 py-8">Loading data...</div>
+                            ) : visits.slice(0, 20).map((visit) => (
+                                <div
+                                    key={visit.id}
+                                    className="flex items-center gap-3 rounded-xl p-3 bg-gray-50 text-sm"
+                                >
+                                    <span
+                                        className={`w-2.5 h-2.5 rounded-full shrink-0 ${visit.is_bot ? 'bg-red-500' : 'bg-green-500'}`}
+                                    />
+                                    <span className="font-medium text-gray-800 min-w-0 truncate">
+                                        {visit.is_bot
+                                            ? (visit.bot_name || 'Unknown Bot')
+                                            : (visit.browser && visit.os ? `${visit.browser} on ${visit.os}` : 'Visitor')}
+                                    </span>
+                                    {visit.trap_type && (
+                                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600 border border-red-200 shrink-0">
+                                            trapped
+                                        </span>
+                                    )}
+                                    <span className="text-gray-400 truncate">{visit.path}</span>
+                                    <span className="text-gray-400 text-xs ml-auto shrink-0">
+                                        {timeAgo(visit.created_at)}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+                </motion.div>
             </div>
         </section>
     )

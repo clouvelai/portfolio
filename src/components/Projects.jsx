@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
 import { ExternalLink, Github, ArrowUpRight, Sparkles, Search, Palette, Activity, Database, BrainCircuit, LayoutTemplate, Blocks, Play, Dumbbell, Eye, MessageSquare } from 'lucide-react'
 

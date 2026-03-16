@@ -5,7 +5,6 @@ export default function Honeypot({ trapType = 'hidden_link', path = '/sitemap-hi
     useEffect(() => {
         const logHoneypotVisit = async () => {
             const userAgent = navigator.userAgent
-            const referrer = document.referrer || 'direct'
             const timestamp = new Date().toISOString()
 
             try {

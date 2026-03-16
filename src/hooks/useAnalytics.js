@@ -46,10 +46,8 @@ export function useAnalytics() {
             const userAgentDetected = detectBot(userAgent)
 
             // Tertiary bot detection: WebDriver and other browser features
-            const isWebDriver = navigator.webdriver
             const hasPhantomJS = !!(window.phantom || window._phantom || window.callPhantom)
             const hasNightmare = !!window.__nightmare
-            const chromeRuntime = !!(window.chrome && window.chrome.runtime)
             const hasAutomation = navigator.webdriver || hasPhantomJS || hasNightmare
 
             // Final bot determination (honeypot is primary indicator)
