@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
-import { Activity, Users, Bot, RefreshCw, ShieldAlert } from 'lucide-react'
+import { Activity, Users, Bot, RefreshCw } from 'lucide-react'
 
 function timeAgo(date) {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000)
@@ -60,7 +60,6 @@ export default function AnalyticsDashboard() {
 
     const botCount = visits.filter(v => v.is_bot).length
     const humanCount = visits.length - botCount
-    const trappedCount = visits.filter(v => v.trap_type).length
     const humanPercent = visits.length > 0 ? Math.round((humanCount / visits.length) * 100) : 0
     const botPercent = visits.length > 0 ? 100 - humanPercent : 0
 
@@ -105,20 +104,6 @@ export default function AnalyticsDashboard() {
             ),
             className: 'bg-white border border-gray-200',
         },
-        {
-            key: 'trapped',
-            render: () => (
-                <div>
-                    <div className="flex items-center gap-3 mb-4 text-red-600">
-                        <ShieldAlert size={20} />
-                        <span className="text-sm font-medium">Bots Trapped</span>
-                    </div>
-                    <p className="text-5xl font-bold text-red-600">{trappedCount}</p>
-                    <p className="text-xs text-red-400 mt-2">via honeypot detection</p>
-                </div>
-            ),
-            className: 'bg-red-50 border border-red-200',
-        },
     ]
 
     return (
@@ -158,7 +143,7 @@ export default function AnalyticsDashboard() {
                     className="bg-white border border-gray-200 rounded-3xl overflow-hidden p-8 md:p-10"
                 >
                     {/* Row 1: Stat Cards */}
-                    <div className="grid md:grid-cols-3 gap-6 mb-8">
+                    <div className="grid md:grid-cols-2 gap-6 mb-8">
                         {statCards.map((card, index) => (
                             <motion.div
                                 key={card.key}

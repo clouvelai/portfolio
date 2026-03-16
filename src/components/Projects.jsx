@@ -167,20 +167,38 @@ export default function Projects() {
                                     </div>
 
                                     <div className="flex gap-3">
-                                        <a
-                                            href={project.github}
-                                            className="p-3 bg-gray-100 rounded-xl hover:bg-white hover:text-blue-600 transition-all text-gray-500 shadow-sm hover:shadow-md hidden"
-                                            aria-label="View on GitHub"
-                                        >
-                                            <Github size={20} />
-                                        </a>
-                                        <a
-                                            href={project.link}
-                                            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl hover:shadow-lg transition-all font-medium"
-                                        >
-                                            Visit Site
-                                            <ArrowUpRight size={18} />
-                                        </a>
+                                        {project.github && project.github !== "#" && (
+                                            <a
+                                                href={project.github}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="p-3 bg-gray-100 rounded-xl hover:bg-white hover:text-blue-600 transition-all text-gray-500 shadow-sm hover:shadow-md"
+                                                aria-label="View on GitHub"
+                                            >
+                                                <Github size={20} />
+                                            </a>
+                                        )}
+                                        {project.link && project.link !== "#" ? (
+                                            <a
+                                                href={project.link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl hover:shadow-lg transition-all font-medium"
+                                            >
+                                                Visit Site
+                                                <ArrowUpRight size={18} />
+                                            </a>
+                                        ) : project.github && project.github !== "#" && (
+                                            <a
+                                                href={project.github}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl hover:shadow-lg transition-all font-medium"
+                                            >
+                                                View Code
+                                                <Github size={18} />
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
 
