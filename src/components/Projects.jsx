@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { ExternalLink, Github, ArrowUpRight, Sparkles, Search, Palette, Activity, Database, BrainCircuit } from 'lucide-react'
+import { ExternalLink, Github, ArrowUpRight, Sparkles, Search, Palette, Activity, Database, BrainCircuit, LayoutTemplate, Blocks, Play, Dumbbell, Eye, MessageSquare } from 'lucide-react'
 
 const projects = [
     {
@@ -63,6 +63,70 @@ const projects = [
                 description: "RL Training + Agent actions",
                 color: "text-emerald-600",
                 bg: "bg-emerald-50"
+            }
+        ]
+    },
+    {
+        title: "Cobblr",
+        subtitle: "Block-Based Coding IDE for Kids",
+        description: "A visual programming environment where kids ages 3-16 build games and animations by dragging code blocks. An AI coding buddy named Pip helps them learn, debug, and create.",
+        tags: ["React", "TypeScript", "Tailwind", "Blockly", "FastAPI", "Python", "Supabase", "Claude API", "Canvas 2D", "Playwright"],
+        link: "#",
+        github: "https://github.com/clouvelai/cobblr",
+        gradient: "from-purple-500/10 via-violet-500/10 to-indigo-500/10",
+        workflow: [
+            {
+                icon: <LayoutTemplate size={20} />,
+                title: "Pick a Template",
+                description: "Kids choose from progressive starter projects organized by difficulty, from simple line drawings to full sprite-based games",
+                color: "text-blue-600",
+                bg: "bg-blue-50"
+            },
+            {
+                icon: <Blocks size={20} />,
+                title: "Code with Blocks",
+                description: "Drag-and-drop visual blocks snap together into programs, with Draw Mode for younger kids and Build Mode for the full workspace",
+                color: "text-purple-600",
+                bg: "bg-purple-50"
+            },
+            {
+                icon: <Play size={20} />,
+                title: "Run & Iterate with Pip",
+                description: "Hit the green flag to execute code on a live canvas while Pip, an AI assistant powered by Claude, helps debug and teach",
+                color: "text-pink-600",
+                bg: "bg-pink-50"
+            }
+        ]
+    },
+    {
+        title: "EndorArena",
+        subtitle: "Train Your Own Soccer AI",
+        description: "An interactive RL training playground where you train a reinforcement learning agent to play soccer, watch it learn in real-time 3D, and coach its behavior with natural language that an LLM translates into reward weight adjustments.",
+        tags: ["Python", "React", "TypeScript", "Three.js", "FastAPI", "Stable Baselines3", "Gymnasium", "Supabase", "Docker"],
+        link: "#",
+        github: "https://github.com/clouvelai/EndorArena",
+        gradient: "from-orange-500/10 via-red-500/10 to-pink-500/10",
+        workflow: [
+            {
+                icon: <Dumbbell size={20} />,
+                title: "Train",
+                description: "Configure reward weights and kick off PPO training — a MaskablePPO agent learns to chase, possess, and score on a continuous 105×68 pitch with 17 discrete actions",
+                color: "text-orange-600",
+                bg: "bg-orange-50"
+            },
+            {
+                icon: <Eye size={20} />,
+                title: "Watch",
+                description: "Live 3D visualization streams agent and ball positions at 10fps via WebSocket to a React Three Fiber pitch with stadium lights, goal celebrations, and ball trails",
+                color: "text-blue-600",
+                bg: "bg-blue-50"
+            },
+            {
+                icon: <MessageSquare size={20} />,
+                title: "Coach",
+                description: "Type natural language instructions like \"be more aggressive\" and an LLM translates them into reward weight changes applied on the next training run",
+                color: "text-purple-600",
+                bg: "bg-purple-50"
             }
         ]
     }
