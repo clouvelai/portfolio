@@ -135,7 +135,7 @@ const projects = [
         title: "EvoGolf",
         subtitle: "3D Golf × Genetic Programming",
         description: "A 3D golf game where players evolve optimal swing strategies through genetic programming. Watch populations of golf balls launch, compete, and evolve across generations until one sinks the hole.",
-        tags: ["React", "Three.js", "React Three Fiber", "SpacetimeDB", "TypeScript", "Docker"],
+        tags: ["React Three Fiber", "SpacetimeDB", "TypeScript", "Docker"],
         link: "#",
         github: "https://github.com/clouvelai/EvoGolf",
         gradient: "from-green-500/10 via-emerald-500/10 to-teal-500/10",
