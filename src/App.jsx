@@ -27,8 +27,7 @@ function Portfolio() {
           <div className="flex items-center gap-8">
             <a href="#about" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">About</a>
             <a href="#projects" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Projects</a>
-            <a href="#analytics" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Analytics</a>
-            <a href="#contact" className="text-sm px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-colors">Contact</a>
+<a href="#contact" className="text-sm px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-colors">Contact</a>
           </div>
         </div>
       </nav>
