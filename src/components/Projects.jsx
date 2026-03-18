@@ -1,6 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
-import { ExternalLink, Github, ArrowUpRight, Sparkles, Search, Palette, Activity, Database, BrainCircuit, LayoutTemplate, Blocks, Play, Dumbbell, Eye, MessageSquare } from 'lucide-react'
+import { ExternalLink, Github, ArrowUpRight, Sparkles, Search, Palette, Activity, Database, BrainCircuit, LayoutTemplate, Blocks, Play, Dumbbell, Eye, MessageSquare, Dna, Zap, Trophy } from 'lucide-react'
 
 const projects = [
     {
@@ -128,6 +128,38 @@ const projects = [
                 description: "Type natural language instructions like \"be more aggressive\" and an LLM translates them into reward weight changes applied on the next training run",
                 color: "text-purple-600",
                 bg: "bg-purple-50"
+            }
+        ]
+    },
+    {
+        title: "EvoGolf",
+        subtitle: "3D Golf × Genetic Programming",
+        description: "A 3D golf game where players evolve optimal swing strategies through genetic programming. Watch populations of golf balls launch, compete, and evolve across generations until one sinks the hole.",
+        tags: ["React", "Three.js", "React Three Fiber", "SpacetimeDB", "TypeScript", "Docker"],
+        link: "#",
+        github: "https://github.com/clouvelai/EvoGolf",
+        gradient: "from-green-500/10 via-emerald-500/10 to-teal-500/10",
+        workflow: [
+            {
+                icon: <Dna size={20} />,
+                title: "Population Init",
+                description: "Generate GP program trees using ramped half-and-half initialization",
+                color: "text-green-600",
+                bg: "bg-green-50"
+            },
+            {
+                icon: <Zap size={20} />,
+                title: "Evolution",
+                description: "Tournament selection, subtree crossover, and mutation across generations",
+                color: "text-emerald-600",
+                bg: "bg-emerald-50"
+            },
+            {
+                icon: <Trophy size={20} />,
+                title: "Hole-in-One",
+                description: "Winning genome found — celebrate and replay the perfect trajectory",
+                color: "text-teal-600",
+                bg: "bg-teal-50"
             }
         ]
     }
