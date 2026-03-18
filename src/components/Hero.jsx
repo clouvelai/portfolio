@@ -85,6 +85,24 @@ export default function Hero() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
                 >
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.6, delay: 0.1 }}
+                        className="mb-6"
+                    >
+                        <div className="relative w-20 h-20">
+                            {/* Animated gradient ring */}
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 animate-spin-slow" />
+                            {/* Inner image with inset to show ring */}
+                            <img
+                                src="/headshot.png"
+                                alt="Samuel Clark"
+                                className="absolute inset-[2px] rounded-full object-cover shadow-lg shadow-blue-500/20"
+                                style={{ objectPosition: 'center 15%' }}
+                            />
+                        </div>
+                    </motion.div>
                     <h2 className="text-blue-600 font-semibold tracking-wider mb-6 uppercase text-xs">Samuel Clark</h2>
                     <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight tracking-tight text-gray-900">
                         Building <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Intelligent Systems</span>,<br />
