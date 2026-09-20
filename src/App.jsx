@@ -2,13 +2,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Hero from './components/Hero'
 import Projects from './components/Projects'
 import Contact from './components/Contact'
-import AnalyticsDashboard from './components/AnalyticsDashboard'
 import Honeypot from './components/Honeypot'
-import { useAnalytics } from './hooks/useAnalytics'
 import { useState, useEffect } from 'react'
 
 function Portfolio() {
-  useAnalytics() // Track visits
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -35,13 +32,12 @@ function Portfolio() {
       <main>
         <Hero />
         <Projects />
-        <AnalyticsDashboard />
         <Contact />
       </main>
 
       {/* Multiple Hidden Honeypot Links - Different techniques to catch various bot types */}
       <footer className="py-8 text-center text-gray-500 text-xs border-t border-gray-200">
-        <p>&copy; {new Date().getFullYear()} Samuel Clark. Built with React & Supabase.</p>
+        <p>&copy; {new Date().getFullYear()} Samuel Clark. Built with React.</p>
 
         {/* Technique 1: Opacity 0 + absolute positioning */}
         <a href="/sitemap-hidden.xml" className="opacity-0 absolute bottom-0 left-0 w-1 h-1 overflow-hidden" aria-hidden="true" tabIndex="-1">
@@ -73,10 +69,10 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Portfolio />} />
         {/* Multiple honeypot routes with different trap types */}
-        <Route path="/sitemap-hidden.xml" element={<Honeypot trapType="hidden_link" path="/sitemap-hidden.xml" />} />
-        <Route path="/admin-login" element={<Honeypot trapType="robots_txt_trap" path="/admin-login" />} />
-        <Route path="/wp-admin" element={<Honeypot trapType="robots_txt_trap" path="/wp-admin" />} />
-        <Route path="/api/internal/config" element={<Honeypot trapType="robots_txt_trap" path="/api/internal/config" />} />
+        <Route path="/sitemap-hidden.xml" element={<Honeypot />} />
+        <Route path="/admin-login" element={<Honeypot />} />
+        <Route path="/wp-admin" element={<Honeypot />} />
+        <Route path="/api/internal/config" element={<Honeypot />} />
       </Routes>
     </Router>
   )
