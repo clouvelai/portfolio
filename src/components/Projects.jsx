@@ -1,6 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
-import { ExternalLink, Github, ArrowUpRight, Sparkles, Search, Palette, Activity, Database, BrainCircuit, LayoutTemplate, Blocks, Play, Dumbbell, Eye, MessageSquare, Dna, Zap, Trophy } from 'lucide-react'
+import { ExternalLink, Github, ArrowUpRight, Sparkles, Search, Palette, Activity, Database, BrainCircuit, LayoutTemplate, Blocks, Play, Dumbbell, Eye, MessageSquare, Dna, Zap, Trophy, FileText, Scale, CircleDollarSign } from 'lucide-react'
 
 const projects = [
     {
@@ -160,6 +160,38 @@ const projects = [
                 description: "Winning genome found — celebrate and replay the perfect trajectory",
                 color: "text-teal-600",
                 bg: "bg-teal-50"
+            }
+        ]
+    },
+    {
+        title: "Merilane",
+        subtitle: "Wrong-Charge Underwriting",
+        description: "A /jev-based underwriting engine for subscription wrong-charge tickets. Paste the ticket and invoice; Merilane returns Credit, Escalate, or Deny — with dollars of false credits avoided and an audit row. It never auto-refunds; your stack still moves the money.",
+        tags: ["/jev", "TypeSafe", "Decision API"],
+        link: "https://merilane.io/",
+        github: "#",
+        gradient: "from-emerald-500/10 via-teal-500/10 to-cyan-500/10",
+        workflow: [
+            {
+                icon: <FileText size={20} />,
+                title: "Paste Evidence",
+                description: "Ticket and invoice go in as the underwrite packet",
+                color: "text-blue-600",
+                bg: "bg-blue-50"
+            },
+            {
+                icon: <Scale size={20} />,
+                title: "/jev Decision",
+                description: "Returns Credit, Escalate, or Deny with calibrated confidence",
+                color: "text-purple-600",
+                bg: "bg-purple-50"
+            },
+            {
+                icon: <CircleDollarSign size={20} />,
+                title: "Audit Row",
+                description: "Tally false credits avoided — your team still moves the money",
+                color: "text-emerald-600",
+                bg: "bg-emerald-50"
             }
         ]
     }
