@@ -14,7 +14,7 @@ export default function Contact() {
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
                 >
-                    <h2 className="text-5xl md:text-7xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-b from-gray-900 to-gray-500">
+                    <h2 className="text-5xl md:text-7xl font-bold mb-8 leading-tight pb-1 bg-clip-text text-transparent bg-gradient-to-b from-gray-900 to-gray-500">
                         Let's work together.
                     </h2>
                     <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
