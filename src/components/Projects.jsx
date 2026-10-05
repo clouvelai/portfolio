@@ -1,6 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
-import { ExternalLink, Github, ArrowUpRight, Sparkles, Search, Palette, Activity, Database, BrainCircuit, LayoutTemplate, Blocks, Play, Dumbbell, Eye, MessageSquare, Dna, Zap, Trophy, FileText, Scale, CircleDollarSign } from 'lucide-react'
+import { ExternalLink, Github, ArrowUpRight, Sparkles, Search, Palette, Activity, Database, BrainCircuit, LayoutTemplate, Blocks, Play, Dumbbell, Eye, MessageSquare, Dna, Zap, Trophy, FileText, Scale, CircleDollarSign, Flag, Target } from 'lucide-react'
 
 const projects = [
     {
@@ -190,6 +190,38 @@ const projects = [
                 icon: <CircleDollarSign size={20} />,
                 title: "Audit Row",
                 description: "Tally false credits avoided — your team still moves the money",
+                color: "text-emerald-600",
+                bg: "bg-emerald-50"
+            }
+        ]
+    },
+    {
+        title: "Oiseau",
+        subtitle: "Generative Golf Broadcast",
+        description: "A live golf broadcast played by an agent. The course comes from a seed. Mireille asks /jev for the shot, a die bends the result, and one stored flight is what every viewer watches.",
+        tags: ["/jev", "TypeSafe", "SpacetimeDB"],
+        link: "https://oiseau.dev",
+        github: "#",
+        gradient: "from-sky-500/10 via-cyan-500/10 to-emerald-500/10",
+        workflow: [
+            {
+                icon: <Flag size={20} />,
+                title: "Read the lie",
+                description: "Hole, lie, and persona go in as the question.",
+                color: "text-blue-600",
+                bg: "bg-blue-50"
+            },
+            {
+                icon: <Target size={20} />,
+                title: "/jev Decision",
+                description: "Returns line, shape, club, and commitment.",
+                color: "text-purple-600",
+                bg: "bg-purple-50"
+            },
+            {
+                icon: <Play size={20} />,
+                title: "One flight",
+                description: "The module rolls, simulates the ball once, and stores it. Spectators only play it back.",
                 color: "text-emerald-600",
                 bg: "bg-emerald-50"
             }
