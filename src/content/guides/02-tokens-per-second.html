@@ -1,0 +1,1049 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Tokens Per Second</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@87.5,500;87.5,700;87.5,800;100,500;100,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sticky chapter rail (desktop) beside one ~68ch reading column; every chapter pairs short prose with one "instrument" panel the reader operates. Charts use the validated four-slot series palette; the accent doubles as series 1 so "the thing you picked" is always the same blue. */
+:root{
+  --bg:#F4F5F7; --surface:#FFFFFF; --fg:#121521; --muted:#5B6275; --line:#D9DCE6; --line-strong:#B3B9CB;
+  --accent:#2A78D6; --accent-soft:#E3EDFB; --accent-ink:#FFFFFF;
+  --s1:#2A78D6; --s2:#EB6834; --s3:#1BAF7A; --s4:#6250D6;
+  --ok:#1F7A4E; --warn:#B8640A; --bad:#B4321A; --mask:#8C93A8;
+  --font-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --font-body:"Newsreader",Georgia,"Times New Roman",serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1118; --surface:#161A24; --fg:#E8EAF1; --muted:#9AA2B6; --line:#272D3C; --line-strong:#3D4558;
+    --accent:#3987E5; --accent-soft:#1B2A45; --accent-ink:#0E1118;
+    --s1:#3987E5; --s2:#D95926; --s3:#199E70; --s4:#9085E9;
+    --ok:#4BC38A; --warn:#F5A524; --bad:#F08A72; --mask:#4A5270; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1118; --surface:#161A24; --fg:#E8EAF1; --muted:#9AA2B6; --line:#272D3C; --line-strong:#3D4558;
+  --accent:#3987E5; --accent-soft:#1B2A45; --accent-ink:#0E1118;
+  --s1:#3987E5; --s2:#D95926; --s3:#199E70; --s4:#9085E9;
+  --ok:#4BC38A; --warn:#F5A524; --bad:#F08A72; --mask:#4A5270; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} *{animation:none!important;transition:none!important} }
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:17.5px;line-height:1.6;margin:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+#progress{position:fixed;left:0;top:env(safe-area-inset-top,0px);height:3px;width:0;background:var(--accent);z-index:50;transition:width .1s linear}
+.frame{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:0 40px}
+@media (min-width:980px){ .frame{grid-template-columns:200px minmax(0,1fr)} }
+nav.rail{display:none}
+@media (min-width:980px){
+  nav.rail{display:block;position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;padding-top:28px;font-family:var(--font-display);font-size:13px}
+  nav.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+  nav.rail li a{display:block;padding:6px 0 6px 14px;color:var(--muted);text-decoration:none;border-left:2px solid transparent;margin-left:-1px;line-height:1.3}
+  nav.rail li a.active{color:var(--fg);border-left-color:var(--accent)}
+  nav.rail li a:hover{color:var(--fg)}
+  nav.rail .n{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-right:6px}
+}
+main{min-width:0}
+.hero{padding-block:56px 24px}
+.eyebrow{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:var(--muted);margin:0 0 14px}
+h1{font-family:var(--font-display);font-weight:800;font-stretch:87.5%;font-size:clamp(38px,6vw,68px);line-height:1;letter-spacing:-.02em;margin:0 0 18px;text-wrap:balance}
+h2{font-family:var(--font-display);font-weight:700;font-stretch:87.5%;font-size:clamp(26px,3.4vw,36px);line-height:1.1;letter-spacing:-.012em;margin:0 0 12px;text-wrap:balance}
+h3{font-family:var(--font-display);font-weight:700;font-size:18px;margin:0 0 8px}
+.lede{font-size:21px;line-height:1.5;max-width:62ch;margin:0 0 26px}
+p{max-width:68ch;margin:0 0 14px}
+section.ch{padding-block:36px;border-top:1px solid var(--line)}
+.chn{font-family:var(--font-mono);font-size:12px;color:var(--accent);letter-spacing:.08em;margin:0 0 10px}
+.inst{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin:22px 0 12px;min-width:0}
+.inst .hint{font-family:var(--font-display);font-size:13px;color:var(--muted);margin:10px 0 0;max-width:none}
+.ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;font-family:var(--font-display);font-size:13px;margin:0 0 14px}
+.ctl label{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.ctl input[type=range]{accent-color:var(--accent);width:150px;max-width:40vw}
+.ctl select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;max-width:60vw}
+.ctl .v{font-family:var(--font-mono);color:var(--fg);min-width:3.5ch;font-variant-numeric:tabular-nums}
+.btn{font-family:var(--font-display);font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn[aria-pressed="true"],.btn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;gap:4px;flex-wrap:wrap}
+.read{font-family:var(--font-mono);font-size:13px;color:var(--muted);margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 22px;font-variant-numeric:tabular-nums}
+.read b{color:var(--fg);font-weight:600}
+canvas{display:block;width:100%;max-width:100%}
+.eq{font-family:var(--font-body);font-size:22px;text-align:center;margin:18px 0;line-height:1.4}
+.eq .op{font-style:normal;font-family:var(--font-display);font-weight:500}
+.eq i{font-style:italic}
+.mono{font-family:var(--font-mono);font-size:.85em}
+.grid2{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:760px){ .grid2{grid-template-columns:1fr 1fr} }
+.grid2>*{min-width:0}
+.bars{display:grid;grid-template-columns:auto 1fr auto;gap:5px 10px;align-items:center;font-family:var(--font-mono);font-size:12px;font-variant-numeric:tabular-nums}
+.bars .bar{height:12px;border-radius:0 4px 4px 0;background:var(--s1);min-width:1px}
+.bars .bar.lit{background:var(--s2)}
+.bars .lab{color:var(--muted);white-space:nowrap}
+.cards{display:grid;grid-template-columns:1fr;gap:12px;margin-top:18px}
+@media (min-width:700px){ .cards{grid-template-columns:1fr 1fr} }
+.card{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface);min-width:0}
+.card h3{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.card h3 .yr{font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:400}
+.card p{font-size:15px;margin:0 0 8px;max-width:none}
+.card .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:14px;margin-top:6px}
+.card .kv span:first-child{font-family:var(--font-display);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:3px}
+.timeline{overflow-x:auto;margin:18px 0 4px;padding-bottom:8px}
+.tl{display:flex;gap:0;min-width:max-content;position:relative;padding-top:10px}
+.tl::before{content:"";position:absolute;left:0;right:0;top:19px;height:1px;background:var(--line-strong)}
+.tl .ev{width:160px;padding:0 10px 0 0;position:relative}
+.tl .ev::before{content:"";position:absolute;left:0;top:4px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
+.tl .ev .y{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin:20px 0 2px}
+.tl .ev .t{font-family:var(--font-display);font-size:13px;font-weight:700;line-height:1.25}
+.tl .ev .d{font-size:12.5px;color:var(--muted);line-height:1.35;margin-top:2px}
+.quiz{display:grid;gap:14px}
+.qq{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface)}
+.qq .qt{font-family:var(--font-display);font-weight:700;margin:0 0 10px;font-size:16px;max-width:none}
+.qq .opts{display:grid;gap:6px}
+.qq .opt{text-align:left;font:inherit;font-size:15px;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.qq .opt:hover{border-color:var(--line-strong)}
+.qq .opt.right{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.qq .opt.wrong{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+.qq .why{font-size:14.5px;color:var(--muted);margin:10px 0 0;max-width:none}
+.score{font-family:var(--font-display);font-size:14px;color:var(--muted)}
+.note{font-size:15px;color:var(--muted);border-left:2px solid var(--line-strong);padding-left:12px;margin:12px 0;max-width:68ch}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:12px;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--fg)}
+.panel{border:1px dashed var(--line-strong);border-radius:8px;padding:10px 12px;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums;min-width:0}
+.panel h4{font-family:var(--font-display);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}
+.panel .row{display:flex;justify-content:space-between;gap:8px;padding:2px 0;border-bottom:1px solid var(--line)}
+.panel .row:last-child{border-bottom:0}
+.panel .row b{font-weight:600;text-align:right}
+.gloss{display:grid;grid-template-columns:1fr;gap:10px 22px;margin-top:18px}
+@media (min-width:760px){ .gloss{grid-template-columns:1fr 1fr} }
+.g{padding:10px 0;border-top:1px solid var(--line);min-width:0}
+.g dt{font-family:var(--font-display);font-weight:700;font-size:16px;margin:0 0 4px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.g dt .sym{font-family:var(--font-mono);font-size:12px;color:var(--muted);font-weight:400}
+.g dd{margin:0;font-size:15px;line-height:1.5}
+.g dd .ana{display:block;color:var(--muted);margin-top:4px;font-size:14px}
+a.term{color:inherit;text-decoration:none;border-bottom:1px dotted var(--accent)}
+a.term:hover{color:var(--accent)}
+.legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-family:var(--font-display);font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.stream{font-family:var(--font-body);font-size:18px;line-height:1.55;min-height:7.5em;max-height:7.5em;overflow-y:auto;position:relative;border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--bg)}
+.stream .cur{display:inline-block;width:.55em;height:1.1em;background:var(--accent);vertical-align:-3px;margin-left:1px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.stream.wait .cur{animation:none;opacity:.35}
+.tokrow{display:flex;flex-wrap:wrap;gap:4px;font-family:var(--font-mono);font-size:12.5px;margin-top:10px;min-height:2.4em}
+.tokrow span{padding:3px 6px;border-radius:4px;border:1px solid var(--line);background:var(--surface)}
+.tokrow .acc{background:var(--accent-soft);border-color:var(--accent)}
+.tokrow .rej{text-decoration:line-through;color:var(--muted);opacity:.6}
+.tokrow .fix{border-color:var(--s2);box-shadow:inset 0 0 0 1px var(--s2)}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums;width:100%;min-width:520px}
+.tbl th,.tbl td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line)}
+.tbl th{font-family:var(--font-display);font-weight:700;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.tbl td:first-child,.tbl th:first-child{text-align:left}
+.tbl tr.lit td{background:var(--accent-soft)}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--font-mono);font-size:13px;margin:14px 0}
+.flow span{padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--muted)}
+.flow .op{color:var(--fg);border-color:var(--line-strong)}
+.flow .arrow{border:none;padding:0 2px;color:var(--accent)}
+footer{font-family:var(--font-display);font-size:13px;color:var(--muted);padding-top:28px;border-top:1px solid var(--line);margin-top:30px}
+.textin{font:inherit;font-family:var(--font-mono);font-size:14px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);color:var(--fg);width:100%;min-width:0}
+
+/* Figures: hand-drawn inline SVG mechanism diagrams + stat tiles. Strokes/text inherit currentColor; series classes carry meaning. */
+.fig{margin:22px 0 14px;max-width:none}
+.fig svg{display:block;width:100%;height:auto;max-width:100%;color:var(--fg);font-family:var(--font-display);font-size:12px;overflow:visible}
+.fig svg text{fill:currentColor}
+.fig figcaption{font-family:var(--font-display);font-size:13px;color:var(--muted);margin-top:8px;max-width:68ch;line-height:1.45}
+.fig .box{fill:var(--surface);stroke:var(--line-strong);stroke-width:1}
+.fig .soft{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1}
+.fig .ghost{fill:none;stroke:var(--line-strong);stroke-dasharray:4 4}
+.fig .f1{fill:var(--s1)} .fig .f2{fill:var(--s2)} .fig .f3{fill:var(--s3)} .fig .f4{fill:var(--s4)} .fig .fm{fill:var(--mask)} .fig .fl{fill:var(--line)}
+.fig .l1{stroke:var(--s1)} .fig .l2{stroke:var(--s2)} .fig .l3{stroke:var(--s3)} .fig .l4{stroke:var(--s4)}
+.fig .ln{stroke:currentColor;fill:none;stroke-width:1.2}
+.fig .mu{fill:var(--muted)} .fig .mono{font-family:var(--font-mono);font-size:11px} .fig .b{font-weight:700}
+.fig .sm{font-size:10.5px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:18px 0}
+.tile{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface);min-width:0}
+.tile .n{font-family:var(--font-display);font-weight:800;font-stretch:87.5%;font-size:30px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile .n small{font-size:14px;font-weight:600;color:var(--muted);margin-left:4px;letter-spacing:0}
+.tile .l{font-family:var(--font-display);font-size:12px;color:var(--muted);margin-top:6px;line-height:1.3}
+.tile.a .n{color:var(--accent)}
+@media (max-width:700px){ .fig{overflow-x:auto;-webkit-overflow-scrolling:touch} .fig svg{min-width:600px} }
+</style>
+
+<div id="progress"></div>
+<div class="frame">
+<nav class="rail" aria-label="Chapters">
+  <ol>
+    <li><a href="#c0"><span class="n">00</span>Plain words</a></li>
+    <li><a href="#c1"><span class="n">01</span>Two clocks</a></li>
+    <li><a href="#c2"><span class="n">02</span>Speed of light</a></li>
+    <li><a href="#c3"><span class="n">03</span>Batching</a></li>
+    <li><a href="#c4"><span class="n">04</span>The context tax</a></li>
+    <li><a href="#c5"><span class="n">05</span>Fewer bytes</a></li>
+    <li><a href="#c6"><span class="n">06</span>Guessing ahead</a></li>
+    <li><a href="#c7"><span class="n">07</span>Experts</a></li>
+    <li><a href="#c8"><span class="n">08</span>More chips</a></li>
+    <li><a href="#c9"><span class="n">09</span>The serving stack</a></li>
+    <li><a href="#c10"><span class="n">10</span>Reading the numbers</a></li>
+    <li><a href="#c11"><span class="n">11</span>The frontier</a></li>
+    <li><a href="#c12"><span class="n">12</span>Why it matters to me</a></li>
+    <li><a href="#c13"><span class="n">13</span>Check yourself</a></li>
+  </ol>
+</nav>
+<main>
+
+<header class="hero">
+  <p class="eyebrow">An interactive field guide</p>
+  <h1>Tokens per second, from one byte to the frontier</h1>
+  <p class="lede">A language model answers one small piece of text at a time. How fast those pieces arrive is set by a short list of physical facts: how many bytes the chip must move per piece, how fast it can move them, how many people share the chip, and a handful of tricks that bend those limits. This page builds the number from scratch and then shows every trick.</p>
+  <div class="inst" id="hero-inst">
+    <div class="ctl"><label>speed <input type="range" id="hs-tps" min="0" max="100" value="45"><span class="v" id="hs-tps-v">30</span> tok/s</label><label>wait before first word <input type="range" id="hs-ttft" min="0" max="3000" step="50" value="600"><span class="v" id="hs-ttft-v">0.6</span> s</label><button class="btn" id="hs-go">▶ replay</button></div>
+    <div class="stream" id="hs-stream"><span id="hs-text"></span><span class="cur"></span></div>
+    <div class="read" id="hs-read"></div>
+    <p class="hint">This is what a speed feels like. A fast reader manages about 6 tokens a second, so anything above that is faster than you can read. Code, tool calls and "thinking" are consumed by machines, and for those the ceiling is as high as physics allows.</p>
+  </div>
+<div class="tiles"><div class="tile a"><div class="n">6<small>tok/s</small></div><div class="l">a fast human reader</div></div><div class="tile"><div class="n">30–80<small>tok/s</small></div><div class="l">a typical chat API today</div></div><div class="tile"><div class="n">1,000+<small>tok/s</small></div><div class="l">SRAM machines and NVL72, 2025</div></div><div class="tile"><div class="n">~0.5<small>s</small></div><div class="l">a good time to first token</div></div></div>
+</header>
+
+<section class="ch" id="c0">
+  <p class="chn">00 · PLAIN WORDS</p>
+<figure class="fig"><svg viewBox="0 0 760 262" role="img" aria-label="A request flows from prompt through prefill, which writes the KV cache and ends with the first token, then through decode, which re-reads the weights and the KV cache for every token. TTFT measures the first part, tokens per second the second.">
+<defs><marker id="m0a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="m0b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f1"/></marker><marker id="m0c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f2"/></marker></defs>
+<path d="M14 22v-6h356v6" class="ln"/><text x="192" y="12" text-anchor="middle" class="mono">TTFT · time to first token</text>
+<path d="M404 22v-6h166v6" class="ln"/><text x="487" y="12" text-anchor="middle" class="mono">tok/s · rhythm after that</text>
+<rect x="14" y="40" width="116" height="78" rx="8" class="box"/>
+<text x="72" y="58" text-anchor="middle" class="b">your prompt</text>
+<rect x="26" y="66" width="10" height="8" rx="1.5" class="f1"/><rect x="38" y="66" width="10" height="8" rx="1.5" class="f1"/><rect x="50" y="66" width="10" height="8" rx="1.5" class="f1"/><rect x="62" y="66" width="10" height="8" rx="1.5" class="f1"/><rect x="74" y="66" width="10" height="8" rx="1.5" class="f1"/><rect x="86" y="66" width="10" height="8" rx="1.5" class="f1"/><rect x="98" y="66" width="10" height="8" rx="1.5" class="f1"/><rect x="110" y="66" width="10" height="8" rx="1.5" class="f1"/><rect x="26" y="76" width="10" height="8" rx="1.5" class="f1"/><rect x="38" y="76" width="10" height="8" rx="1.5" class="f1"/><rect x="50" y="76" width="10" height="8" rx="1.5" class="f1"/><rect x="62" y="76" width="10" height="8" rx="1.5" class="f1"/><rect x="74" y="76" width="10" height="8" rx="1.5" class="f1"/><rect x="86" y="76" width="10" height="8" rx="1.5" class="f1"/><rect x="98" y="76" width="10" height="8" rx="1.5" class="f1"/><rect x="110" y="76" width="10" height="8" rx="1.5" class="f1"/><rect x="26" y="86" width="10" height="8" rx="1.5" class="f1"/><rect x="38" y="86" width="10" height="8" rx="1.5" class="f1"/><rect x="50" y="86" width="10" height="8" rx="1.5" class="f1"/><rect x="62" y="86" width="10" height="8" rx="1.5" class="f1"/><rect x="74" y="86" width="10" height="8" rx="1.5" class="f1"/><rect x="86" y="86" width="10" height="8" rx="1.5" class="f1"/><rect x="98" y="86" width="10" height="8" rx="1.5" class="f1"/><rect x="110" y="86" width="10" height="8" rx="1.5" class="f1"/>
+<text x="72" y="112" text-anchor="middle" class="mu sm">2,000 tokens</text>
+<line x1="130" y1="79" x2="162" y2="79" class="ln" marker-end="url(#m0a)"/>
+<rect x="164" y="40" width="206" height="78" rx="8" class="soft"/>
+<text x="267" y="60" text-anchor="middle" class="b">PREFILL</text>
+<text x="267" y="78" text-anchor="middle" class="sm">all prompt tokens, one wide pass</text>
+<text x="267" y="96" text-anchor="middle" class="mono">compute-bound</text>
+<text x="267" y="110" text-anchor="middle" class="mu sm">chip is multiplying</text>
+<line x1="370" y1="79" x2="402" y2="79" class="ln" marker-end="url(#m0a)"/>
+<text x="386" y="70" text-anchor="middle" class="sm mu">1st</text>
+<rect x="404" y="40" width="166" height="78" rx="8" class="soft"/>
+<text x="487" y="60" text-anchor="middle" class="b">DECODE</text>
+<text x="487" y="78" text-anchor="middle" class="sm">one token per step</text>
+<text x="487" y="96" text-anchor="middle" class="mono">memory-bound</text>
+<text x="487" y="110" text-anchor="middle" class="mu sm">chip is waiting on bytes</text>
+<line x1="570" y1="79" x2="602" y2="79" class="ln" marker-end="url(#m0a)"/>
+<rect x="604" y="40" width="142" height="78" rx="8" class="box"/>
+<text x="675" y="58" text-anchor="middle" class="b">answer, streamed</text>
+<rect x="616" y="66" width="10" height="8" rx="1.5" class="f1"/><rect x="628" y="66" width="10" height="8" rx="1.5" class="f1"/><rect x="640" y="66" width="10" height="8" rx="1.5" class="f1"/><rect x="652" y="66" width="10" height="8" rx="1.5" class="f1"/><rect x="664" y="66" width="10" height="8" rx="1.5" class="f1"/><rect x="676" y="66" width="10" height="8" rx="1.5" class="f1"/><rect x="688" y="66" width="10" height="8" rx="1.5" class="fl"/><rect x="700" y="66" width="10" height="8" rx="1.5" class="fl"/><rect x="712" y="66" width="10" height="8" rx="1.5" class="fl"/><rect x="724" y="66" width="10" height="8" rx="1.5" class="fl"/>
+<text x="675" y="100" text-anchor="middle" class="mu sm">300 tokens, 6/s is reading speed</text>
+<rect x="318" y="150" width="138" height="40" rx="6" class="box"/>
+<text x="387" y="167" text-anchor="middle" class="b">KV cache</text>
+<text x="387" y="182" text-anchor="middle" class="mu sm">memory of every token so far</text>
+<path d="M300 118v26a6 6 0 0 0 6 6h10" class="ln" marker-end="url(#m0a)"/>
+<text x="322" y="142" class="mono">writes</text>
+<path d="M456 170h12a6 6 0 0 0 6-6v-46" class="ln" marker-end="url(#m0a)"/>
+<text x="480" y="150" class="mono">re-read every step, grows by one</text>
+<rect x="164" y="214" width="406" height="40" rx="6" class="box"/>
+<text x="367" y="231" text-anchor="middle" class="b">weights in HBM memory</text>
+<text x="367" y="246" text-anchor="middle" class="mu sm">parameters × bytes per parameter · moved at the chip's bandwidth</text>
+<line x1="230" y1="214" x2="230" y2="120" class="ln" marker-end="url(#m0a)"/>
+<text x="236" y="206" class="mono sm">read once per pass</text>
+<line x1="520" y1="214" x2="520" y2="120" class="ln" marker-end="url(#m0a)"/>
+<text x="526" y="206" class="mono sm">read once per token</text>
+</svg><figcaption>The map every term on this page lives on. Prefill reads the prompt in one pass and ends when the first token appears. Decode then produces one token per step, and each step must stream the whole model plus the KV cache through the chip. The two brackets at the top are the two numbers people quote.</figcaption></figure>
+
+  <h2>Every term, in one breath</h2>
+  <p>The chapters use these words freely. Each entry is a one-sentence definition and a picture to hold it by. Dotted-underlined terms in the chapters link back here. Nothing on this page assumes you know any of them already.</p>
+  <dl class="gloss">
+  <div class="g" id="g-token"><dt>Token</dt><dd>The unit a model reads and writes: a word, a piece of a word, a number, a punctuation mark. In English one word is about 1.3 tokens; code and other languages run higher.<span class="ana">A tile. Everything on this page is about how fast tiles come out of the machine.</span></dd></div>
+  <div class="g" id="g-tps"><dt>Tokens per second <span class="sym">tok/s · TPS</span></dt><dd>How many tokens arrive each second once the answer has started. The headline speed number. It is almost always quoted for the output, not the prompt, and for one user, not the whole server.<span class="ana">The speedometer. Not the whole story, because the car also has to start.</span></dd></div>
+  <div class="g" id="g-ttft"><dt>Time to first token <span class="sym">TTFT</span></dt><dd>The pause between sending a request and the first token coming back. Set mostly by how long the prompt is, because the model must read all of it before it can write anything.<span class="ana">How long the engine cranks before it catches.</span></dd></div>
+  <div class="g" id="g-tpot"><dt>Time per output token <span class="sym">TPOT · ITL</span></dt><dd>The gap between one output token and the next, usually in milliseconds. Tokens per second is just 1000 divided by this. Also called inter-token latency.<span class="ana">The tick of the metronome. 20 ms per tick is 50 tok/s.</span></dd></div>
+  <div class="g" id="g-latency"><dt>Latency vs throughput</dt><dd>Latency is how long one person waits. Throughput is how much work the whole system finishes per second. They pull against each other: serving more people at once makes each one slightly slower.<span class="ana">A bus is high throughput; a taxi is low latency. Same road.</span></dd></div>
+  <div class="g" id="g-prefill"><dt>Prefill</dt><dd>The first phase of a request: the model reads the whole prompt in one pass and builds its working memory of it. All prompt tokens are processed at once, so this phase is heavy on arithmetic.<span class="ana">Reading the brief before writing a word.</span></dd></div>
+  <div class="g" id="g-decode"><dt>Decode</dt><dd>The second phase: the model produces output one token at a time, each one requiring a full pass through the model. This is where tokens per second lives.<span class="ana">Typing the reply, one key at a time, re-reading your notes before every key.</span></dd></div>
+  <div class="g" id="g-forward"><dt>Forward pass</dt><dd>One trip through all the model's layers to produce one prediction. Decode is one forward pass per output token. Prefill is one forward pass over the whole prompt at once.<span class="ana">One turn of the crank.</span></dd></div>
+  <div class="g" id="g-params"><dt>Parameters, weights <span class="sym">P</span></dt><dd>The learned numbers that make up the model. A "70B model" has seventy billion of them. They are fixed, and every single one is read from memory on every forward pass.<span class="ana">The model's long-term memory. Reading it in full, every tick, is the whole speed problem.</span></dd></div>
+  <div class="g" id="g-precision"><dt>Precision, bytes per parameter <span class="sym">bf16 · fp8 · int4</span></dt><dd>How many bytes each parameter takes in memory. bf16 is 2 bytes, fp8 is 1, int4 is half a byte. Fewer bytes means fewer bytes to move per token, so faster decode.<span class="ana">Writing the same number in big handwriting or small handwriting.</span></dd></div>
+  <div class="g" id="g-quant"><dt>Quantization</dt><dd>Converting a trained model's parameters to a lower precision after training. The model gets smaller and faster; done carelessly it gets slightly dumber.<span class="ana">Compressing a photo. Mostly invisible until you push it too far.</span></dd></div>
+  <div class="g" id="g-flops"><dt>FLOPs</dt><dd>Floating-point operations: the count of multiplications and additions. Each token costs about 2 × P FLOPs (one multiply and one add per parameter). Chips are rated in FLOPs per second.<span class="ana">The arithmetic bill. Surprisingly, it is usually not the thing that limits speed.</span></dd></div>
+  <div class="g" id="g-bw"><dt>Memory bandwidth, HBM</dt><dd>How many bytes per second the chip can pull from its main memory. HBM (high-bandwidth memory) is the fast memory stacked next to a GPU: an H100 reads 3.35 terabytes per second from it.<span class="ana">The width of the pipe between the pantry and the kitchen.</span></dd></div>
+  <div class="g" id="g-bound"><dt>Memory-bound vs compute-bound</dt><dd>A memory-bound step spends its time waiting for bytes to arrive. A compute-bound step spends it doing arithmetic. Decode is memory-bound; prefill is compute-bound. Everything else on this page follows from that one sentence.<span class="ana">A chef who is either walking to the pantry or chopping. You can only speed up the one they are doing.</span></dd></div>
+  <div class="g" id="g-ai"><dt>Arithmetic intensity</dt><dd>FLOPs performed per byte moved. If it is low, the chip starves for data; if it is high, the chip is busy. Each chip has a crossover point, and a decode step for one user sits far below it.<span class="ana">How much chopping you do per trip to the pantry.</span></dd></div>
+  <div class="g" id="g-roofline"><dt>Roofline</dt><dd>The chart that puts arithmetic intensity on the x axis and achievable speed on the y axis. Left of the crossover the roof slopes up (bandwidth limits you); right of it the roof is flat (compute limits you).<span class="ana">The shape of the ceiling you are standing under.</span></dd></div>
+  <div class="g" id="g-batch"><dt>Batch size <span class="sym">B</span></dt><dd>How many requests the chip handles in one forward pass. Reading the weights once and using them for 64 users costs about the same as using them for 1, so batching is how servers get throughput almost for free.<span class="ana">Taking the pantry trip once and cooking for the whole table.</span></dd></div>
+  <div class="g" id="g-cb"><dt>Continuous batching</dt><dd>Letting requests join and leave the batch at every token step instead of waiting for the whole batch to finish. The standard since 2023; without it a server idles while one long answer finishes.<span class="ana">A bus that picks up and drops off at every stop rather than only at the depot.</span></dd></div>
+  <div class="g" id="g-kv"><dt>KV cache</dt><dd>The model's working memory of everything in the conversation so far: for each past token, the "keys" and "values" each layer computed. It is read in full on every decode step and grows with the conversation.<span class="ana">Notes from earlier pages, re-read before every new sentence. More pages, slower sentences.</span></dd></div>
+  <div class="g" id="g-ctx"><dt>Context window <span class="sym">n</span></dt><dd>The number of tokens the model can hold at once: prompt, files, tool results and everything it has written so far. Longer context means a bigger KV cache and a slower, costlier step.<span class="ana">The size of the desk.</span></dd></div>
+  <div class="g" id="g-prefix"><dt>Prefix cache</dt><dd>Keeping the KV cache of a prompt's opening (a system prompt, a long document, the earlier turns of a chat) so the next request that starts the same way skips prefill for that part. Cuts TTFT and cost dramatically in agent loops.<span class="ana">Not re-reading the brief when only the last line changed.</span></dd></div>
+  <div class="g" id="g-spec"><dt>Speculative decoding <span class="sym">draft · target · acceptance</span></dt><dd>A small, fast "draft" model guesses several tokens ahead; the big "target" model checks them all in one pass and keeps the prefix that matches what it would have said. The output is identical to the big model alone; it just arrives in bursts.<span class="ana">A junior finishing your sentences; you nod through the right ones and correct the first wrong one.</span></dd></div>
+  <div class="g" id="g-moe"><dt>Mixture of experts <span class="sym">MoE · active parameters</span></dt><dd>A model whose feed-forward blocks are split into many "experts," with a router picking a few per token. Total parameters can be huge while the parameters actually read per token (the active ones) stay small. Decode speed follows the active count.<span class="ana">A hospital with 256 specialists where each patient sees 8.</span></dd></div>
+  <div class="g" id="g-par"><dt>Tensor, pipeline and expert parallelism</dt><dd>Ways to spread one model across several chips. Tensor parallel splits every matrix, so every chip reads a slice of the weights at once (adds bandwidth, helps speed). Pipeline parallel gives each chip some layers (helps fit, not speed). Expert parallel gives each chip some experts.<span class="ana">Splitting a book between readers: by page (tensor), by chapter (pipeline), or by topic (expert).</span></dd></div>
+  <div class="g" id="g-link"><dt>Interconnect <span class="sym">NVLink · PCIe · InfiniBand</span></dt><dd>The wiring between chips. Tensor parallelism makes chips exchange partial results after every layer, so the wiring's delay sets a floor on how fast a step can be, however many chips you add.<span class="ana">The hallway between readers. Shouting across it costs time every page.</span></dd></div>
+  <div class="g" id="g-kernel"><dt>Kernel, CUDA graph</dt><dd>A kernel is one small program the GPU runs (one matrix multiply, one softmax). A decode step launches hundreds of them, and the launching itself takes time; a CUDA graph records the whole sequence and replays it in one go.<span class="ana">Pre-plating every ingredient so the chef never pauses to read the recipe.</span></dd></div>
+  <div class="g" id="g-sram"><dt>SRAM chips <span class="sym">Groq · Cerebras</span></dt><dd>Chips that hold the model in on-chip memory, which is tiny per chip but tens of times faster than HBM. They need hundreds of chips (or one wafer-sized chip) to hold a model, and in return produce thousands of tokens per second for one user.<span class="ana">Keeping the whole pantry on the counter. Expensive counter.</span></dd></div>
+  <div class="g" id="g-pct"><dt>Percentiles <span class="sym">p50 · p99</span></dt><dd>Half of requests are faster than the p50; 99% are faster than the p99. Speed claims quote the median; users remember the p99.<span class="ana">Average commute versus the day the train broke.</span></dd></div>
+  <div class="g" id="g-mfu"><dt>MFU, goodput</dt><dd>Model FLOPs utilization: the fraction of the chip's rated arithmetic actually being used. Goodput: throughput counting only requests that met their latency target. Both are honesty metrics for a serving system.<span class="ana">Not how fast the kitchen runs, but how many meals went out hot.</span></dd></div>
+  <div class="g" id="g-think"><dt>Reasoning tokens</dt><dd>Tokens a model writes to itself before answering ("thinking"). They are generated at the same tokens per second as the answer, so a slow-feeling reasoning model is usually a model writing a lot, not a slow chip.<span class="ana">The scratch paper. Same pen speed, more pages.</span></dd></div>
+  <div class="g" id="g-stream"><dt>Streaming</dt><dd>Sending tokens to the user as they are produced rather than after the whole answer is done. Costs nothing and turns a 20-second wait into a 0.5-second wait plus visible progress.<span class="ana">Reading over the writer's shoulder.</span></dd></div>
+  <div class="g" id="g-disagg"><dt>Disaggregated serving</dt><dd>Running prefill on one pool of chips and decode on another, shipping the KV cache between them. Each pool is tuned for its own bottleneck and a long prompt no longer stalls someone else's streaming answer.<span class="ana">A separate reading room and writing room.</span></dd></div>
+  </dl>
+</section>
+
+<section class="ch" id="c1">
+  <p class="chn">01 · TWO CLOCKS</p>
+  <h2>Every request has a read phase and a write phase</h2>
+  <p>Send a prompt and two very different things happen. First, <a class="term" href="#g-prefill">prefill</a>: the model reads every prompt token in one wide pass. Thousands of tokens flow through the layers together, so the chip is doing a great deal of arithmetic on each batch of weights it loads. This phase is <a class="term" href="#g-bound">compute-bound</a>, and its length is what you feel as <a class="term" href="#g-ttft">time to first token</a>.</p>
+<figure class="fig"><svg viewBox="0 0 760 216" role="img" aria-label="Left: in prefill one load of a weight slab is multiplied against two thousand prompt tokens, so the chip's arithmetic is the bottleneck. Right: in decode the same slab is loaded and multiplied against one token, so the chip waits on memory.">
+<defs><marker id="m1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="m1b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f1"/></marker><marker id="m1c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f2"/></marker></defs>
+<text x="14" y="16" class="b">Prefill · one weight load, 2,000 tokens to multiply</text>
+<rect x="14" y="30" width="120" height="110" rx="8" class="box"/>
+<text x="74" y="50" text-anchor="middle" class="mono">weight slab</text>
+<rect x="28" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="41" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="54" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="67" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="80" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="93" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="106" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="119" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="28" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="41" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="54" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="67" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="80" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="93" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="106" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="119" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="28" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="41" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="54" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="67" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="80" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="93" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="106" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="119" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="28" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="41" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="54" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="67" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="80" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="93" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="106" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="119" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="28" y="112" width="10" height="10" rx="1.5" class="fm"/><rect x="41" y="112" width="10" height="10" rx="1.5" class="fm"/><rect x="54" y="112" width="10" height="10" rx="1.5" class="fm"/><rect x="67" y="112" width="10" height="10" rx="1.5" class="fm"/><rect x="80" y="112" width="10" height="10" rx="1.5" class="fm"/><rect x="93" y="112" width="10" height="10" rx="1.5" class="fm"/><rect x="106" y="112" width="10" height="10" rx="1.5" class="fm"/><rect x="119" y="112" width="10" height="10" rx="1.5" class="fm"/>
+<line x1="134" y1="85" x2="166" y2="85" class="ln" marker-end="url(#m1a)"/>
+<text x="150" y="76" text-anchor="middle" class="sm mu">load</text>
+<rect x="168" y="30" width="60" height="110" rx="8" class="soft"/>
+<text x="198" y="80" text-anchor="middle" class="b">×</text>
+<text x="198" y="96" text-anchor="middle" class="sm">multiply</text>
+<line x1="228" y1="85" x2="258" y2="85" class="ln" marker-end="url(#m1a)"/>
+<rect x="262" y="36" width="10" height="8" rx="1.5" class="f1"/><rect x="275" y="36" width="10" height="8" rx="1.5" class="f1"/><rect x="288" y="36" width="10" height="8" rx="1.5" class="f1"/><rect x="301" y="36" width="10" height="8" rx="1.5" class="f1"/><rect x="314" y="36" width="10" height="8" rx="1.5" class="f1"/><rect x="327" y="36" width="10" height="8" rx="1.5" class="f1"/><rect x="340" y="36" width="10" height="8" rx="1.5" class="f1"/><rect x="262" y="49" width="10" height="8" rx="1.5" class="f1"/><rect x="275" y="49" width="10" height="8" rx="1.5" class="f1"/><rect x="288" y="49" width="10" height="8" rx="1.5" class="f1"/><rect x="301" y="49" width="10" height="8" rx="1.5" class="f1"/><rect x="314" y="49" width="10" height="8" rx="1.5" class="f1"/><rect x="327" y="49" width="10" height="8" rx="1.5" class="f1"/><rect x="340" y="49" width="10" height="8" rx="1.5" class="f1"/><rect x="262" y="62" width="10" height="8" rx="1.5" class="f1"/><rect x="275" y="62" width="10" height="8" rx="1.5" class="f1"/><rect x="288" y="62" width="10" height="8" rx="1.5" class="f1"/><rect x="301" y="62" width="10" height="8" rx="1.5" class="f1"/><rect x="314" y="62" width="10" height="8" rx="1.5" class="f1"/><rect x="327" y="62" width="10" height="8" rx="1.5" class="f1"/><rect x="340" y="62" width="10" height="8" rx="1.5" class="f1"/><rect x="262" y="75" width="10" height="8" rx="1.5" class="f1"/><rect x="275" y="75" width="10" height="8" rx="1.5" class="f1"/><rect x="288" y="75" width="10" height="8" rx="1.5" class="f1"/><rect x="301" y="75" width="10" height="8" rx="1.5" class="f1"/><rect x="314" y="75" width="10" height="8" rx="1.5" class="f1"/><rect x="327" y="75" width="10" height="8" rx="1.5" class="f1"/><rect x="340" y="75" width="10" height="8" rx="1.5" class="f1"/><rect x="262" y="88" width="10" height="8" rx="1.5" class="f1"/><rect x="275" y="88" width="10" height="8" rx="1.5" class="f1"/><rect x="288" y="88" width="10" height="8" rx="1.5" class="f1"/><rect x="301" y="88" width="10" height="8" rx="1.5" class="f1"/><rect x="314" y="88" width="10" height="8" rx="1.5" class="f1"/><rect x="327" y="88" width="10" height="8" rx="1.5" class="f1"/><rect x="340" y="88" width="10" height="8" rx="1.5" class="f1"/><rect x="262" y="101" width="10" height="8" rx="1.5" class="f1"/><rect x="275" y="101" width="10" height="8" rx="1.5" class="f1"/><rect x="288" y="101" width="10" height="8" rx="1.5" class="f1"/><rect x="301" y="101" width="10" height="8" rx="1.5" class="f1"/><rect x="314" y="101" width="10" height="8" rx="1.5" class="f1"/><rect x="327" y="101" width="10" height="8" rx="1.5" class="f1"/><rect x="340" y="101" width="10" height="8" rx="1.5" class="f1"/><rect x="262" y="114" width="10" height="8" rx="1.5" class="f1"/><rect x="275" y="114" width="10" height="8" rx="1.5" class="f1"/><rect x="288" y="114" width="10" height="8" rx="1.5" class="f1"/><rect x="301" y="114" width="10" height="8" rx="1.5" class="f1"/><rect x="314" y="114" width="10" height="8" rx="1.5" class="f1"/><rect x="327" y="114" width="10" height="8" rx="1.5" class="f1"/><rect x="340" y="114" width="10" height="8" rx="1.5" class="f1"/>
+<text x="306" y="138" text-anchor="middle" class="mu sm">… 2,000 tokens</text>
+<text x="14" y="168" class="mono">arithmetic per byte loaded: ~2,000 multiplies</text>
+<text x="14" y="186" class="mono b">bottleneck = multipliers</text>
+<text x="14" y="204" class="mu sm">rated FLOPs set the time → TTFT</text>
+<line x1="390" y1="8" x2="390" y2="210" class="ln" stroke-dasharray="3 4" opacity=".5"/>
+<text x="414" y="16" class="b">Decode · one weight load, 1 token to multiply</text>
+<rect x="414" y="30" width="120" height="110" rx="8" class="box"/>
+<text x="474" y="50" text-anchor="middle" class="mono">same slab</text>
+<rect x="428" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="441" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="454" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="467" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="480" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="493" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="506" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="519" y="60" width="10" height="10" rx="1.5" class="fm"/><rect x="428" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="441" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="454" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="467" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="480" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="493" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="506" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="519" y="73" width="10" height="10" rx="1.5" class="fm"/><rect x="428" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="441" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="454" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="467" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="480" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="493" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="506" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="519" y="86" width="10" height="10" rx="1.5" class="fm"/><rect x="428" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="441" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="454" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="467" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="480" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="493" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="506" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="519" y="99" width="10" height="10" rx="1.5" class="fm"/><rect x="428" y="112" width="10" height="10" rx="1.5" class="fm"/><rect x="441" y="112" width="10" height="10" rx="1.5" class="fm"/><rect x="454" y="112" width="10" height="10" rx="1.5" class="fm"/><rect x="467" y="112" width="10" height="10" rx="1.5" class="fm"/><rect x="480" y="112" width="10" height="10" rx="1.5" class="fm"/><rect x="493" y="112" width="10" height="10" rx="1.5" class="fm"/><rect x="506" y="112" width="10" height="10" rx="1.5" class="fm"/><rect x="519" y="112" width="10" height="10" rx="1.5" class="fm"/>
+<line x1="534" y1="85" x2="566" y2="85" class="ln" marker-end="url(#m1a)"/>
+<text x="550" y="76" text-anchor="middle" class="sm mu">load</text>
+<rect x="568" y="30" width="60" height="110" rx="8" class="soft"/>
+<text x="598" y="80" text-anchor="middle" class="b">×</text>
+<text x="598" y="96" text-anchor="middle" class="sm">multiply</text>
+<line x1="628" y1="85" x2="658" y2="85" class="ln" marker-end="url(#m1a)"/>
+<rect x="662" y="81" width="10" height="8" rx="1.5" class="f1"/>
+<text x="676" y="89" class="mu sm">1 token</text>
+<text x="414" y="168" class="mono">arithmetic per byte loaded: ~1 multiply</text>
+<text x="414" y="186" class="mono b">bottleneck = memory pipe</text>
+<text x="414" y="204" class="mu sm">bandwidth sets the time → tok/s</text>
+</svg><figcaption>Same weights, two very different jobs. Prefill multiplies each loaded byte against thousands of prompt tokens, so the chip's arithmetic speed is the limit. Decode multiplies it against one token and the chip spends almost all its time waiting for the next bytes to arrive.</figcaption></figure>
+
+  <p>Then <a class="term" href="#g-decode">decode</a>: one token at a time. Each new token needs a full <a class="term" href="#g-forward">forward pass</a>, and that pass must load every weight in the model from memory to do a tiny amount of arithmetic with it. For a single user the chip is almost idle, waiting on bytes. This phase is <a class="term" href="#g-bound">memory-bound</a>, and its rhythm is <a class="term" href="#g-tps">tokens per second</a>.</p>
+  <div class="inst">
+    <div class="ctl"><label>prompt <input type="range" id="tc-in" min="0" max="1000" value="420"><span class="v" id="tc-in-v">2k</span> tok</label><label>answer <input type="range" id="tc-out" min="0" max="1000" value="500"><span class="v" id="tc-out-v">300</span> tok</label><label>setup <select id="tc-cfg"><option value="0">Llama 3.1 8B · 1×H100</option><option value="1" selected>Llama 3.1 70B · 8×H100</option><option value="2">DeepSeek-V3 (MoE) · 8×H200</option></select></label></div>
+    <canvas id="tc-cv" style="aspect-ratio:16/5;max-height:220px"></canvas>
+    <div class="read" id="tc-read"></div>
+    <p class="hint">One request on an unloaded server, bf16 weights. Prefill time comes from arithmetic (2 FLOPs per parameter per prompt token at about half the chip's rated speed). Decode time comes from bytes (weights plus KV cache, read once per token at about 70% of rated bandwidth). Push the prompt to 100k and watch the read phase swallow the request.</p>
+  </div>
+  <p>Two consequences fall out immediately. A long prompt costs you up front, once; a long answer costs you continuously. And the number everyone quotes, tokens per second, measures only the second clock. A provider can have brilliant decode and still feel slow if its prefill is queued behind someone else's 100k-token document.</p>
+</section>
+
+<section class="ch" id="c2">
+  <p class="chn">02 · SPEED OF LIGHT</p>
+  <h2>Bytes per token, divided by bytes per second</h2>
+  <p>For one user, the decode step cannot be faster than the time it takes to stream the whole model through the chip's memory pipe. That gives a ceiling you can compute on a napkin:</p>
+  <div class="eq"><span class="op">max tok/s ≈</span> <i>bandwidth</i> <span class="op">÷</span> (<i>parameters</i> × <i>bytes per parameter</i> + <i>KV cache bytes</i>)</div>
+  <p>Llama 3.1 70B in bf16 is 140 GB of <a class="term" href="#g-params">weights</a>. An H100 moves 3.35 TB/s. Even with the model split perfectly across two H100s (6.7 TB/s combined) that is 48 tokens per second, and no software can beat it without changing one of the three terms. Everything in chapters 05 to 08 is an attack on one of those terms: fewer bytes per parameter, fewer parameters touched, more bandwidth.</p>
+<div class="tiles"><div class="tile a"><div class="n">140<small>GB</small></div><div class="l">weights, Llama 3.1 70B bf16</div></div><div class="tile"><div class="n">3.35<small>TB/s</small></div><div class="l">one H100's memory pipe</div></div><div class="tile"><div class="n">42<small>ms</small></div><div class="l">to stream the model once</div></div><div class="tile"><div class="n">24<small>tok/s</small></div><div class="l">one-chip ceiling, one user</div></div></div>
+<figure class="fig"><svg viewBox="0 0 760 170" role="img" aria-label="140 gigabytes of weights sit in HBM memory and must stream through a 3.35 terabyte per second pipe into the compute cores to produce each token, which takes 42 milliseconds, so the ceiling is 24 tokens per second.">
+<defs><marker id="m2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="m2b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f1"/></marker><marker id="m2c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f2"/></marker></defs>
+<rect x="14" y="30" width="300" height="86" rx="8" class="box"/>
+<text x="164" y="50" text-anchor="middle" class="b">HBM memory · Llama 3.1 70B in bf16</text>
+<rect x="30" y="60" width="36" height="40" rx="3" class="f1"/><text x="48" y="85" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">20 GB</text><rect x="70" y="60" width="36" height="40" rx="3" class="f1"/><text x="88" y="85" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">20 GB</text><rect x="110" y="60" width="36" height="40" rx="3" class="f1"/><text x="128" y="85" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">20 GB</text><rect x="150" y="60" width="36" height="40" rx="3" class="f1"/><text x="168" y="85" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">20 GB</text><rect x="190" y="60" width="36" height="40" rx="3" class="f1"/><text x="208" y="85" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">20 GB</text><rect x="230" y="60" width="36" height="40" rx="3" class="f1"/><text x="248" y="85" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">20 GB</text><rect x="270" y="60" width="36" height="40" rx="3" class="f1"/><text x="288" y="85" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">20 GB</text>
+<text x="164" y="112" text-anchor="middle" class="mu sm">140 GB · all of it, every token</text>
+<rect x="314" y="62" width="150" height="22" class="soft"/>
+<line x1="320" y1="73" x2="462" y2="73" class="ln l1" stroke-width="2" marker-end="url(#m2b)"/>
+<text x="389" y="54" text-anchor="middle" class="mono b">3.35 TB/s</text>
+<text x="389" y="100" text-anchor="middle" class="mu sm">the pipe (one H100)</text>
+<rect x="466" y="30" width="150" height="86" rx="8" class="box"/>
+<text x="541" y="50" text-anchor="middle" class="b">compute cores</text>
+<rect x="486" y="60" width="16" height="12" rx="1.5" class="fl"/><rect x="505" y="60" width="16" height="12" rx="1.5" class="fl"/><rect x="524" y="60" width="16" height="12" rx="1.5" class="fl"/><rect x="543" y="60" width="16" height="12" rx="1.5" class="fl"/><rect x="562" y="60" width="16" height="12" rx="1.5" class="fl"/><rect x="581" y="60" width="16" height="12" rx="1.5" class="fl"/><rect x="486" y="75" width="16" height="12" rx="1.5" class="fl"/><rect x="505" y="75" width="16" height="12" rx="1.5" class="fl"/><rect x="524" y="75" width="16" height="12" rx="1.5" class="fl"/><rect x="543" y="75" width="16" height="12" rx="1.5" class="fl"/><rect x="562" y="75" width="16" height="12" rx="1.5" class="fl"/><rect x="581" y="75" width="16" height="12" rx="1.5" class="fl"/><rect x="486" y="90" width="16" height="12" rx="1.5" class="fl"/><rect x="505" y="90" width="16" height="12" rx="1.5" class="fl"/><rect x="524" y="90" width="16" height="12" rx="1.5" class="fl"/><rect x="543" y="90" width="16" height="12" rx="1.5" class="fl"/><rect x="562" y="90" width="16" height="12" rx="1.5" class="fl"/><rect x="581" y="90" width="16" height="12" rx="1.5" class="fl"/>
+<text x="541" y="112" text-anchor="middle" class="mu sm">mostly idle for one user</text>
+<line x1="616" y1="73" x2="648" y2="73" class="ln" marker-end="url(#m2a)"/>
+<rect x="652" y="63" width="20" height="20" rx="3" class="f2"/>
+<text x="678" y="70" class="sm b">1 token</text>
+<text x="678" y="84" class="mu sm">every 42 ms</text>
+<text x="14" y="150" class="mono">140 GB ÷ 3.35 TB/s = 0.042 s per token  →  1 ÷ 0.042 = 24 tok/s, the ceiling for one chip</text>
+</svg><figcaption>The whole napkin equation as a picture. Every token requires the full 140 GB to pass through the pipe. Nothing about how fast the cores can multiply appears here, because for one user they are idle most of the time.</figcaption></figure>
+
+  <div class="inst">
+    <div class="ctl"><label>model <select id="sl-model"></select></label><label>precision <select id="sl-dtype"><option value="2">bf16 (2 B)</option><option value="1">fp8 (1 B)</option><option value="0.5">int4 / fp4 (0.5 B)</option></select></label><label>context <input type="range" id="sl-ctx" min="0" max="1000" value="333"><span class="v" id="sl-ctx-v">8k</span></label></div>
+    <div class="bars" id="sl-bars"></div>
+    <div class="read" id="sl-read"></div>
+    <p class="hint">Each bar: the bandwidth ceiling for one user on the smallest number of that chip that fits the model (weights + this context's KV cache), assuming perfect tensor-parallel scaling. Hover a bar for the chip count. Real systems land at 60–80% of this; chapter 08 explains the gap. Groq and Cerebras hold the model in SRAM, which is why their bars leave the chart.</p>
+  </div>
+  <p>Notice what the chart does not care about: how fast the chip can multiply. Compute matters for prefill and for busy servers (next chapter), but a lone user decoding is a bandwidth problem, and the chip's rated FLOPs are mostly unused.</p>
+</section>
+
+<section class="ch" id="c3">
+  <p class="chn">03 · BATCHING</p>
+  <h2>The weights are loaded once. Why use them for one person?</h2>
+  <p>When the chip streams 140 GB of weights to produce one token, it could just as easily produce one token for each of 64 users at the same time: the weights are already there, and the extra arithmetic is nearly free until the chip's multipliers are busy. This is the <a class="term" href="#g-roofline">roofline</a>. On the left, the chip is bandwidth-starved and adding users costs nothing. Past the crossover, the chip is compute-saturated and every added user slows everyone down.</p>
+<figure class="fig"><svg viewBox="0 0 760 206" role="img" aria-label="One read of the weights can produce one token for one user or one token each for 64 users at nearly the same cost, until the chip's multipliers saturate.">
+<defs><marker id="m3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="m3b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f1"/></marker><marker id="m3c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f2"/></marker></defs>
+<text x="14" y="16" class="b">Batch of 1</text>
+<rect x="14" y="28" width="150" height="40" rx="6" class="box"/>
+<text x="89" y="45" text-anchor="middle" class="mono">read 140 GB</text>
+<text x="89" y="60" text-anchor="middle" class="mu sm">42 ms</text>
+<line x1="164" y1="48" x2="196" y2="48" class="ln" marker-end="url(#m3a)"/>
+<rect x="200" y="42" width="12" height="12" rx="2" class="f1"/>
+<text x="218" y="52" class="sm">1 token · 24 tok/s for the server</text>
+<text x="14" y="100" class="b">Batch of 64</text>
+<rect x="14" y="112" width="150" height="40" rx="6" class="box"/>
+<text x="89" y="129" text-anchor="middle" class="mono">read 140 GB</text>
+<text x="89" y="144" text-anchor="middle" class="mu sm">still ≈ 42 ms</text>
+<line x1="164" y1="132" x2="196" y2="132" class="ln" marker-end="url(#m3a)"/>
+<rect x="200" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="215" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="230" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="245" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="260" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="275" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="290" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="305" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="320" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="335" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="350" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="365" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="380" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="395" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="410" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="425" y="96" width="12" height="12" rx="1.5" class="f1"/><rect x="200" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="215" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="230" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="245" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="260" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="275" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="290" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="305" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="320" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="335" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="350" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="365" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="380" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="395" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="410" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="425" y="111" width="12" height="12" rx="1.5" class="f1"/><rect x="200" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="215" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="230" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="245" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="260" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="275" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="290" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="305" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="320" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="335" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="350" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="365" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="380" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="395" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="410" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="425" y="126" width="12" height="12" rx="1.5" class="f1"/><rect x="200" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="215" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="230" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="245" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="260" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="275" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="290" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="305" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="320" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="335" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="350" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="365" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="380" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="395" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="410" y="141" width="12" height="12" rx="1.5" class="f1"/><rect x="425" y="141" width="12" height="12" rx="1.5" class="f1"/>
+<text x="440" y="120" class="sm">64 tokens · 1,500 tok/s for the server</text>
+<text x="440" y="136" class="sm">each user still sees ≈ 24 tok/s</text>
+<text x="440" y="152" class="mu sm">cost per token ÷ 64</text>
+<rect x="14" y="176" width="732" height="22" rx="4" class="ghost"/>
+<text x="380" y="191" text-anchor="middle" class="mono">free until the multipliers saturate · H100 bf16 ≈ 300 users per step · then every added user slows everyone</text>
+</svg><figcaption>The weights are already streaming past. Pointing them at 64 users instead of one costs almost nothing extra until the arithmetic catches up with the bytes. That gap is the entire economics of serving.</figcaption></figure>
+
+  <p>An H100 crosses over at roughly 300 <a class="term" href="#g-ai">FLOPs per byte</a>. In bf16 a decode step for <i>B</i> users has an intensity of about <i>B</i> FLOPs per byte, so the first few hundred concurrent users are close to free. This single fact is why serving is a business: a provider who batches 200 users on a node pays about the same per step as one who batches 10, and can charge a twentieth as much per token.</p>
+  <div class="inst">
+    <div class="ctl"><label>concurrent users B <input type="range" id="rf-b" min="0" max="100" value="30"><span class="v" id="rf-b-v">8</span></label><label>chip <select id="rf-gpu"></select></label><label>model <select id="rf-model"></select></label></div>
+    <div class="grid2">
+      <div><canvas id="rf-cv" style="aspect-ratio:4/3;max-height:320px"></canvas></div>
+      <div><canvas id="rf-cv2" style="aspect-ratio:4/3;max-height:320px"></canvas></div>
+    </div>
+    <div class="read" id="rf-read"></div>
+    <p class="hint">Left: the roofline for the chosen chip; the dot is this model's decode step at batch B. Right: what each user sees (per-user tok/s, blue) versus what the server gets (total tok/s, orange) as B grows. The knee is where speed and throughput stop being free together. Model is placed on as many chips as it needs in bf16; the whole batch shares a 4k context.</p>
+  </div>
+  <p>Read the right-hand chart as a menu. A provider picks a point on it. Far left: fast for each user, expensive per token. Near the knee: nearly as fast, far cheaper. Past the knee: cheap, and each user's speed falls as the chip is shared. "Fast mode" or "priority" tiers are the same model served from a point further left on this curve, which is why they cost more per token.</p>
+</section>
+
+<section class="ch" id="c4">
+  <p class="chn">04 · THE CONTEXT TAX</p>
+  <h2>Every token re-reads the conversation</h2>
+  <p>The weights are not the only bytes a decode step streams. Each layer also reads the <a class="term" href="#g-kv">KV cache</a>: the stored keys and values for every token so far. For a short chat the cache is a rounding error next to the weights. At 100k tokens it can be larger than the weights, and the per-token time climbs with it. That is the context tax: the longer the conversation, the slower each new token, and the more the server must dedicate to you.</p>
+<figure class="fig"><svg viewBox="0 0 760 150" role="img" aria-label="Bytes one decode step must read for Llama 3.1 70B at three context lengths. Weights stay at 140 gigabytes; the KV cache grows from 1 gigabyte at 4k tokens to 164 gigabytes at 512k, and the speed on two H100s falls from 47 to 22 tokens per second.">
+<text x="14" y="14" class="b">Bytes one decode step reads · Llama 3.1 70B bf16, 2×H100</text>
+<text x="14" y="42" class="mono">4k ctx</text><rect x="96" y="28" width="245" height="20" rx="3" class="f1"/><rect x="343" y="28" width="2" height="20" rx="3" class="f2"/><text x="353" y="42" class="mono">141 GB → 47 tok/s</text>
+<text x="14" y="74" class="mono">128k ctx</text><rect x="96" y="60" width="245" height="20" rx="3" class="f1"/><rect x="343" y="60" width="74" height="20" rx="3" class="f2"/><text x="424" y="74" class="mono">182 GB → 37 tok/s</text>
+<text x="14" y="106" class="mono">512k ctx</text><rect x="96" y="92" width="245" height="20" rx="3" class="f1"/><rect x="343" y="92" width="287" height="20" rx="3" class="f2"/><text x="638" y="106" class="mono">304 GB → 22 tok/s</text>
+<rect x="14" y="128" width="12" height="12" rx="2" class="f1"/><text x="32" y="138" class="sm">weights · 140 GB, fixed</text>
+<rect x="190" y="128" width="12" height="12" rx="2" class="f2"/><text x="208" y="138" class="sm">KV cache · 320 KB per token, grows with the conversation</text>
+</svg><figcaption>Why a long conversation slows down. The weights are a fixed bill; the KV cache is a bill that grows with every token kept. Past a few hundred thousand tokens the memory of the conversation outweighs the model itself.</figcaption></figure>
+
+  <p>How steep the tax is depends on architecture. Llama 3 keeps 8 key/value heads per layer (320 KB per token at 70B). DeepSeek-V3's compressed latent (MLA) stores about 69 KB per token for a model ten times larger. The KV cache is also what fills GPU memory in a busy server, which caps how many users can share a batch, which (chapter 03) caps throughput.</p>
+  <div class="inst">
+    <div class="ctl"><label>precision <select id="ct-dtype"><option value="2">bf16</option><option value="1">fp8</option></select></label><label>chip <select id="ct-gpu"></select></label><span class="legend" id="ct-legend"></span></div>
+    <canvas id="ct-cv" style="aspect-ratio:16/8;max-height:340px"></canvas>
+    <div class="read" id="ct-read">hover the chart</div>
+    <p class="hint">Single user, bandwidth ceiling, one model per line, each on the fewest chips that hold its bf16 weights. The x axis is log scale from 1k to 1M tokens. Where a line turns down, the KV cache has outgrown the weights.</p>
+  </div>
+  <p>Prefill pays the tax too, and worse: reading an <i>n</i>-token prompt costs arithmetic proportional to <i>n</i> for the weights and to <i>n</i>² for attention, so a 200k-token prompt can take tens of seconds on a full node. The 2025 generation of sparse and hybrid attention (covered in the attention guide) exists to flatten exactly these two curves.</p>
+</section>
+
+<section class="ch" id="c5">
+  <p class="chn">05 · FEWER BYTES</p>
+  <h2>Shrink the number, keep the model</h2>
+  <p>If decode is bytes divided by bandwidth, the most direct lever is bytes. Training usually happens in bf16: 16 bits, 2 bytes per parameter. Serving in fp8 halves the bytes and roughly doubles the bandwidth ceiling. int4 or Blackwell's fp4 halves it again. The arithmetic also gets cheaper when the chip has native low-precision multipliers (H100 for fp8, B200 for fp4), which helps prefill and busy servers as well.</p>
+<figure class="fig"><svg viewBox="0 0 760 176" role="img" aria-label="One weight stored in fp32 takes 32 bits, bf16 16, fp8 8 and int4 4. For a 70 billion parameter model that is 280, 140, 70 and 35 gigabytes, needing 4, 2, 1 and 1 H100s.">
+<text x="14" y="14" class="b">One number, four ways to store it · and what a 70B model weighs</text>
+<text x="14" y="39" class="mono b">fp32</text><rect x="72" y="28" width="9" height="14" rx="1.5" class="f2"/><rect x="83" y="28" width="9" height="14" rx="1.5" class="f1"/><rect x="94" y="28" width="9" height="14" rx="1.5" class="f1"/><rect x="105" y="28" width="9" height="14" rx="1.5" class="f1"/><rect x="116" y="28" width="9" height="14" rx="1.5" class="f1"/><rect x="127" y="28" width="9" height="14" rx="1.5" class="f1"/><rect x="138" y="28" width="9" height="14" rx="1.5" class="f1"/><rect x="149" y="28" width="9" height="14" rx="1.5" class="f1"/><rect x="160" y="28" width="9" height="14" rx="1.5" class="f1"/><rect x="171" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="182" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="193" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="204" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="215" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="226" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="237" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="248" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="259" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="270" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="281" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="292" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="303" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="314" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="325" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="336" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="347" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="358" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="369" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="380" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="391" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="402" y="28" width="9" height="14" rx="1.5" class="f3"/><rect x="413" y="28" width="9" height="14" rx="1.5" class="f3"/><text x="434" y="39" class="mono">4 B · 280 GB · 4×H100</text>
+<text x="14" y="69" class="mono b">bf16</text><rect x="72" y="58" width="9" height="14" rx="1.5" class="f2"/><rect x="83" y="58" width="9" height="14" rx="1.5" class="f1"/><rect x="94" y="58" width="9" height="14" rx="1.5" class="f1"/><rect x="105" y="58" width="9" height="14" rx="1.5" class="f1"/><rect x="116" y="58" width="9" height="14" rx="1.5" class="f1"/><rect x="127" y="58" width="9" height="14" rx="1.5" class="f1"/><rect x="138" y="58" width="9" height="14" rx="1.5" class="f1"/><rect x="149" y="58" width="9" height="14" rx="1.5" class="f1"/><rect x="160" y="58" width="9" height="14" rx="1.5" class="f1"/><rect x="171" y="58" width="9" height="14" rx="1.5" class="f3"/><rect x="182" y="58" width="9" height="14" rx="1.5" class="f3"/><rect x="193" y="58" width="9" height="14" rx="1.5" class="f3"/><rect x="204" y="58" width="9" height="14" rx="1.5" class="f3"/><rect x="215" y="58" width="9" height="14" rx="1.5" class="f3"/><rect x="226" y="58" width="9" height="14" rx="1.5" class="f3"/><rect x="237" y="58" width="9" height="14" rx="1.5" class="f3"/><text x="258" y="69" class="mono">2 B · 140 GB · 2×H100 · training default</text>
+<text x="14" y="99" class="mono b">fp8</text><rect x="72" y="88" width="9" height="14" rx="1.5" class="f2"/><rect x="83" y="88" width="9" height="14" rx="1.5" class="f1"/><rect x="94" y="88" width="9" height="14" rx="1.5" class="f1"/><rect x="105" y="88" width="9" height="14" rx="1.5" class="f1"/><rect x="116" y="88" width="9" height="14" rx="1.5" class="f1"/><rect x="127" y="88" width="9" height="14" rx="1.5" class="f3"/><rect x="138" y="88" width="9" height="14" rx="1.5" class="f3"/><rect x="149" y="88" width="9" height="14" rx="1.5" class="f3"/><text x="170" y="99" class="mono">1 B · 70 GB · 1×H100 · most APIs</text>
+<text x="14" y="129" class="mono b">int4</text><rect x="72" y="118" width="9" height="14" rx="1.5" class="f4"/><rect x="83" y="118" width="9" height="14" rx="1.5" class="f4"/><rect x="94" y="118" width="9" height="14" rx="1.5" class="f4"/><rect x="105" y="118" width="9" height="14" rx="1.5" class="f4"/><text x="126" y="129" class="mono">0.5 B · 35 GB · 1×H100 · consumer cards</text>
+<rect x="14" y="152" width="12" height="12" rx="2" class="f2"/><text x="32" y="162" class="sm">sign</text>
+<rect x="80" y="152" width="12" height="12" rx="2" class="f1"/><text x="98" y="162" class="sm">exponent · range</text>
+<rect x="210" y="152" width="12" height="12" rx="2" class="f3"/><text x="228" y="162" class="sm">mantissa · precision</text>
+<rect x="370" y="152" width="12" height="12" rx="2" class="f4"/><text x="388" y="162" class="sm">integer on a shared scale</text>
+</svg><figcaption>Quantization is just storing each weight in fewer bits. Halving the bits halves the gigabytes, halves the chips needed, and doubles the bandwidth ceiling. What you give up is the mantissa, the part that carries precision.</figcaption></figure>
+
+  <p>The cost is accuracy. <a class="term" href="#g-quant">Quantization</a> rounds every weight to a coarser grid. At fp8 the loss is usually unmeasurable on benchmarks; at 4 bits it depends on the method (per-group scales, outlier handling, calibration data) and on the model, with small models hurt most. The KV cache can be quantized too, usually to fp8, which both speeds decode and lets more users fit in memory. Most frontier APIs serve in fp8 or a mix today; the open-weights community lives at 4 bits because that is what fits on a consumer card.</p>
+  <div class="inst">
+    <div class="ctl"><label>model <select id="qz-model"></select></label><label>chip <select id="qz-gpu"></select></label></div>
+    <div class="tbl"><table id="qz-table"></table></div>
+    <p class="hint">Weights at each precision, how many of the chosen chip are needed to hold them (with 8k of KV cache in fp8 for 16 users), and the single-user ceiling on that many chips. The last column is the typical quality cost, a judgement rather than a measurement.</p>
+  </div>
+</section>
+
+<section class="ch" id="c6">
+  <p class="chn">06 · GUESSING AHEAD</p>
+  <h2>Checking is cheaper than writing</h2>
+  <p>Here is the asymmetry that makes <a class="term" href="#g-spec">speculative decoding</a> work. Producing one token costs a full read of the weights. Checking five proposed tokens <em>also</em> costs one full read of the weights, because the check is a prefill over five positions and prefill is compute-bound with compute to spare. So: let a tiny draft model propose <i>k</i> tokens, run the big model once over all of them, keep every token up to the first one the big model disagrees with, and take the big model's own token at that point as a bonus. The output distribution is provably identical to the big model alone.</p>
+<figure class="fig"><svg viewBox="0 0 760 226" role="img" aria-label="Plain decode: five full weight reads produce five tokens. Speculative decoding: a tiny draft proposes five tokens, one full weight read checks them all, four are accepted and one is corrected, giving five tokens for one big read.">
+<defs><marker id="m6a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="m6b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f1"/></marker><marker id="m6c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f2"/></marker></defs>
+<text x="14" y="16" class="b">Plain decode · 5 tokens = 5 full reads of the weights</text>
+<rect x="14" y="28" width="72" height="34" rx="6" class="box"/><text x="50.0" y="49" text-anchor="middle" class="mono sm">read 140 GB</text><line x1="86" y1="45" x2="104" y2="45" class="ln" marker-end="url(#m6a)"/><rect x="108" y="39" width="12" height="12" rx="2" class="f1"/><line x1="120" y1="45" x2="160" y2="45" class="ln" marker-end="url(#m6a)"/><rect x="162" y="28" width="72" height="34" rx="6" class="box"/><text x="198.0" y="49" text-anchor="middle" class="mono sm">read 140 GB</text><line x1="234" y1="45" x2="252" y2="45" class="ln" marker-end="url(#m6a)"/><rect x="256" y="39" width="12" height="12" rx="2" class="f1"/><line x1="268" y1="45" x2="308" y2="45" class="ln" marker-end="url(#m6a)"/><rect x="310" y="28" width="72" height="34" rx="6" class="box"/><text x="346.0" y="49" text-anchor="middle" class="mono sm">read 140 GB</text><line x1="382" y1="45" x2="400" y2="45" class="ln" marker-end="url(#m6a)"/><rect x="404" y="39" width="12" height="12" rx="2" class="f1"/><line x1="416" y1="45" x2="456" y2="45" class="ln" marker-end="url(#m6a)"/><rect x="458" y="28" width="72" height="34" rx="6" class="box"/><text x="494.0" y="49" text-anchor="middle" class="mono sm">read 140 GB</text><line x1="530" y1="45" x2="548" y2="45" class="ln" marker-end="url(#m6a)"/><rect x="552" y="39" width="12" height="12" rx="2" class="f1"/><line x1="564" y1="45" x2="604" y2="45" class="ln" marker-end="url(#m6a)"/><rect x="606" y="28" width="72" height="34" rx="6" class="box"/><text x="642.0" y="49" text-anchor="middle" class="mono sm">read 140 GB</text><line x1="678" y1="45" x2="696" y2="45" class="ln" marker-end="url(#m6a)"/><rect x="700" y="39" width="12" height="12" rx="2" class="f1"/>
+<text x="14" y="84" class="mono">time ≈ 5 × 42 ms = 210 ms</text>
+<line x1="14" y1="100" x2="746" y2="100" class="ln" stroke-dasharray="3 4" opacity=".5"/>
+<text x="14" y="122" class="b">Speculative · 5 tokens = 1 tiny draft + 1 full read that checks all five</text>
+<rect x="14" y="134" width="134" height="34" rx="6" class="box"/>
+<text x="81" y="149" text-anchor="middle" class="mono sm">draft model</text>
+<text x="81" y="162" text-anchor="middle" class="mu sm">1/20 the size · 5 guesses</text>
+<line x1="148" y1="151" x2="176" y2="151" class="ln" marker-end="url(#m6a)"/>
+<rect x="180" y="145" width="12" height="12" rx="2" class="fl"/><rect x="196" y="145" width="12" height="12" rx="2" class="fl"/><rect x="212" y="145" width="12" height="12" rx="2" class="fl"/><rect x="228" y="145" width="12" height="12" rx="2" class="fl"/><rect x="244" y="145" width="12" height="12" rx="2" class="fl"/>
+<text x="220" y="138" text-anchor="middle" class="mu sm">proposed</text>
+<line x1="264" y1="151" x2="296" y2="151" class="ln" marker-end="url(#m6a)"/>
+<rect x="300" y="134" width="180" height="34" rx="6" class="soft"/>
+<text x="390" y="149" text-anchor="middle" class="mono sm">read 140 GB once</text>
+<text x="390" y="162" text-anchor="middle" class="mu sm">checks 5 positions in one pass</text>
+<line x1="480" y1="151" x2="512" y2="151" class="ln" marker-end="url(#m6a)"/>
+<rect x="516" y="145" width="12" height="12" rx="2" class="f1"/><rect x="532" y="145" width="12" height="12" rx="2" class="f1"/><rect x="548" y="145" width="12" height="12" rx="2" class="f1"/><rect x="564" y="145" width="12" height="12" rx="2" class="f1"/>
+<rect x="580" y="145" width="12" height="12" rx="2" fill="none" class="l2" stroke-width="2"/>
+<text x="548" y="138" text-anchor="middle" class="mu sm">4 accepted</text>
+<text x="586" y="176" text-anchor="middle" class="mu sm">1 corrected by the big model</text>
+<text x="606" y="155" class="sm">= 5 tokens</text>
+<text x="14" y="198" class="mono">time ≈ 42 ms + a little  →  about 4× faster on this burst; identical output distribution</text>
+<text x="14" y="216" class="mu sm">Checking is a prefill over 5 positions; prefill has arithmetic to spare, so the extra positions ride for free.</text>
+</svg><figcaption>The whole trick in one picture. Writing a token costs a full weight read. Checking five proposed tokens also costs one full weight read, because a check is a tiny prefill and prefill is compute-bound with compute left over.</figcaption></figure>
+
+  <p>The speedup is set by the acceptance rate <i>α</i>: how often the draft guesses right. Expected tokens per big-model step is (1 − α<sup>k+1</sup>) / (1 − α). At α = 0.8 and k = 4 that is 3.4 tokens per step instead of 1. Drafts are easy to get right for boilerplate, code and repeated text, hard for creative prose, so the speedup varies by task. Modern variants (Medusa, EAGLE, DeepSeek's MTP heads) bolt the draft onto the big model itself so no second model is needed.</p>
+  <div class="inst">
+    <div class="ctl"><label>acceptance α <input type="range" id="sp-a" min="0" max="0.98" step="0.02" value="0.8"><span class="v" id="sp-a-v">0.80</span></label><label>draft length k <input type="range" id="sp-k" min="1" max="8" value="4"><span class="v" id="sp-k-v">4</span></label><label>draft cost <input type="range" id="sp-c" min="0" max="0.3" step="0.01" value="0.06"><span class="v" id="sp-c-v">0.06</span>× target</label><button class="btn" id="sp-play" aria-pressed="false">▶ run</button><button class="btn" id="sp-reset">reset</button></div>
+    <div class="tokrow" id="sp-row"></div>
+    <div class="grid2" style="margin-top:12px">
+      <div class="panel"><h4>This run</h4><div id="sp-state"></div></div>
+      <div class="panel"><h4>Expected, from the formula</h4><div id="sp-math"></div></div>
+    </div>
+    <p class="hint">Each burst is one big-model step. Blue tokens were drafted and accepted; the struck-through one was rejected; the orange-outlined token is the big model's own correction (or bonus token when every draft was accepted). Speedup = tokens per step ÷ (1 + k × draft cost).</p>
+  </div>
+</section>
+
+<section class="ch" id="c7">
+  <p class="chn">07 · EXPERTS</p>
+  <h2>A trillion parameters, thirty billion read</h2>
+  <p>In a dense model every parameter is read for every token. In a <a class="term" href="#g-moe">mixture of experts</a> the big feed-forward blocks are split into many experts and a small router sends each token to a few of them. DeepSeek-V3 has 671 billion parameters but reads about 37 billion per token; Kimi K2 has a trillion and reads 32 billion. For one user, the decode ceiling follows the active count, so a trillion-parameter MoE can stream faster than a dense 70B.</p>
+<div class="tiles"><div class="tile a"><div class="n">671<small>B</small></div><div class="l">DeepSeek-V3 total parameters</div></div><div class="tile"><div class="n">37<small>B</small></div><div class="l">read per token (active)</div></div><div class="tile"><div class="n">18×</div><div class="l">fewer bytes per step than dense of the same size</div></div><div class="tile"><div class="n">1,340<small>GB</small></div><div class="l">still has to fit in memory, bf16</div></div></div>
+<figure class="fig"><svg viewBox="0 0 760 220" role="img" aria-label="A dense layer reads every parameter for every token. A mixture of experts layer routes each token to a few experts out of many; for one token only those experts are read, but a batch of 64 tokens touches nearly all of them.">
+<defs><marker id="m7a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="m7b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f1"/></marker><marker id="m7c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f2"/></marker></defs>
+<text x="14" y="16" class="b">Dense layer</text>
+<rect x="14" y="28" width="150" height="120" rx="8" class="f1" opacity=".9"/>
+<text x="89" y="84" text-anchor="middle" class="b" style="fill:var(--accent-ink)">one big block</text>
+<text x="89" y="100" text-anchor="middle" class="sm" style="fill:var(--accent-ink)">all of it read, every token</text>
+<text x="14" y="172" class="mono">70B dense → 70B read per token</text>
+<line x1="200" y1="8" x2="200" y2="214" class="ln" stroke-dasharray="3 4" opacity=".5"/>
+<text x="226" y="16" class="b">Mixture of experts · 1 token</text>
+<rect x="306" y="28" width="90" height="26" rx="6" class="box"/>
+<text x="351" y="45" text-anchor="middle" class="mono sm">router</text>
+<rect x="226" y="88" width="26" height="60" rx="4" class="fl"/><rect x="258" y="88" width="26" height="60" rx="4" class="f1"/><rect x="290" y="88" width="26" height="60" rx="4" class="fl"/><rect x="322" y="88" width="26" height="60" rx="4" class="fl"/><rect x="354" y="88" width="26" height="60" rx="4" class="fl"/><rect x="386" y="88" width="26" height="60" rx="4" class="f1"/><rect x="418" y="88" width="26" height="60" rx="4" class="fl"/><rect x="450" y="88" width="26" height="60" rx="4" class="fl"/>
+<path d="M340 54 L271 86" class="ln l1" stroke-width="1.5" marker-end="url(#m7b)"/>
+<path d="M362 54 L399 86" class="ln l1" stroke-width="1.5" marker-end="url(#m7b)"/>
+<text x="351" y="76" text-anchor="middle" class="mu sm">picks top-2 of 8</text>
+<text x="226" y="172" class="mono">8 experts, 2 read → ¼ of the block</text>
+<text x="226" y="190" class="mu sm">DeepSeek-V3: 256 experts, 8 read → 671B total, 37B active</text>
+<line x1="500" y1="8" x2="500" y2="214" class="ln" stroke-dasharray="3 4" opacity=".5"/>
+<text x="526" y="16" class="b">Same layer · batch of 64</text>
+<rect x="526" y="28" width="20" height="8" rx="1.5" class="f1"/><rect x="552" y="28" width="20" height="8" rx="1.5" class="f1"/><rect x="578" y="28" width="20" height="8" rx="1.5" class="f1"/><rect x="604" y="28" width="20" height="8" rx="1.5" class="f1"/><rect x="630" y="28" width="20" height="8" rx="1.5" class="f1"/><rect x="656" y="28" width="20" height="8" rx="1.5" class="f1"/><rect x="682" y="28" width="20" height="8" rx="1.5" class="f1"/>
+<text x="710" y="36" class="mu sm">… ×64</text>
+<rect x="526" y="88" width="22" height="60" rx="4" class="f1"/><rect x="553" y="88" width="22" height="60" rx="4" class="f1"/><rect x="580" y="88" width="22" height="60" rx="4" class="f1"/><rect x="607" y="88" width="22" height="60" rx="4" class="f1"/><rect x="634" y="88" width="22" height="60" rx="4" class="f1"/><rect x="661" y="88" width="22" height="60" rx="4" class="f1"/><rect x="688" y="88" width="22" height="60" rx="4" class="fl"/><rect x="715" y="88" width="22" height="60" rx="4" class="f1"/>
+<path d="M536 38 L537 86" class="ln l1" opacity=".6" marker-end="url(#m7b)"/><path d="M562 38 L564 86" class="ln l1" opacity=".6" marker-end="url(#m7b)"/><path d="M588 38 L591 86" class="ln l1" opacity=".6" marker-end="url(#m7b)"/><path d="M614 38 L618 86" class="ln l1" opacity=".6" marker-end="url(#m7b)"/><path d="M640 38 L645 86" class="ln l1" opacity=".6" marker-end="url(#m7b)"/><path d="M666 38 L672 86" class="ln l1" opacity=".6" marker-end="url(#m7b)"/><path d="M692 38 L726 86" class="ln l1" opacity=".6" marker-end="url(#m7b)"/>
+<text x="526" y="172" class="mono">7 of 8 touched → most of the block</text>
+<text x="526" y="190" class="mu sm">cheap for one user, pays like dense at scale</text>
+</svg><figcaption>Why a trillion-parameter model can stream faster than a dense 70B. The router sends each token to a few experts and only those are read. Batch many tokens and almost every expert gets a visitor, so the cheapness fades exactly when a server is busy.</figcaption></figure>
+
+  <p>The catch arrives with batching. Different tokens pick different experts, so at batch 64 nearly every expert is touched and the step reads most of the model after all. MoE gives you cheap single-user speed and demands lots of memory; dense gives you better batching economics per byte. This is why MoE serving leans on expert parallelism across many chips (DeepSeek runs decode across dozens of GPUs with experts spread out) and on very large batches to amortise the memory.</p>
+  <div class="inst">
+    <div class="ctl"><label>model <select id="mo-model"></select></label><label>batch B <input type="range" id="mo-b" min="0" max="100" value="0"><span class="v" id="mo-b-v">1</span></label></div>
+    <div class="grid2">
+      <div><canvas id="mo-cv" style="aspect-ratio:4/3;max-height:300px"></canvas></div>
+      <div class="panel"><h4>Bytes read per step (bf16)</h4><div id="mo-state"></div></div>
+    </div>
+    <p class="hint">Line: expected fraction of the model's experts touched by a batch of B tokens, assuming the router spreads load evenly (E × (1 − (1 − k/E)<sup>B</sup>) over E experts, top-k). The dense-equivalent line is 100% from B = 1. Readout compares bytes streamed, which is what sets the step time.</p>
+  </div>
+</section>
+
+<section class="ch" id="c8">
+  <p class="chn">08 · MORE CHIPS</p>
+  <h2>Eight pipes are wider than one, until they have to talk</h2>
+  <p><a class="term" href="#g-par">Tensor parallelism</a> cuts every weight matrix into slices and gives each chip one slice. Eight chips each read an eighth of the weights at the same time, so the effective bandwidth is eight times higher and the single-user ceiling rises with it. This is why a 70B model on 8 H100s streams at over 100 tok/s while the same model on 2 H100s is stuck under 50.</p>
+<figure class="fig"><svg viewBox="0 0 760 228" role="img" aria-label="One chip must read all four slices of the weights, 42 milliseconds. Four chips each read one slice in parallel, 10.5 milliseconds, but must exchange partial results with an all-reduce twice per layer, which adds a fixed cost that does not shrink with more chips.">
+<defs><marker id="m8a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="m8b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f1"/></marker><marker id="m8c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f2"/></marker></defs>
+<text x="14" y="16" class="b">1 chip</text>
+<rect x="14" y="28" width="90" height="110" rx="8" class="box"/><text x="59" y="44" text-anchor="middle" class="mono sm">H100</text><rect x="26" y="54" width="66" height="16" rx="2" class="f1"/><rect x="26" y="74" width="66" height="16" rx="2" class="f1"/><rect x="26" y="94" width="66" height="16" rx="2" class="f1"/><rect x="26" y="114" width="66" height="16" rx="2" class="f1"/>
+<text x="59" y="156" text-anchor="middle" class="mono">reads 140 GB</text>
+<text x="59" y="172" text-anchor="middle" class="mono b">42 ms / token</text>
+<text x="59" y="190" text-anchor="middle" class="mu sm">no talking needed</text>
+<line x1="150" y1="8" x2="150" y2="222" class="ln" stroke-dasharray="3 4" opacity=".5"/>
+<text x="180" y="16" class="b">4 chips, tensor parallel · each holds one slice</text>
+<rect x="180" y="28" width="90" height="110" rx="8" class="box"/><text x="225" y="44" text-anchor="middle" class="mono sm">chip 1</text><rect x="192" y="54" width="66" height="16" rx="2" class="f1"/><rect x="192" y="74" width="66" height="16" rx="2" class="fl"/><rect x="192" y="94" width="66" height="16" rx="2" class="fl"/><rect x="192" y="114" width="66" height="16" rx="2" class="fl"/><rect x="300" y="28" width="90" height="110" rx="8" class="box"/><text x="345" y="44" text-anchor="middle" class="mono sm">chip 2</text><rect x="312" y="54" width="66" height="16" rx="2" class="fl"/><rect x="312" y="74" width="66" height="16" rx="2" class="f1"/><rect x="312" y="94" width="66" height="16" rx="2" class="fl"/><rect x="312" y="114" width="66" height="16" rx="2" class="fl"/><rect x="420" y="28" width="90" height="110" rx="8" class="box"/><text x="465" y="44" text-anchor="middle" class="mono sm">chip 3</text><rect x="432" y="54" width="66" height="16" rx="2" class="fl"/><rect x="432" y="74" width="66" height="16" rx="2" class="fl"/><rect x="432" y="94" width="66" height="16" rx="2" class="f1"/><rect x="432" y="114" width="66" height="16" rx="2" class="fl"/><rect x="540" y="28" width="90" height="110" rx="8" class="box"/><text x="585" y="44" text-anchor="middle" class="mono sm">chip 4</text><rect x="552" y="54" width="66" height="16" rx="2" class="fl"/><rect x="552" y="74" width="66" height="16" rx="2" class="fl"/><rect x="552" y="94" width="66" height="16" rx="2" class="fl"/><rect x="552" y="114" width="66" height="16" rx="2" class="f1"/>
+<path d="M270 146 H540" class="ln l2" stroke-width="1.5"/>
+<path d="M270 146 v-8" class="ln l2" stroke-width="1.5"/><path d="M390 146 v-8" class="ln l2" stroke-width="1.5"/><path d="M510 146 v-8" class="ln l2" stroke-width="1.5"/><path d="M585 146 v-8" class="ln l2" stroke-width="1.5"/>
+<path d="M585 146 h0" class="ln l2"/>
+<text x="428" y="162" text-anchor="middle" class="mono" style="fill:var(--s2)">all-reduce · add up partial results · 2× per layer</text>
+<text x="180" y="186" class="mono">each reads 35 GB → 10.5 ms</text>
+<text x="180" y="202" class="mono b">+ 160 exchanges × 8 µs (NVLink) ≈ 1.3 ms  →  ~85 tok/s, not 95</text>
+<text x="180" y="218" class="mu sm">on PCIe the same exchanges cost 25 µs each = 4 ms · a fixed bill that flattens the curve</text>
+</svg><figcaption>Splitting the weights across chips multiplies the bandwidth, but every layer ends with the chips adding up their partial answers. That exchange costs the same whether you have 4 chips or 64, which is why the gain flattens and why the link speed matters so much.</figcaption></figure>
+
+  <p>The limit is the <a class="term" href="#g-link">interconnect</a>. After every layer the chips must add up their partial results (an "all-reduce"), twice per layer. Each exchange costs a few microseconds over NVLink and tens over PCIe or Ethernet, and an 80-layer model does 160 of them per token. That fixed cost does not shrink as you add chips, so the curve flattens. It is also why per-token latency across chips stuck together with slow links is poor however many you buy, and why the fastest decode numbers come from systems built around one enormous NVLink domain (NVL72) or around on-chip SRAM.</p>
+  <div class="inst">
+    <div class="ctl"><label>model <select id="tp-model"></select></label><label>chip <select id="tp-gpu"></select></label><label>link <select id="tp-link"><option value="8">NVLink (≈8 µs/all-reduce)</option><option value="25">PCIe (≈25 µs)</option><option value="60">Ethernet / RDMA (≈60 µs)</option></select></label></div>
+    <canvas id="tp-cv" style="aspect-ratio:16/8;max-height:320px"></canvas>
+    <div class="read" id="tp-read"></div>
+    <p class="hint">Single-user tok/s against the number of chips sharing the model by tensor parallelism. Dashed: the pure bandwidth ceiling. Solid: with two all-reduces per layer at the link's latency. The gap is the price of talking. Pipeline parallelism (splitting by layer) does not appear because it does not raise single-user speed at all; it only helps fit.</p>
+  </div>
+</section>
+
+<section class="ch" id="c9">
+  <p class="chn">09 · THE SERVING STACK</p>
+  <h2>What the software does between the user and the chip</h2>
+  <p>A chip's ceiling is only reachable if the software keeps it fed. Before 2023 servers batched requests statically: collect <i>B</i> requests, run them until the longest finished, repeat. Every short answer in the batch sat idle while the long one finished. <a class="term" href="#g-cb">Continuous batching</a> (from the Orca paper, 2022) fixed that by swapping requests in and out at every token step. Together with paged KV memory (vLLM's PagedAttention, 2023) it is the reason modern servers run at a few times the throughput of 2022 servers on the same hardware.</p>
+<figure class="fig"><svg viewBox="0 0 760 250" role="img" aria-label="A request goes from the user to a scheduler, which checks the prefix cache; on a miss it is sent to prefill workers, whose KV cache is shipped to decode workers, which stream tokens back. Continuous batching admits new requests at every step.">
+<defs><marker id="m9a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="m9b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f1"/></marker><marker id="m9c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f2"/></marker></defs>
+<rect x="14" y="40" width="88" height="50" rx="8" class="box"/><text x="58.0" y="60" text-anchor="middle" class="b">user</text><text x="58.0" y="76" text-anchor="middle" class="mu sm">prompt in</text>
+<line x1="102" y1="65" x2="134" y2="65" class="ln" marker-end="url(#m9a)"/>
+<rect x="138" y="40" width="130" height="50" rx="8" class="soft"/><text x="203.0" y="60" text-anchor="middle" class="b">scheduler</text><text x="203.0" y="76" text-anchor="middle" class="mu sm">continuous batching</text>
+<text x="203" y="104" text-anchor="middle" class="mono sm">admits at every step</text>
+<line x1="268" y1="65" x2="300" y2="65" class="ln" marker-end="url(#m9a)"/>
+<rect x="304" y="40" width="120" height="50" rx="8" class="box"/><text x="364.0" y="60" text-anchor="middle" class="b">prefix cache</text><text x="364.0" y="76" text-anchor="middle" class="mu sm">seen this prompt start?</text>
+<path d="M364 90 v22 a8 8 0 0 0 8 8 h276 a8 8 0 0 0 8-8 v-20" class="ln l3" stroke-width="1.5" marker-end="url(#m9a)"/>
+<text x="508" y="134" text-anchor="middle" class="mono sm" style="fill:var(--s3)">hit · skip prefill, reuse the stored KV</text>
+<line x1="424" y1="65" x2="456" y2="65" class="ln" marker-end="url(#m9a)"/>
+<text x="440" y="56" text-anchor="middle" class="mu sm">miss</text>
+<rect x="460" y="40" width="120" height="50" rx="8" class="soft"/><text x="520.0" y="60" text-anchor="middle" class="b">prefill pool</text><text x="520.0" y="76" text-anchor="middle" class="mu sm">compute-heavy chips</text>
+<line x1="580" y1="65" x2="612" y2="65" class="ln" marker-end="url(#m9a)"/>
+<text x="596" y="56" text-anchor="middle" class="mu sm">KV</text>
+<rect x="616" y="40" width="130" height="50" rx="8" class="soft"/><text x="681.0" y="60" text-anchor="middle" class="b">decode pool</text><text x="681.0" y="76" text-anchor="middle" class="mu sm">bandwidth-heavy chips</text>
+<path d="M681 90 v50 a8 8 0 0 1 -8 8 H66 a8 8 0 0 1 -8 -8 V90" class="ln l1" stroke-width="1.5" marker-end="url(#m9b)"/>
+<text x="380" y="164" text-anchor="middle" class="mono sm" style="fill:var(--s1)">tokens stream back one per step</text>
+<rect x="14" y="180" width="732" height="62" rx="6" class="ghost"/>
+<text x="24" y="198" class="sm b">Under the decode pool</text>
+<text x="24" y="216" class="sm">paged KV memory (no wasted slots) · chunked prefill (long prompts sliced so decode never stalls)</text>
+<text x="24" y="232" class="sm">CUDA graphs (no per-step launch cost) · speculative decoding (several tokens per read)</text>
+</svg><figcaption>The 2025 serving shape. Prefill and decode run on separate pools because one is compute-bound and the other memory-bound. The prefix cache short-circuits the expensive half, and the scheduler refills the batch at every token step instead of waiting for the slowest request.</figcaption></figure>
+
+  <div class="inst">
+    <div class="ctl"><span class="seg" role="group" aria-label="Mode"><button class="btn" id="cb-static" aria-pressed="true">static batching</button><button class="btn" id="cb-cont" aria-pressed="false">continuous batching</button></span><button class="btn" id="cb-run">▶ run 240 steps</button><button class="btn" id="cb-reset">reset</button></div>
+    <canvas id="cb-cv" style="aspect-ratio:16/6;max-height:260px"></canvas>
+    <div class="read" id="cb-read"></div>
+    <p class="hint">Eight slots on one chip, a queue of requests with answers of random length. Each column is one decode step; a filled cell is a slot producing a token. Static batching waits for the whole batch to finish before admitting the next. Same requests, same chip, same step time; only the schedule changes.</p>
+  </div>
+  <h3>The rest of the stack, one line each</h3>
+  <div class="cards" id="stack-cards"></div>
+</section>
+
+<section class="ch" id="c10">
+  <p class="chn">10 · READING THE NUMBERS</p>
+  <h2>How to read a speed claim without being fooled</h2>
+  <p>A speed is three numbers, not one: <a class="term" href="#g-ttft">TTFT</a>, <a class="term" href="#g-tpot">time per output token</a>, and the length of what is being generated. The calculator below turns them into what a person actually waits, and it is the single most useful thing to do with any benchmark table.</p>
+  <div class="inst">
+    <div class="ctl"><label>TTFT <input type="range" id="rd-ttft" min="0.05" max="10" step="0.05" value="0.8"><span class="v" id="rd-ttft-v">0.8</span> s</label><label>output speed <input type="range" id="rd-tps" min="5" max="2000" step="5" value="60"><span class="v" id="rd-tps-v">60</span> tok/s</label><label>reasoning tokens <input type="range" id="rd-think" min="0" max="20000" step="250" value="2000"><span class="v" id="rd-think-v">2k</span></label><label>answer tokens <input type="range" id="rd-out" min="50" max="5000" step="50" value="400"><span class="v" id="rd-out-v">400</span></label></div>
+    <canvas id="rd-cv" style="aspect-ratio:16/4;max-height:160px"></canvas>
+    <div class="read" id="rd-read"></div>
+    <p class="hint">Wait = TTFT + (reasoning + answer tokens) ÷ tok/s. The "perceived" speed is total tokens over total time, which is what users compare against the headline number, and it is always lower.</p>
+  </div>
+  <figure class="fig"><svg viewBox="0 0 760 176" role="img" aria-label="A skewed distribution of time to first token. Half of requests finish under 0.5 seconds, but the slowest 5 percent take over 1.8 seconds and the slowest 1 percent over 3.5 seconds. The average hides that tail.">
+<text x="14" y="14" class="b">The same server, a thousand requests · how long until the first token</text>
+<path d="M60.0 130.0 L71.0 126.0 L82.0 94.2 L93.0 67.9 L104.0 64.0 L115.0 72.7 L126.0 84.8 L137.0 96.0 L148.0 105.1 L159.0 112.0 L170.0 117.0 L181.0 120.7 L192.0 123.3 L203.0 125.1 L214.0 126.5 L225.0 127.4 L236.0 128.1 L247.0 128.6 L258.0 128.9 L269.0 129.2 L280.0 129.4 L291.0 129.5 L302.0 129.7 L313.0 129.7 L324.0 129.8 L335.0 129.8 L346.0 129.9 L357.0 129.9 L368.0 129.9 L379.0 129.9 L390.0 130.0 L401.0 130.0 L412.0 130.0 L423.0 130.0 L434.0 130.0 L445.0 130.0 L456.0 130.0 L467.0 130.0 L478.0 130.0 L489.0 130.0 L500.0 130.0 L511.0 130.0 L522.0 130.0 L533.0 130.0 L544.0 130.0 L555.0 130.0 L566.0 130.0 L577.0 130.0 L588.0 130.0 L599.0 130.0 L610.0 130.0 L621.0 130.0 L632.0 130.0 L643.0 130.0 L654.0 130.0 L665.0 130.0 L676.0 130.0 L687.0 130.0 L698.0 130.0 L709.0 130.0 L720.0 130.0 L720.0 130 L60 130 Z" class="f1" opacity=".25"/>
+<path d="M60.0 130.0 L71.0 126.0 L82.0 94.2 L93.0 67.9 L104.0 64.0 L115.0 72.7 L126.0 84.8 L137.0 96.0 L148.0 105.1 L159.0 112.0 L170.0 117.0 L181.0 120.7 L192.0 123.3 L203.0 125.1 L214.0 126.5 L225.0 127.4 L236.0 128.1 L247.0 128.6 L258.0 128.9 L269.0 129.2 L280.0 129.4 L291.0 129.5 L302.0 129.7 L313.0 129.7 L324.0 129.8 L335.0 129.8 L346.0 129.9 L357.0 129.9 L368.0 129.9 L379.0 129.9 L390.0 130.0 L401.0 130.0 L412.0 130.0 L423.0 130.0 L434.0 130.0 L445.0 130.0 L456.0 130.0 L467.0 130.0 L478.0 130.0 L489.0 130.0 L500.0 130.0 L511.0 130.0 L522.0 130.0 L533.0 130.0 L544.0 130.0 L555.0 130.0 L566.0 130.0 L577.0 130.0 L588.0 130.0 L599.0 130.0 L610.0 130.0 L621.0 130.0 L632.0 130.0 L643.0 130.0 L654.0 130.0 L665.0 130.0 L676.0 130.0 L687.0 130.0 L698.0 130.0 L709.0 130.0" class="ln l1" stroke-width="2"/>
+<line x1="60" y1="130" x2="720" y2="130" class="ln"/>
+<text x="60" y="146" text-anchor="middle" class="mono sm">0 s</text><text x="170" y="146" text-anchor="middle" class="mono sm">1 s</text><text x="280" y="146" text-anchor="middle" class="mono sm">2 s</text><text x="390" y="146" text-anchor="middle" class="mono sm">3 s</text><text x="500" y="146" text-anchor="middle" class="mono sm">4 s</text><text x="610" y="146" text-anchor="middle" class="mono sm">5 s</text><text x="720" y="146" text-anchor="middle" class="mono sm">6 s</text>
+<line x1="115" y1="30" x2="115" y2="130" class="ln l3" stroke-dasharray="3 3" stroke-width="1.5"/>
+<text x="120" y="40" class="mono b" style="fill:var(--s3)">p50 · 0.5 s</text>
+<text x="120" y="54" class="mu sm">half are faster than this</text>
+<line x1="258" y1="30" x2="258" y2="130" class="ln l2" stroke-dasharray="3 3" stroke-width="1.5"/>
+<text x="263" y="40" class="mono b" style="fill:var(--s2)">p95 · 1.8 s</text>
+<text x="263" y="54" class="mu sm">1 in 20 is slower</text>
+<line x1="456" y1="30" x2="456" y2="130" class="ln" stroke-dasharray="3 3" stroke-width="1.5"/>
+<text x="461" y="40" class="mono b">p99 · 3.6 s</text>
+<text x="461" y="54" class="mu sm">1 in 100 is slower</text>
+<text x="14" y="170" class="mu sm">A "median TTFT 0.5 s" claim is true here. So is "one in twenty users waits almost four times longer". Ask for p95 and p99.</text>
+</svg><figcaption>Why one number is never enough. Latency is a distribution with a long tail; the median describes the lucky half and the percentiles describe the users who will complain.</figcaption></figure>
+<h3>Six ways a benchmark lies to you</h3>
+  <div class="cards" id="lie-cards"></div>
+</section>
+
+<section class="ch" id="c11">
+  <p class="chn">11 · THE FRONTIER</p>
+  <h2>Four years of attacking three terms</h2>
+  <div class="timeline"><div class="tl" id="tl"></div></div>
+  <p>Every advance below attacks a term of the chapter 02 equation (bytes per parameter, parameters touched, bandwidth), or the fixed costs around it (scheduling, interconnect, prefill), or gives up on one token at a time altogether.</p>
+<figure class="fig"><svg viewBox="0 0 760 276" role="img" aria-label="The equation tokens per second equals bandwidth divided by parameters touched times bytes per parameter plus KV bytes, with each family of advances connected to the term it attacks: quantization to bytes per parameter, mixture of experts to parameters touched, MLA and GQA to KV bytes, tensor parallelism, HBM and SRAM to bandwidth, and speculative decoding plus diffusion acting outside the equation by producing several tokens per step.">
+<defs><marker id="m11a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="m11b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f1"/></marker><marker id="m11c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f2"/></marker></defs>
+<rect x="14" y="14" width="150" height="38" rx="6" class="box"/><text x="89.0" y="30" text-anchor="middle" class="sm b">fp8 · fp4 · int4</text><text x="89.0" y="44" text-anchor="middle" class="mu sm">quantization</text>
+<rect x="178" y="14" width="150" height="38" rx="6" class="box"/><text x="253.0" y="30" text-anchor="middle" class="sm b">mixture of experts</text><text x="253.0" y="44" text-anchor="middle" class="mu sm">read a few experts</text>
+<rect x="342" y="14" width="150" height="38" rx="6" class="box"/><text x="417.0" y="30" text-anchor="middle" class="sm b">MLA · GQA · KV fp8</text><text x="417.0" y="44" text-anchor="middle" class="mu sm">shrink the cache</text>
+<rect x="506" y="14" width="240" height="38" rx="6" class="box"/><text x="626.0" y="30" text-anchor="middle" class="sm b">HBM3e · NVLink TP · SRAM chips</text><text x="626.0" y="44" text-anchor="middle" class="mu sm">more bytes per second</text>
+<line x1="89" y1="52" x2="200" y2="110" class="ln" marker-end="url(#m11a)"/>
+<line x1="253" y1="52" x2="253" y2="110" class="ln" marker-end="url(#m11a)"/>
+<line x1="417" y1="52" x2="440" y2="110" class="ln" marker-end="url(#m11a)"/>
+<line x1="626" y1="52" x2="626" y2="110" class="ln" marker-end="url(#m11a)"/>
+<text x="14" y="138" class="b" font-size="15">tok/s ≈</text>
+<rect x="566" y="112" width="120" height="48" rx="8" class="soft"/>
+<text x="626" y="141" text-anchor="middle" class="b">bandwidth</text>
+<text x="548" y="141" text-anchor="middle" class="b" font-size="18">÷</text>
+<rect x="80" y="112" width="440" height="48" rx="8" class="soft"/>
+<text x="140" y="141" text-anchor="middle" class="b">parameters</text>
+<text x="200" y="141" text-anchor="middle" class="b">×</text>
+<text x="260" y="141" text-anchor="middle" class="b">bytes each</text>
+<text x="330" y="141" text-anchor="middle" class="b">+</text>
+<text x="440" y="141" text-anchor="middle" class="b">KV cache bytes</text>
+<text x="300" y="176" text-anchor="middle" class="mu sm">bytes one token must read</text>
+<text x="626" y="176" text-anchor="middle" class="mu sm">how fast they move</text>
+<rect x="14" y="218" width="200" height="38" rx="6" class="box"/>
+<text x="114" y="234" text-anchor="middle" class="sm b">speculative decoding · MTP</text>
+<text x="114" y="248" text-anchor="middle" class="mu sm">several tokens per read</text>
+<rect x="228" y="218" width="190" height="38" rx="6" class="box"/>
+<text x="323" y="234" text-anchor="middle" class="sm b">diffusion LLMs</text>
+<text x="323" y="248" text-anchor="middle" class="mu sm">many tokens at once</text>
+<rect x="432" y="218" width="314" height="38" rx="6" class="box"/>
+<text x="589" y="234" text-anchor="middle" class="sm b">continuous batching · paged KV · P/D split · prefix cache</text>
+<text x="589" y="248" text-anchor="middle" class="mu sm">keep the chip fed; share each read across more users</text>
+<path d="M114 218 v-16 a8 8 0 0 1 8-8 h616" class="ln l4" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="470" y="208" text-anchor="middle" class="mono sm" style="fill:var(--s4)">these multiply the result instead of changing a term</text>
+</svg><figcaption>Every card below is an attack on one box of this equation, or a way to get more than one token out of each read. Keep it in your head and every speed announcement becomes legible: ask which term it moved.</figcaption></figure>
+
+  <div class="cards" id="cards"></div>
+  <h3>Where 2026 stands</h3>
+  <p>The single-user frontier is set by SRAM machines: Cerebras and Groq serve open models at 1,000 to 3,000 tokens per second, and NVIDIA answered with Blackwell NVL72 systems that run DeepSeek-R1 at about 1,000 tokens per second per user using fp4 weights, multi-token-prediction speculation and 72 GPUs in one NVLink domain. The throughput frontier is set by MoE models served disaggregated at enormous batch: DeepSeek disclosed roughly 15,000 output tokens per second per H800 node in early 2025, and the 2025 open serving stacks (vLLM, SGLang, TensorRT-LLM, Dynamo) all converged on prefill/decode separation, prefix caching and speculative decoding as defaults. The live arguments are whether diffusion-style parallel generation can match autoregressive quality at 5–10× the speed, whether linear-attention hybrids keep their decode advantage on agentic work, and how much of the remaining gap is kernels versus architecture. Rubin-generation hardware in late 2026 raises bandwidth again, which lifts every ceiling on this page by the same ratio.</p>
+</section>
+
+<section class="ch" id="c12">
+  <p class="chn">12 · WHY IT MATTERS TO ME</p>
+  <h2>What this has to do with the thing you are talking to</h2>
+  <p>Every reply I write is decode on a shared server. The stack of facts above explains most of what you feel in a session.</p>
+  <p><b>The first token is a prefill bill.</b> A coding session carries a long system prompt, the files you opened, every earlier turn and every tool result. Without a <a class="term" href="#g-prefix">prefix cache</a> I would re-read all of it on every turn; with one, only the new tail is prefilled, which is why a turn in a long session can still start quickly and why providers price cached input tokens at a fraction of fresh ones.</p>
+  <p><b>Agent loops are bound by TTFT more than by tok/s.</b> A tool call is a short burst of output followed by a new request. Twenty tool calls are twenty prefills. For that pattern, cutting TTFT (prefix cache hits, disaggregated prefill, short tool results) does more than doubling decode speed.</p>
+<figure class="fig"><svg viewBox="0 0 760 118" role="img" aria-label="An agent loop as a strip of turns. Each turn is a prefill over the whole context, almost all of it a prefix-cache hit, plus a short decode for the tool call. Twenty tool calls are twenty prefills, so first-token time dominates the session.">
+<defs><marker id="m12a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="m12b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f1"/></marker><marker id="m12c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f2"/></marker></defs>
+<text x="14" y="16" class="b">One coding session · each column is one turn of the agent loop</text>
+<rect x="14" y="30" width="40.0" height="16" rx="2" class="f3" opacity=".55"/><rect x="55.0" y="30" width="8" height="16" rx="2" class="f1"/><rect x="65.0" y="30" width="14" height="16" rx="2" class="f2"/><rect x="87" y="30" width="41.4" height="16" rx="2" class="f3" opacity=".55"/><rect x="129.4" y="30" width="8" height="16" rx="2" class="f1"/><rect x="139.4" y="30" width="14" height="16" rx="2" class="f2"/><rect x="160" y="30" width="42.8" height="16" rx="2" class="f3" opacity=".55"/><rect x="203.8" y="30" width="8" height="16" rx="2" class="f1"/><rect x="213.8" y="30" width="14" height="16" rx="2" class="f2"/><rect x="233" y="30" width="44.2" height="16" rx="2" class="f3" opacity=".55"/><rect x="278.2" y="30" width="8" height="16" rx="2" class="f1"/><rect x="288.2" y="30" width="14" height="16" rx="2" class="f2"/><rect x="306" y="30" width="45.6" height="16" rx="2" class="f3" opacity=".55"/><rect x="352.6" y="30" width="8" height="16" rx="2" class="f1"/><rect x="362.6" y="30" width="14" height="16" rx="2" class="f2"/><rect x="379" y="30" width="47.0" height="16" rx="2" class="f3" opacity=".55"/><rect x="427.0" y="30" width="8" height="16" rx="2" class="f1"/><rect x="437.0" y="30" width="14" height="16" rx="2" class="f2"/><rect x="452" y="30" width="48.4" height="16" rx="2" class="f3" opacity=".55"/><rect x="501.4" y="30" width="8" height="16" rx="2" class="f1"/><rect x="511.4" y="30" width="14" height="16" rx="2" class="f2"/><rect x="525" y="30" width="49.8" height="16" rx="2" class="f3" opacity=".55"/><rect x="575.8" y="30" width="8" height="16" rx="2" class="f1"/><rect x="585.8" y="30" width="14" height="16" rx="2" class="f2"/><rect x="598" y="30" width="51.2" height="16" rx="2" class="f3" opacity=".55"/><rect x="650.2" y="30" width="8" height="16" rx="2" class="f1"/><rect x="660.2" y="30" width="14" height="16" rx="2" class="f2"/><rect x="671" y="30" width="52.6" height="16" rx="2" class="f3" opacity=".55"/><rect x="724.6" y="30" width="8" height="16" rx="2" class="f1"/><rect x="734.6" y="30" width="14" height="16" rx="2" class="f2"/>
+<text x="746" y="42" text-anchor="end" class="mu sm">…</text>
+<path d="M60 52 v10 h650 v-10" class="ln" marker-end="url(#m12a)"/>
+<text x="385" y="76" text-anchor="middle" class="mono sm">tool runs · result appended · next turn re-reads everything</text>
+<rect x="14" y="92" width="12" height="12" rx="2" class="f3" opacity=".55"/><text x="32" y="102" class="sm">context already seen · prefix-cache hit, nearly free</text>
+<rect x="330" y="92" width="12" height="12" rx="2" class="f1"/><text x="348" y="102" class="sm">new tail · the only real prefill</text>
+<rect x="540" y="92" width="12" height="12" rx="2" class="f2"/><text x="558" y="102" class="sm">decode · a short tool call</text>
+</svg><figcaption>What a tool-using session looks like to the server. Each turn is a fresh prefill over a growing context and a short decode. The prefix cache is what keeps the green part from being paid for twenty times, and TTFT, not tok/s, is what you feel.</figcaption></figure>
+
+  <p><b>Thinking is tokens.</b> When I reason before answering, those tokens are produced at the same rate as visible ones. A "slow" reasoning answer is usually a long one. Output-length discipline, on my side, is a speed feature.</p>
+  <p><b>Fast tiers are a point on the batching curve.</b> The same weights, served with fewer users per step and more hardware per user, sit further left on chapter 03's chart. Faster per token, more expensive per token, identical answers.</p>
+  <div class="note">Numbers on this page are napkin physics: rated bandwidth and FLOPs, ideal scaling, no scheduling losses. They predict the order of magnitude and the direction of every trade-off. Measured numbers for a given provider come from running the benchmark yourself with your own prompts and your own tokenizer.</div>
+</section>
+
+<section class="ch" id="c13">
+  <p class="chn">13 · CHECK YOURSELF</p>
+  <h2>Eight questions</h2>
+  <p class="score" id="q-score">0 / 8 answered</p>
+  <div class="quiz" id="quiz"></div>
+</section>
+
+<footer>Sources behind the chapters: Williams 2009 (roofline) · Yu 2022 (Orca, continuous batching) · Leviathan 2022 and Chen 2023 (speculative decoding) · Pope 2022 (efficiently scaling transformer inference) · Kwon 2023 (PagedAttention) · Agrawal 2023 (SARATHI, chunked prefill) · Dao 2023 (Flash-Decoding) · Cai 2024 (Medusa) · Li 2024/2025 (EAGLE 1–3) · Zhong 2024 (DistServe) · Qin 2024 (Mooncake) · Zheng 2024 (SGLang) · DeepSeek-V3 2024 (MTP) and inference-system disclosure 2025 · Groq 2024 and Cerebras 2024/2025 (SRAM inference) · Inception 2025 (Mercury) and Google 2025 (Gemini Diffusion) · NVIDIA 2025 (Dynamo, Blackwell NVL72 records) · SemiAnalysis 2025 (InferenceMAX) · Moonshot 2025 (Kimi Linear). Chip figures are vendor-rated dense peaks. Timeline and cards reflect training data through mid-2026.</footer>
+</main>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const root=document.documentElement;
+const css=n=>getComputedStyle(root).getPropertyValue(n).trim();
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+function fit(cv){const dpr=window.devicePixelRatio||1;const w=cv.clientWidth,h=cv.clientHeight;if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);return {ctx,w,h};}
+function rng(seed){let a=seed>>>0;return ()=>{a+=0x6D2B79F5;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296;};}
+const fmt=(x,d=2)=>(Math.round(x*10**d)/10**d).toFixed(d);
+const fmtB=b=>{const u=['B','KB','MB','GB','TB','PB'];let i=0;while(b>=1000&&i<u.length-1){b/=1000;i++;}return (b>=100?b.toFixed(0):b>=10?b.toFixed(1):b.toFixed(2))+' '+u[i];};
+const fmtN=n=>n>=1e6?(n/1e6).toFixed(n%1e6?1:0)+'M':n>=1e3?(n/1e3).toFixed(n%1e3?1:0)+'k':String(Math.round(n));
+const fmtT=t=>t>=1000?(t/1000).toFixed(1)+' s':t>=100?t.toFixed(0)+' ms':t.toFixed(1)+' ms';
+const fmtR=x=>x>=1000?fmtN(x):x>=100?x.toFixed(0):x>=10?x.toFixed(1):x.toFixed(2);
+const redraws=[];
+function reg(f){redraws.push(f);f();}
+function redrawAll(){redraws.forEach(f=>f());}
+new MutationObserver(redrawAll).observe(root,{attributes:true,attributeFilter:['data-theme']});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redrawAll);
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(redrawAll,80);});
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- shared data: chips and models ---------- */
+/* mem GB · bw TB/s · bf16 dense TFLOPS · fp8 dense TFLOPS · fp4 dense TFLOPS (0 = none) · sram: on-chip memory machine */
+const GPUS=[
+  {n:'A100 80GB',mem:80,bw:2.0,f16:312,f8:0,f4:0},
+  {n:'H100 SXM',mem:80,bw:3.35,f16:989,f8:1979,f4:0},
+  {n:'H200',mem:141,bw:4.8,f16:989,f8:1979,f4:0},
+  {n:'B200',mem:180,bw:8.0,f16:2250,f8:4500,f4:9000},
+  {n:'MI300X',mem:192,bw:5.3,f16:1307,f8:2615,f4:0},
+  {n:'MI355X',mem:288,bw:8.0,f16:2500,f8:5000,f4:10000},
+  {n:'RTX 5090',mem:32,bw:1.79,f16:210,f8:420,f4:840},
+  {n:'Apple M4 Max',mem:128,bw:0.546,f16:35,f8:0,f4:0},
+  {n:'Apple M3 Ultra',mem:512,bw:0.819,f16:57,f8:0,f4:0},
+  {n:'Groq LPU (per chip)',mem:0.23,bw:80,f16:188,f8:750,f4:0,sram:true},
+  {n:'Cerebras WSE-3',mem:44,bw:21000,f16:125000,f8:0,f4:0,sram:true}
+];
+/* total B · active B · layers · KV bytes/token bf16 · E experts · k top ·  */
+const MODELS=[
+  {n:'Llama 3.1 8B',T:8,A:8,L:32,kv:131072},
+  {n:'Llama 3.1 70B',T:70,A:70,L:80,kv:327680},
+  {n:'Llama 3.1 405B',T:405,A:405,L:126,kv:516096},
+  {n:'Mixtral 8×7B (MoE)',T:47,A:13,L:32,kv:131072,E:8,k:2},
+  {n:'Qwen3-235B-A22B (MoE)',T:235,A:22,L:94,kv:192512,E:128,k:8},
+  {n:'GPT-OSS-120B (MoE)',T:117,A:5.1,L:36,kv:73728,E:128,k:4},
+  {n:'DeepSeek-V3 / R1 (MoE, MLA)',T:671,A:37,L:61,kv:70272,E:256,k:8},
+  {n:'Kimi K2 (MoE, MLA)',T:1040,A:32,L:61,kv:70272,E:384,k:8}
+];
+const weightBytes=(m,bpp,active)=>(active?m.A:m.T)*1e9*bpp;
+const kvBytes=(m,n,bpk=2)=>m.kv*(bpk/2)*n;
+function chipsNeeded(m,g,bpp,ctxBytes){const need=weightBytes(m,bpp,false)+ctxBytes;return Math.max(1,Math.ceil(need/(g.mem*1e9*0.9)));}
+/* single-user bandwidth ceiling in tok/s */
+function ceiling(m,g,bpp,ctx,chips,bpk=2){const bytes=weightBytes(m,bpp,true)+kvBytes(m,ctx,bpk);return chips*g.bw*1e12/bytes;}
+function fillSel(sel,arr,def){arr.forEach((x,i)=>{const o=document.createElement('option');o.value=i;o.textContent=x.n;sel.appendChild(o);});sel.value=def;}
+function axes(ctx,w,h,pad){ctx.strokeStyle=css('--line');ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,h-pad.b);ctx.lineTo(w-pad.r,h-pad.b);ctx.stroke();}
+const tips=new WeakMap();
+function hover(cv,fn){const on=e=>{const r=cv.getBoundingClientRect();fn(e.clientX-r.left,e.clientY-r.top);};cv.addEventListener('mousemove',on);cv.addEventListener('touchstart',e=>{const t=e.touches[0];const r=cv.getBoundingClientRect();fn(t.clientX-r.left,t.clientY-r.top);},{passive:true});cv.addEventListener('mouseleave',()=>fn(-1,-1));}
+
+/* ---------- hero: feel the speed ---------- */
+(function(){
+  const text="A language model does not write a sentence; it writes one token, re-reads everything, and writes the next. Each of those re-reads streams the entire model through the chip's memory. At thirty tokens a second you are watching one hundred and forty gigabytes go past thirty times a second, which is why the number on this page is mostly a number about bandwidth, and why the tricks that raise it are tricks about bytes.".split(' ');
+  const tpsOf=v=>Math.round(Math.pow(10,0.7+v/100*2.5)); /* 5 → ~1600 */
+  let timer=null,start=0;
+  const el=$('#hs-text'),box=$('#hs-stream'),read=$('#hs-read');
+  function run(){clearInterval(timer);const tps=tpsOf(+$('#hs-tps').value),ttft=+$('#hs-ttft').value;$('#hs-tps-v').textContent=tps;$('#hs-ttft-v').textContent=(ttft/1000).toFixed(1);
+    el.textContent='';box.classList.add('wait');let i=0;const wps=tps/1.3;start=performance.now();
+    const n300=ttft/1000+300/tps;
+    read.innerHTML=`<span>words/s ≈ <b>${fmtR(wps)}</b></span><span>ms per token <b>${fmtR(1000/tps)}</b></span><span>300-token answer <b>${fmt(n300,1)} s</b></span><span>vs reading speed <b>${tps>=6?fmtR(tps/6)+'× faster than you read':'slower than you read'}</b></span>`;
+    if(reduced){el.textContent=text.join(' ');box.classList.remove('wait');return;}
+    timer=setInterval(()=>{const t=performance.now()-start;if(t<ttft)return;box.classList.remove('wait');const want=Math.min(text.length,Math.floor((t-ttft)/1000*wps));while(i<want){el.textContent+=(i?' ':'')+text[i];i++;}box.scrollTop=box.scrollHeight;if(i>=text.length){clearInterval(timer);}},33);}
+  $('#hs-tps').oninput=run;$('#hs-ttft').oninput=run;$('#hs-go').onclick=run;run();
+})();
+
+/* ---------- 01 two clocks ---------- */
+(function(){
+  const cfgs=[{m:MODELS[0],g:GPUS[1],chips:1},{m:MODELS[1],g:GPUS[1],chips:8},{m:MODELS[6],g:GPUS[2],chips:8}];
+  const cv=$('#tc-cv'),read=$('#tc-read');
+  const tokOf=v=>Math.round(Math.pow(10,2+v/1000*3)); /* 100 → 100k */
+  function calc(){const c=cfgs[+$('#tc-cfg').value];const nin=tokOf(+$('#tc-in').value),nout=tokOf(+$('#tc-out').value);$('#tc-in-v').textContent=fmtN(nin);$('#tc-out-v').textContent=fmtN(nout);
+    const flops=2*c.m.A*1e9*nin+4*nin*nin*c.m.L*1024; /* weights + attention (approx d=1024 kv-side) */
+    const pre=flops/(c.chips*c.g.f16*1e12*0.5)+weightBytes(c.m,2,true)/(c.chips*c.g.bw*1e12*0.7);
+    const perTok=(weightBytes(c.m,2,true)+kvBytes(c.m,nin+nout/2))/(c.chips*c.g.bw*1e12*0.7);
+    const dec=perTok*nout;return {c,nin,nout,pre,dec,perTok};}
+  function draw(){const {c,nin,nout,pre,dec,perTok}=calc();const {ctx,w,h}=fit(cv);const tot=pre+dec;const pad={l:12,r:12,t:28,b:30};const W=w-pad.l-pad.r;
+    const y=pad.t+18,bh=40;
+    ctx.fillStyle=css('--s2');ctx.fillRect(pad.l,y,Math.max(2,W*pre/tot-1),bh);
+    ctx.fillStyle=css('--s1');ctx.fillRect(pad.l+W*pre/tot+1,y,Math.max(2,W*dec/tot-1),bh);
+    /* ticks for tokens inside decode */
+    ctx.strokeStyle=css('--surface');ctx.lineWidth=1;const nt=Math.min(nout,200);for(let i=1;i<nt;i++){const x=pad.l+W*pre/tot+1+W*dec/tot*i/nt;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+bh);ctx.globalAlpha=.35;ctx.stroke();ctx.globalAlpha=1;}
+    ctx.font='600 12px '+css('--font-display');ctx.fillStyle=css('--fg');ctx.textAlign='left';ctx.fillText('prefill (read '+fmtN(nin)+' tokens) · compute-bound',pad.l,pad.t-6);ctx.textAlign='right';ctx.fillText('decode (write '+fmtN(nout)+' tokens) · memory-bound',w-pad.r,pad.t-6);
+    ctx.font='11px '+css('--font-mono');ctx.fillStyle=css('--muted');ctx.textAlign='left';ctx.fillText('0 s',pad.l,h-pad.b+16);ctx.textAlign='center';ctx.fillText('first token at '+fmt(pre,2)+' s',clamp(pad.l+W*pre/tot,pad.l+70,w-pad.r-70),h-pad.b+16);ctx.textAlign='right';ctx.fillText(fmt(tot,2)+' s',w-pad.r,h-pad.b+16);
+    ctx.strokeStyle=css('--fg');ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(pad.l+W*pre/tot,y-6);ctx.lineTo(pad.l+W*pre/tot,y+bh+6);ctx.stroke();ctx.setLineDash([]);
+    read.innerHTML=`<span>TTFT <b>${fmtT(pre*1000)}</b></span><span>per output token <b>${fmtT(perTok*1000)}</b></span><span>decode speed <b>${fmtR(1/perTok)} tok/s</b></span><span>total wait <b>${fmt(tot,2)} s</b></span><span>prefill share <b>${Math.round(pre/tot*100)}%</b></span>`;}
+  ['#tc-in','#tc-out'].forEach(s=>$(s).oninput=draw);$('#tc-cfg').onchange=draw;reg(draw);
+})();
+
+/* ---------- 02 speed of light bars ---------- */
+(function(){
+  const sel=$('#sl-model');fillSel(sel,MODELS,1);const bars=$('#sl-bars'),read=$('#sl-read');
+  const ctxOf=v=>Math.round(Math.pow(10,3+v/1000*3));
+  function draw(){const m=MODELS[+sel.value];const bpp=+$('#sl-dtype').value;const ctx=ctxOf(+$('#sl-ctx').value);$('#sl-ctx-v').textContent=fmtN(ctx);
+    const rows=GPUS.map(g=>{const chips=g.sram?Math.ceil(weightBytes(m,bpp,false)/(g.mem*1e9)):chipsNeeded(m,g,bpp,kvBytes(m,ctx));const c=ceiling(m,g,bpp,ctx,chips);return {g,chips,c};});
+    const max=Math.max(...rows.filter(r=>!r.g.sram).map(r=>r.c));
+    const measured={'Groq LPU (per chip)':'measured 250–800 tok/s on 70B-class','Cerebras WSE-3':'measured 1,000–3,000 tok/s'};
+    bars.innerHTML=rows.map(({g,chips,c})=>{if(g.sram)return `<span class="lab" title="${chips} chips of SRAM">${g.n}</span><div class="bar" style="width:100%;background:var(--s3);border-radius:0" title="${chips} chips; napkin ceiling ${fmtR(c)} tok/s is not meaningful across ${chips} chips"></div><span>→ ${measured[g.n]} · ×${chips}</span>`;const pct=clamp(c/max*100,0,100);return `<span class="lab" title="${chips} chip${chips>1?'s':''}">${g.n}</span><div class="bar${g.n.startsWith('H100')?' lit':''}" style="width:${pct}%" title="${chips} chip${chips>1?'s':''}, ${fmtR(c)} tok/s"></div><span>${fmtR(c)} tok/s · ×${chips}</span>`;}).join('');
+    const h=rows[1];read.innerHTML=`<span>weights <b>${fmtB(weightBytes(m,bpp,false))}</b></span><span>read per token (active) <b>${fmtB(weightBytes(m,bpp,true))}</b></span><span>KV at ${fmtN(ctx)} <b>${fmtB(kvBytes(m,ctx))}</b></span><span>H100 ×${h.chips} ceiling <b>${fmtR(h.c)} tok/s</b> = ${fmt(h.chips*3.35,1)} TB/s ÷ ${fmtB(weightBytes(m,bpp,true)+kvBytes(m,ctx))}</span>`;}
+  sel.onchange=draw;$('#sl-dtype').onchange=draw;$('#sl-ctx').oninput=draw;draw();
+})();
+
+/* ---------- 03 roofline + batching ---------- */
+(function(){
+  const gs=$('#rf-gpu'),ms=$('#rf-model');fillSel(gs,GPUS.filter(g=>!g.sram),1);fillSel(ms,MODELS,1);const cv=$('#rf-cv'),cv2=$('#rf-cv2'),read=$('#rf-read');
+  const bOf=v=>Math.round(Math.pow(10,v/100*3)); /* 1 → 1000 */
+  const gpuList=GPUS.filter(g=>!g.sram);
+  function step(m,g,chips,B){const bytes=weightBytes(m,2,true)+kvBytes(m,4096)*B;const flops=2*m.A*1e9*B;const tb=bytes/(chips*g.bw*1e12),tc=flops/(chips*g.f16*1e12);return {t:Math.max(tb,tc),tb,tc,ai:flops/bytes};}
+  function draw(){const g=gpuList[+gs.value],m=MODELS[+ms.value];const B=bOf(+$('#rf-b').value);$('#rf-b-v').textContent=B;const chips=chipsNeeded(m,g,2,kvBytes(m,4096)*64);
+    /* roofline */
+    {const {ctx,w,h}=fit(cv);const pad={l:60,r:14,t:16,b:34};const ridge=g.f16*1e12/(g.bw*1e12);
+      const X=ai=>pad.l+(Math.log10(ai)+1)/5*(w-pad.l-pad.r);const Y=tf=>h-pad.b-(Math.log10(tf)-0)/4*(h-pad.t-pad.b);
+      axes(ctx,w,h,pad);ctx.font='11px '+css('--font-mono');ctx.fillStyle=css('--muted');
+      [0.1,1,10,100,1000,10000].forEach(v=>{ctx.textAlign='center';ctx.fillText(v>=1?String(v):v,X(v),h-pad.b+16);});ctx.fillText('FLOPs per byte moved',(pad.l+w-pad.r)/2,h-6);
+      [1,10,100,1000,10000].forEach(v=>{ctx.textAlign='right';ctx.fillText(fmtN(v)+' TF',pad.l-6,Y(v)+4);ctx.strokeStyle=css('--line');ctx.beginPath();ctx.moveTo(pad.l,Y(v));ctx.lineTo(w-pad.r,Y(v));ctx.stroke();});
+      ctx.strokeStyle=css('--fg');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(0.1),Y(Math.max(1,0.1*g.bw)));ctx.lineTo(X(ridge),Y(g.f16));ctx.lineTo(X(10000),Y(g.f16));ctx.stroke();
+      ctx.fillStyle=css('--muted');ctx.font='600 11px '+css('--font-display');ctx.textAlign='left';ctx.fillText('bandwidth roof ('+g.bw+' TB/s)',X(0.25),Y(0.25*g.bw)-14);ctx.textAlign='right';ctx.fillText('compute roof ('+fmtN(g.f16)+' TFLOPS bf16)',X(10000),Y(g.f16)-8);
+      ctx.strokeStyle=css('--line-strong');ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(X(ridge),Y(1));ctx.lineTo(X(ridge),Y(g.f16));ctx.stroke();ctx.setLineDash([]);ctx.textAlign='center';ctx.fillText('crossover ≈ '+Math.round(ridge)+' FLOPs/B',X(ridge),h-pad.b-6);
+      const s=step(m,g,chips,B);const att=Math.min(s.ai*g.bw,g.f16);ctx.fillStyle=css('--s1');ctx.beginPath();ctx.arc(X(s.ai),Y(Math.max(1,att)),7,0,Math.PI*2);ctx.fill();ctx.strokeStyle=css('--surface');ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle=css('--fg');ctx.textAlign='left';ctx.fillText('B = '+B,X(s.ai)+11,Y(Math.max(1,att))+4);}
+    /* per-user vs total */
+    {const {ctx,w,h}=fit(cv2);const pad={l:64,r:56,t:16,b:34};const X=b=>pad.l+Math.log10(b)/3*(w-pad.l-pad.r);
+      const pts=[];for(let b=1;b<=1000;b*=1.15){const s=step(m,g,chips,Math.round(b));pts.push({b:Math.round(b),u:1/s.t,tot:Math.round(b)/s.t});}
+      const umax=pts[0].u,tmax=pts[pts.length-1].tot;const Yu=v=>h-pad.b-(v/umax)*(h-pad.t-pad.b);const Yt=v=>h-pad.b-(v/tmax)*(h-pad.t-pad.b);
+      axes(ctx,w,h,pad);ctx.font='11px '+css('--font-mono');ctx.fillStyle=css('--muted');[1,10,100,1000].forEach(v=>{ctx.textAlign='center';ctx.fillText(String(v),X(v),h-pad.b+16);});ctx.fillText('concurrent users B',(pad.l+w-pad.r)/2,h-6);
+      ctx.textAlign='right';ctx.fillStyle=css('--s1');ctx.fillText(fmtR(umax),pad.l-6,pad.t+4);ctx.fillText('0',pad.l-6,h-pad.b+4);ctx.textAlign='left';ctx.fillStyle=css('--s2');ctx.fillText(fmtN(tmax),w-pad.r+6,pad.t+4);ctx.fillText('0',w-pad.r+6,h-pad.b+4);
+      ctx.fillStyle=css('--s1');ctx.font='600 11px '+css('--font-display');ctx.textAlign='left';ctx.fillText('per user, tok/s',pad.l+6,pad.t+4);ctx.fillStyle=css('--s2');ctx.textAlign='right';ctx.fillText('whole server, tok/s',w-pad.r-6,pad.t+4);
+      ctx.lineWidth=2;ctx.strokeStyle=css('--s1');ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(X(p.b),Yu(p.u)):ctx.moveTo(X(p.b),Yu(p.u)));ctx.stroke();
+      ctx.strokeStyle=css('--s2');ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(X(p.b),Yt(p.tot)):ctx.moveTo(X(p.b),Yt(p.tot)));ctx.stroke();
+      const s=step(m,g,chips,B);ctx.strokeStyle=css('--fg');ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(X(B),pad.t);ctx.lineTo(X(B),h-pad.b);ctx.stroke();ctx.setLineDash([]);
+      [[css('--s1'),Yu(1/s.t)],[css('--s2'),Yt(B/s.t)]].forEach(([c,y])=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(X(B),y,6,0,Math.PI*2);ctx.fill();ctx.strokeStyle=css('--surface');ctx.lineWidth=2;ctx.stroke();});
+      const s1=step(m,g,chips,1);
+      read.innerHTML=`<span>${m.n} on <b>${chips}× ${g.n}</b></span><span>at B=${B}: each user <b>${fmtR(1/s.t)} tok/s</b></span><span>server total <b>${fmtR(B/s.t)} tok/s</b></span><span>vs B=1 <b>${fmtR(1/s1.t)} tok/s</b></span><span>bound by <b>${s.tb>=s.tc?'bandwidth':'compute'}</b></span><span>cost per token vs B=1 <b>÷${fmtR((s1.t)/(s.t/B))}</b></span>`;}}
+  $('#rf-b').oninput=draw;gs.onchange=draw;ms.onchange=draw;reg(draw);
+})();
+
+/* ---------- 04 context tax ---------- */
+(function(){
+  const gs=$('#ct-gpu');const gpuList=GPUS.filter(g=>!g.sram);fillSel(gs,gpuList,1);const cv=$('#ct-cv'),read=$('#ct-read');
+  const lines=[[1,'--s1'],[6,'--s3'],[4,'--s2'],[2,'--s4']];
+  $('#ct-legend').innerHTML=lines.map(([i,c])=>`<span><i style="background:var(${c})"></i>${MODELS[i].n}</span>`).join('');
+  let hx=-1;
+  function draw(){const g=gpuList[+gs.value];const bpp=+$('#ct-dtype').value;const {ctx,w,h}=fit(cv);const pad={l:56,r:14,t:14,b:34};
+    const X=n=>pad.l+(Math.log10(n)-3)/3*(w-pad.l-pad.r);
+    const series=lines.map(([i,c])=>{const m=MODELS[i];const chips=chipsNeeded(m,g,2,0);const pts=[];for(let n=1000;n<=1e6;n*=1.12){pts.push({n,v:ceiling(m,g,bpp,n,chips,bpp)});}return {m,c,chips,pts};});
+    const ymax=Math.max(...series.map(s=>s.pts[0].v))*1.1;const Y=v=>h-pad.b-(v/ymax)*(h-pad.t-pad.b);
+    axes(ctx,w,h,pad);ctx.font='11px '+css('--font-mono');ctx.fillStyle=css('--muted');[1e3,1e4,1e5,1e6].forEach(n=>{ctx.textAlign='center';ctx.fillText(fmtN(n),X(n),h-pad.b+16);});ctx.fillText('tokens in context',(pad.l+w-pad.r)/2,h-6);
+    const stepY=Math.pow(10,Math.floor(Math.log10(ymax/4)));for(let v=0;v<=ymax;v+=stepY){ctx.textAlign='right';ctx.fillText(fmtR(v),pad.l-6,Y(v)+4);ctx.strokeStyle=css('--line');ctx.beginPath();ctx.moveTo(pad.l,Y(v));ctx.lineTo(w-pad.r,Y(v));ctx.stroke();}
+    ctx.save();ctx.translate(14,(pad.t+h-pad.b)/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillText('tok/s · one user',0,0);ctx.restore();
+    series.forEach(s=>{ctx.strokeStyle=css(s.c);ctx.lineWidth=2;ctx.beginPath();s.pts.forEach((p,i)=>i?ctx.lineTo(X(p.n),Y(p.v)):ctx.moveTo(X(p.n),Y(p.v)));ctx.stroke();});
+    if(hx>=pad.l&&hx<=w-pad.r){const n=Math.pow(10,3+(hx-pad.l)/(w-pad.l-pad.r)*3);ctx.strokeStyle=css('--line-strong');ctx.beginPath();ctx.moveTo(hx,pad.t);ctx.lineTo(hx,h-pad.b);ctx.stroke();
+      read.innerHTML=`<span>at <b>${fmtN(n)}</b> tokens</span>`+series.map(s=>{const chips=s.chips;const v=ceiling(s.m,g,bpp,n,chips,bpp);const kv=kvBytes(s.m,n,bpp);return `<span style="color:var(${s.c})">${s.m.n.split(' (')[0]} <b>${fmtR(v)} tok/s</b> · KV ${fmtB(kv)} · ×${chips}</span>`;}).join('');
+      series.forEach(s=>{const v=ceiling(s.m,g,bpp,n,s.chips,bpp);ctx.fillStyle=css(s.c);ctx.beginPath();ctx.arc(hx,Y(v),5,0,Math.PI*2);ctx.fill();ctx.strokeStyle=css('--surface');ctx.lineWidth=2;ctx.stroke();});}
+    else read.innerHTML=`<span>hover the chart</span><span>chip <b>${g.n}</b> · weights + KV in ${bpp===2?'bf16':'fp8'}</span>`;}
+  hover(cv,(x,y)=>{hx=x;draw();});gs.onchange=draw;$('#ct-dtype').onchange=draw;reg(draw);
+})();
+
+/* ---------- 05 quantization table ---------- */
+(function(){
+  const ms=$('#qz-model'),gs=$('#qz-gpu');fillSel(ms,MODELS,1);const gpuList=GPUS.filter(g=>!g.sram);fillSel(gs,gpuList,1);const tbl=$('#qz-table');
+  const rows=[['fp32',4,'training master copy','none; nobody serves this'],['bf16',2,'the trained model as shipped','none (reference)'],['fp8',1,'H100 and later have native fp8 multipliers','usually unmeasurable'],['int8',1,'weight-only; multiplies in bf16','usually unmeasurable'],['int4 / fp4',0.5,'GPTQ, AWQ, NVFP4; Blackwell has native fp4','small; method- and model-dependent'],['int2 / ternary',0.25,'research; BitNet-style models are trained this way','large unless trained for it']];
+  function draw(){const m=MODELS[+ms.value],g=gpuList[+gs.value];const kv=kvBytes(m,8192,1)*16;
+    tbl.innerHTML=`<tr><th>precision</th><th>bytes/param</th><th>weights</th><th>${g.n} needed</th><th>1-user ceiling</th><th>hardware note</th><th>quality cost</th></tr>`+rows.map(([n,b,hw,q])=>{const chips=chipsNeeded(m,g,b,kv);const c=ceiling(m,g,b,8192,chips,1);return `<tr class="${b===1&&n==='fp8'?'lit':''}"><td>${n}</td><td>${b}</td><td>${fmtB(weightBytes(m,b,false))}</td><td>×${chips}</td><td>${fmtR(c)} tok/s</td><td style="text-align:left;font-family:var(--font-body);font-size:14px">${hw}</td><td style="text-align:left;font-family:var(--font-body);font-size:14px">${q}</td></tr>`;}).join('');}
+  ms.onchange=draw;gs.onchange=draw;draw();
+})();
+
+/* ---------- 06 speculative decoding ---------- */
+(function(){
+  const row=$('#sp-row'),st=$('#sp-state'),mt=$('#sp-math');let playing=false,timer=null,steps=0,toks=0,r=rng(11);
+  const words="the quick brown fox jumps over the lazy dog while the server streams tokens to a patient user who wants them faster than physics allows unless a smaller model guesses ahead and the larger one agrees".split(' ');let wi=0;
+  function math(){const a=+$('#sp-a').value,k=+$('#sp-k').value,c=+$('#sp-c').value;$('#sp-a-v').textContent=fmt(a);$('#sp-k-v').textContent=k;$('#sp-c-v').textContent=fmt(c);
+    const e=a===1?k+1:(1-Math.pow(a,k+1))/(1-a);const sp=e/(1+k*c);
+    mt.innerHTML=`<div class="row"><span>tokens per step</span><b>${fmt(e)}</b></div><div class="row"><span>step cost (1 + k·c)</span><b>${fmt(1+k*c)}</b></div><div class="row"><span>speedup</span><b>${fmt(sp)}×</b></div><div class="row"><span>at 50 tok/s base</span><b>${fmtR(50*sp)} tok/s</b></div><div class="row"><span>wasted draft tokens / step</span><b>${fmt(k-(e-1))}</b></div>`;return {a,k,c,e,sp};}
+  function state(){const {k,c}=math();st.innerHTML=`<div class="row"><span>big-model steps</span><b>${steps}</b></div><div class="row"><span>tokens produced</span><b>${toks}</b></div><div class="row"><span>tokens per step</span><b>${steps?fmt(toks/steps):'—'}</b></div><div class="row"><span>measured speedup</span><b>${steps?fmt(toks/steps/(1+k*c))+'×':'—'}</b></div>`;}
+  function burst(){const {a,k}=math();const frag=document.createDocumentFragment();let acc=0;for(let i=0;i<k;i++){const s=document.createElement('span');s.textContent=words[wi%words.length];if(r()<a){s.className='acc';acc++;wi++;frag.appendChild(s);}else{s.className='rej';frag.appendChild(s);break;}}
+    const fix=document.createElement('span');fix.className='fix';fix.textContent=words[wi%words.length];wi++;frag.appendChild(fix);const gap=document.createElement('span');gap.style.cssText='border:none;padding:0 2px;color:var(--muted)';gap.textContent='·';frag.appendChild(gap);
+    row.appendChild(frag);while(row.children.length>60)row.removeChild(row.firstChild);steps++;toks+=acc+1;state();}
+  function reset(){clearInterval(timer);playing=false;$('#sp-play').setAttribute('aria-pressed',false);$('#sp-play').textContent='▶ run';row.innerHTML='';steps=0;toks=0;wi=0;r=rng(11);state();}
+  $('#sp-play').onclick=e=>{playing=!playing;e.currentTarget.setAttribute('aria-pressed',playing);e.currentTarget.textContent=playing?'⏸ pause':'▶ run';clearInterval(timer);if(playing)timer=setInterval(burst,reduced?900:450);};
+  $('#sp-reset').onclick=reset;['#sp-a','#sp-k','#sp-c'].forEach(s=>$(s).oninput=state);reset();for(let i=0;i<6;i++)burst();
+})();
+
+/* ---------- 07 experts ---------- */
+(function(){
+  const ms=$('#mo-model');const moe=MODELS.filter(m=>m.E);fillSel(ms,moe,3);const cv=$('#mo-cv'),st=$('#mo-state');
+  const bOf=v=>Math.round(Math.pow(10,v/100*3));
+  function parts(m){const e=(m.T-m.A)/(m.E-m.k);const D=m.A-m.k*e;return {e,D};} /* per-expert size and dense share, in B params */
+  function touched(m,B){return m.E*(1-Math.pow(1-m.k/m.E,B));}
+  function draw(){const m=moe[+ms.value];const B=bOf(+$('#mo-b').value);$('#mo-b-v').textContent=B;const {ctx,w,h}=fit(cv);const pad={l:44,r:14,t:14,b:34};const X=b=>pad.l+Math.log10(b)/3*(w-pad.l-pad.r);const Y=f=>h-pad.b-f*(h-pad.t-pad.b);
+    axes(ctx,w,h,pad);ctx.font='11px '+css('--font-mono');ctx.fillStyle=css('--muted');[1,10,100,1000].forEach(b=>{ctx.textAlign='center';ctx.fillText(String(b),X(b),h-pad.b+16);});ctx.fillText('tokens in the batch',(pad.l+w-pad.r)/2,h-6);
+    [0,.25,.5,.75,1].forEach(f=>{ctx.textAlign='right';ctx.fillText(Math.round(f*100)+'%',pad.l-6,Y(f)+4);ctx.strokeStyle=css('--line');ctx.beginPath();ctx.moveTo(pad.l,Y(f));ctx.lineTo(w-pad.r,Y(f));ctx.stroke();});
+    ctx.strokeStyle=css('--s2');ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(X(1),Y(1));ctx.lineTo(X(1000),Y(1));ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=css('--s2');ctx.font='600 11px '+css('--font-display');ctx.textAlign='left';ctx.fillText('dense model: everything, always',X(1.2),Y(1)+14);
+    ctx.strokeStyle=css('--s1');ctx.beginPath();for(let b=1;b<=1000;b*=1.1){const f=touched(m,b)/m.E;b===1?ctx.moveTo(X(b),Y(f)):ctx.lineTo(X(b),Y(f));}ctx.stroke();ctx.fillStyle=css('--s1');ctx.fillText('experts touched',X(1.2),Y(touched(m,1)/m.E)-8);
+    const f=touched(m,B)/m.E;ctx.beginPath();ctx.arc(X(B),Y(f),6,0,Math.PI*2);ctx.fill();ctx.strokeStyle=css('--surface');ctx.lineWidth=2;ctx.stroke();
+    const {e,D}=parts(m);const bytes=(D+touched(m,B)*e)*2e9;const dense=m.T*2e9;
+    st.innerHTML=`<div class="row"><span>total / active params</span><b>${m.T}B / ${m.A}B</b></div><div class="row"><span>experts, chosen per token</span><b>${m.E}, top-${m.k}</b></div><div class="row"><span>per-expert size</span><b>${fmt(e,2)}B</b></div><div class="row"><span>experts touched at B=${B}</span><b>${fmt(touched(m,B),1)} (${Math.round(f*100)}%)</b></div><div class="row"><span>bytes read this step</span><b>${fmtB(bytes)}</b></div><div class="row"><span>if every expert were read</span><b>${fmtB(dense)}</b></div><div class="row"><span>MoE advantage this step</span><b>${fmt(dense/bytes,1)}×</b></div>`;}
+  ms.onchange=draw;$('#mo-b').oninput=draw;reg(draw);
+})();
+
+/* ---------- 08 tensor parallel ---------- */
+(function(){
+  const ms=$('#tp-model'),gs=$('#tp-gpu');fillSel(ms,MODELS,1);const gpuList=GPUS.filter(g=>!g.sram);fillSel(gs,gpuList,1);const cv=$('#tp-cv'),read=$('#tp-read');
+  function draw(){const m=MODELS[+ms.value],g=gpuList[+gs.value];const lat=+$('#tp-link').value*1e-6;const {ctx,w,h}=fit(cv);const pad={l:52,r:14,t:16,b:34};const N=[1,2,4,8,16,32,64];const X=i=>pad.l+i/(N.length-1)*(w-pad.l-pad.r);
+    const bytes=weightBytes(m,2,true)+kvBytes(m,8192);const min=chipsNeeded(m,g,2,kvBytes(m,8192));
+    const ideal=N.map(n=>n<min?null:n*g.bw*1e12/bytes);const real=N.map(n=>n<min?null:1/(bytes/(n*g.bw*1e12)+(n>1?2*m.L*lat:0)));
+    const ymax=Math.max(...ideal.filter(Boolean))*1.08;const Y=v=>h-pad.b-(v/ymax)*(h-pad.t-pad.b);
+    axes(ctx,w,h,pad);ctx.font='11px '+css('--font-mono');ctx.fillStyle=css('--muted');N.forEach((n,i)=>{ctx.textAlign='center';ctx.fillText(n+'×',X(i),h-pad.b+16);});ctx.fillText('chips sharing the model (tensor parallel)',(pad.l+w-pad.r)/2,h-6);
+    const stepY=Math.pow(10,Math.floor(Math.log10(ymax/4)));for(let v=0;v<=ymax;v+=stepY){ctx.textAlign='right';ctx.fillText(fmtR(v),pad.l-6,Y(v)+4);ctx.strokeStyle=css('--line');ctx.beginPath();ctx.moveTo(pad.l,Y(v));ctx.lineTo(w-pad.r,Y(v));ctx.stroke();}
+    ctx.strokeStyle=css('--s1');ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.beginPath();let st=false;ideal.forEach((v,i)=>{if(v==null)return;st?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v));st=true;});ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();st=false;real.forEach((v,i)=>{if(v==null)return;st?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v));st=true;});ctx.stroke();
+    real.forEach((v,i)=>{if(v==null)return;ctx.fillStyle=css('--s1');ctx.beginPath();ctx.arc(X(i),Y(v),4.5,0,Math.PI*2);ctx.fill();ctx.fillStyle=css('--fg');ctx.font='600 11px '+css('--font-display');ctx.textAlign='center';ctx.fillText(fmtR(v),X(i),Y(v)-10);});
+    ctx.fillStyle=css('--muted');ctx.textAlign='left';ctx.fillText('dashed = bandwidth ceiling · solid = with all-reduce latency',pad.l+6,pad.t+4);
+    const i8=N.indexOf(8);const floor=1/(2*m.L*lat);
+    read.innerHTML=`<span>needs at least <b>×${min}</b> to fit bf16</span><span>at 8 chips: ceiling <b>${ideal[i8]?fmtR(ideal[i8]):'—'}</b>, with talking <b>${real[i8]?fmtR(real[i8]):'—'} tok/s</b></span><span>${m.L} layers × 2 all-reduces × ${(lat*1e6).toFixed(0)} µs = <b>${fmtT(2*m.L*lat*1000)}</b> per token, a hard floor of <b>${fmtR(floor)} tok/s</b> on this link</span>`;}
+  ms.onchange=draw;gs.onchange=draw;$('#tp-link').onchange=draw;reg(draw);
+})();
+
+/* ---------- 09 continuous batching sim ---------- */
+(function(){
+  const cv=$('#cb-cv'),read=$('#cb-read');const S=8,STEPS=240;let mode='static',grid=null,stats=null;
+  function sim(){const r=rng(5);const q=Array.from({length:200},(_,i)=>({id:i,len:3+Math.floor(r()*38)}));let qi=0;const slots=Array(S).fill(null);grid=Array.from({length:S},()=>Array(STEPS).fill(-1));let done=0,busy=0;
+    for(let t=0;t<STEPS;t++){if(mode==='static'){if(slots.every(s=>s===null)){for(let s=0;s<S;s++)if(qi<q.length)slots[s]={...q[qi++]};}}else{for(let s=0;s<S;s++)if(slots[s]===null&&qi<q.length)slots[s]={...q[qi++]};}
+      for(let s=0;s<S;s++){const j=slots[s];if(!j)continue;grid[s][t]=j.id;busy++;j.len--;if(j.len<=0){slots[s]=null;done++;}}}
+    stats={done,busy,util:busy/(S*STEPS)};}
+  let shown=0,timer=null;
+  function draw(){const {ctx,w,h}=fit(cv);const pad={l:54,r:10,t:10,b:26};const cw=(w-pad.l-pad.r)/STEPS,ch=(h-pad.t-pad.b)/S;const cols=[css('--s1'),css('--s2'),css('--s3'),css('--s4')];
+    ctx.font='11px '+css('--font-mono');ctx.fillStyle=css('--muted');for(let s=0;s<S;s++){ctx.textAlign='right';ctx.fillText('slot '+(s+1),pad.l-6,pad.t+s*ch+ch/2+4);}
+    ctx.textAlign='left';ctx.fillText('step 0',pad.l,h-6);ctx.textAlign='right';ctx.fillText('step '+STEPS,w-pad.r,h-6);
+    for(let s=0;s<S;s++)for(let t=0;t<shown;t++){const id=grid[s][t];ctx.fillStyle=id<0?css('--bg'):cols[id%4];ctx.fillRect(pad.l+t*cw,pad.t+s*ch+1,Math.max(1,cw-0.5),ch-2);}
+    const busy=grid.reduce((a,row)=>a+row.slice(0,shown).filter(x=>x>=0).length,0);
+    read.innerHTML=`<span>${mode==='static'?'static':'continuous'} · after <b>${shown}</b> steps</span><span>tokens produced <b>${busy}</b></span><span>slot utilisation <b>${shown?Math.round(busy/(S*shown)*100):0}%</b></span><span>throughput <b>${shown?fmt(busy/shown,2):'—'} tok/step</b> of ${S} possible</span>${shown>=STEPS?`<span>requests finished <b>${stats.done}</b></span>`:''}`;}
+  function run(){clearInterval(timer);shown=0;sim();if(reduced){shown=STEPS;draw();return;}timer=setInterval(()=>{shown=Math.min(STEPS,shown+3);draw();if(shown>=STEPS)clearInterval(timer);},16);}
+  function setMode(m){mode=m;$('#cb-static').setAttribute('aria-pressed',m==='static');$('#cb-cont').setAttribute('aria-pressed',m==='cont');run();}
+  $('#cb-static').onclick=()=>setMode('static');$('#cb-cont').onclick=()=>setMode('cont');$('#cb-run').onclick=run;$('#cb-reset').onclick=()=>{clearInterval(timer);shown=0;sim();draw();};
+  sim();shown=STEPS;reg(draw);
+  const stack=[
+    ['PagedAttention','vLLM, 2023','Store the KV cache in fixed-size blocks with a page table per request, like virtual memory.','No wasted reserved memory, so more requests fit per batch; identical prefixes share blocks.'],
+    ['Prefix caching','SGLang RadixAttention, 2024; now universal','Keep KV blocks of common prompt prefixes (system prompts, documents, earlier turns) and reuse them across requests.','TTFT for a cached prefix drops to near zero; providers charge cached input tokens at a tenth of the price.'],
+    ['Chunked prefill','SARATHI, 2023','Split a long prompt into chunks and interleave them with other users\' decode steps.','A 100k-token prompt no longer freezes everyone else\'s streaming for seconds.'],
+    ['Disaggregated prefill / decode','DistServe and Mooncake 2024, NVIDIA Dynamo 2025','Run prefill on one pool of GPUs and decode on another; ship the KV cache across.','Each pool tuned for its own bottleneck; TTFT and tok/s can be optimised separately.'],
+    ['CUDA graphs and fused kernels','2022→','Record the hundreds of kernel launches in a decode step and replay them as one; fuse small operations into single kernels.','Removes launch overhead that otherwise caps small-batch decode at a few hundred steps per second.'],
+    ['Flash-Decoding','2023','Split the KV cache across many GPU blocks during decode so a single query still uses the whole chip.','Long-context decode stops being bound by one lonely streaming multiprocessor.']
+  ];
+  $('#stack-cards').innerHTML=stack.map(([t,y,w,why])=>`<div class="card"><h3>${t} <span class="yr">${y}</span></h3><p>${w}</p><div class="kv"><span>why</span><span>${why}</span></div></div>`).join('');
+})();
+
+/* ---------- 10 reading the numbers ---------- */
+(function(){
+  const cv=$('#rd-cv'),read=$('#rd-read');
+  function draw(){const ttft=+$('#rd-ttft').value,tps=+$('#rd-tps').value,think=+$('#rd-think').value,out=+$('#rd-out').value;$('#rd-ttft-v').textContent=fmt(ttft,2);$('#rd-tps-v').textContent=tps;$('#rd-think-v').textContent=fmtN(think);$('#rd-out-v').textContent=fmtN(out);
+    const tt=think/tps,to=out/tps,tot=ttft+tt+to;const {ctx,w,h}=fit(cv);const pad={l:12,r:12,t:24,b:26};const W=w-pad.l-pad.r;const y=pad.t,bh=h-pad.t-pad.b;
+    const segs=[[ttft,css('--s2'),'wait'],[tt,css('--s4'),'thinking'],[to,css('--s1'),'answer']];let x=pad.l;
+    segs.forEach(([t,c,l])=>{const ww=W*t/tot;ctx.fillStyle=c;ctx.fillRect(x,y,Math.max(0,ww-1),bh);ctx.fillStyle=css('--fg');ctx.font='600 11px '+css('--font-display');ctx.textAlign='left';if(ww>60)ctx.fillText(l+' '+fmt(t,1)+' s',x+6,y-8);x+=ww;});
+    ctx.font='11px '+css('--font-mono');ctx.fillStyle=css('--muted');ctx.textAlign='left';ctx.fillText('0 s',pad.l,h-8);ctx.textAlign='right';ctx.fillText(fmt(tot,1)+' s',w-pad.r,h-8);
+    read.innerHTML=`<span>first visible token after <b>${fmt(ttft+tt,1)} s</b></span><span>answer complete at <b>${fmt(tot,1)} s</b></span><span>headline speed <b>${tps} tok/s</b></span><span>perceived speed <b>${fmtR((think+out)/tot)} tok/s</b></span><span>answer-only perceived <b>${fmtR(out/tot)} tok/s</b></span>`;}
+  ['#rd-ttft','#rd-tps','#rd-think','#rd-out'].forEach(s=>$(s).oninput=draw);reg(draw);
+  const lies=[
+    ['A token is not a token','Tokenizers differ. One vendor\'s 100 tok/s may be another\'s 80 words per second or 60. Compare characters or words per second across vendors, never raw tokens.'],
+    ['Output only, or input too?','Some "throughput" figures count prompt tokens processed. Prefill runs at thousands of tokens per second per GPU, so mixing it in flatters any number.'],
+    ['Median, not tail','A p50 of 25 ms per token can hide a p99 of 400 ms when the batch fills up. Ask for p95 and p99 at the load you will actually run.'],
+    ['Measured at batch 1','A vendor demo on an empty server shows the ceiling from chapter 02. Your request shares the chip with hundreds of others; the chapter 03 curve applies.'],
+    ['Warm cache, short prompt','Benchmarks reuse a prompt whose prefix is already cached and whose length is tiny. Your first turn with a 50k-token document pays full prefill.'],
+    ['Reasoning counted or not','A model that thinks for 3,000 tokens at 100 tok/s delivers its first answer word after 30 seconds. Headline tok/s is identical to a non-reasoning model; the wait is not.']
+  ];
+  $('#lie-cards').innerHTML=lies.map(([t,d])=>`<div class="card"><h3>${t}</h3><p>${d}</p></div>`).join('');
+})();
+
+/* ---------- 11 timeline + cards ---------- */
+(function(){
+  const tl=[['2022','Orca · speculative decoding','Continuous batching (Orca, OSDI 2022); Google and DeepMind publish draft-and-verify decoding.'],['2023','vLLM · chunked prefill · Flash-Decoding','PagedAttention makes KV memory dense; SARATHI interleaves prefill; decode kernels split the KV read across the chip.'],['2024','Medusa · EAGLE · DistServe · Mooncake · Cerebras','Self-drafting heads; prefill/decode separation in papers and in Kimi\'s production stack; Cerebras ships SRAM inference at 450→2,100 tok/s on 70B.'],['Feb 2025','DeepSeek inference disclosure · Mercury','DeepSeek shows ~15k output tok/s per H800 node with expert parallelism and MTP; Inception\'s Mercury generates by diffusion at 1,000+ tok/s.'],['May 2025','Gemini Diffusion · Blackwell records','Google previews a diffusion LLM; NVIDIA reports ~1,000 tok/s per user on DeepSeek-R1 with fp4 on an 8×B200 node.'],['H2 2025','GPT-OSS at 3,000 tok/s · InferenceMAX · Kimi Linear','SRAM vendors serve OpenAI\'s open MoE at 3k tok/s; SemiAnalysis launches a continuous serving benchmark; linear-attention hybrids claim 6× decode at 1M context.'],['2026','Rubin · disaggregation by default','Next-generation HBM lifts bandwidth again; every major serving stack ships prefill/decode disaggregation, prefix caching and speculation on by default.']];
+  $('#tl').innerHTML=tl.map(([y,t,d])=>`<div class="ev"><div class="y">${y}</div><div class="t">${t}</div><div class="d">${d}</div></div>`).join('');
+  const cards=[
+    ['Continuous batching','Orca, 2022','Admit and retire requests at every decode step instead of per batch. The scheduler owns the GPU; requests are just rows in it.','Throughput rises several-fold on the same hardware with no change to the model. The baseline every server now assumes.','Needs paged KV memory to avoid fragmentation; scheduling policy becomes a tuning surface (who gets admitted when).'],
+    ['Speculative decoding family','2022→','Draft-and-verify (Leviathan, Chen), self-drafting heads (Medusa), feature-level drafting (EAGLE 1→3), and multi-token prediction trained into the model (DeepSeek-V3 MTP). Also prompt-lookup: draft from n-grams already in the context, no model needed.','2–3× single-user speedup on code and structured text with identical output distribution; the main software lever once the bandwidth ceiling is reached.','Gains shrink at large batch (verification spends compute the batch wanted) and on free-form prose where drafts miss.'],
+    ['Low-precision serving','fp8 2022 → fp4 2025','Weights, activations and KV cache in 8-bit or 4-bit formats with per-block scales; Hopper multiplies in fp8 natively, Blackwell in fp4 (NVFP4).','Halves or quarters the bytes per token, so decode ceiling doubles or quadruples; compute throughput rises in step on native hardware.','Calibration and outlier handling decide quality; 4-bit remains a per-model judgement. fp4 KV cache is still unusual.'],
+    ['Mixture of experts at scale','Mixtral 2023 · DeepSeek-V3 2024 · Kimi K2, GPT-OSS, Qwen3 2025','Hundreds of small experts, a handful active per token. Serving spreads experts across many GPUs (expert parallelism) and batches large so every expert earns its memory.','Trillion-parameter models decode like 30B models for one user; at scale, DeepSeek reported 5–10× cheaper tokens than dense peers.','Memory-hungry; needs big batches and fast interconnect; load balance across experts is a live engineering problem.'],
+    ['Disaggregated prefill and decode','DistServe and Mooncake 2024 · Dynamo 2025','Separate GPU pools for the compute-bound and memory-bound phases, with a KV-cache transfer (often over RDMA) between them. Mooncake adds a cluster-wide KV store so any prefix can be found anywhere.','Prefill no longer interrupts decode; each pool scales on its own metric (TTFT vs tok/s); goodput under a latency target rises 2–4× in the papers.','Transfer cost and a second scheduling problem; small deployments gain little.'],
+    ['SRAM inference machines','Groq 2023 · Cerebras 2024','Hold all weights in on-chip SRAM. Groq chains hundreds of LPUs with a fully deterministic compiler-scheduled dataflow; Cerebras uses one 44 GB wafer-scale chip with 21 PB/s of internal bandwidth.','Single-user decode of 1,000–3,000 tok/s on 70B–120B models, an order of magnitude above GPU nodes.','Capital-heavy (many chips per model), memory per chip is tiny, so very large dense models and very long contexts are awkward; batching economics differ from GPUs.'],
+    ['One NVLink domain','GB200 / GB300 NVL72, 2025','72 Blackwell GPUs wired as one all-to-all NVLink fabric, so tensor and expert parallelism stop paying the inter-node tax; fp4 and MTP speculation on top.','NVIDIA\'s ~1,000 tok/s per user on DeepSeek-R1 and large throughput gains for MoE serving come mostly from the fabric.','A single system costs millions and draws over 100 kW; the win is proportional to how much the model was interconnect-bound.'],
+    ['Diffusion language models','Mercury 2025 · Gemini Diffusion 2025 · LLaDA, Dream (open) 2025','Generate the whole answer as a block, refining all positions in parallel over a few dozen steps, instead of one token per pass.','Reported 5–10× the tok/s of same-size autoregressive models on H100s; each refinement step is a prefill-like compute-bound pass.','Quality at frontier scale is unproven; long outputs, tool-calling and streaming semantics are awkward; the ecosystem (KV caching, speculation) does not transfer.'],
+    ['Linear and hybrid attention','Mamba 2023 · Qwen3-Next, Kimi Linear 2025','Replace most softmax-attention layers with constant-size recurrent state, keeping a few full layers for exact recall.','Removes the context tax from chapter 04 for most layers: Kimi Linear reports 75% less KV cache and ~6× decode throughput at 1M tokens.','Whether exact recall survives agentic workloads is contested; MiniMax returned to full attention for M2.'],
+    ['Open serving stacks','vLLM 2023 · SGLang 2024 · TensorRT-LLM · Dynamo 2025','The engines that implement everything above and expose it as an API: continuous batching, paged and prefix-cached KV, chunked prefill, speculative decoding, quantised kernels, disaggregation.','The gap between a research GPU and a production token stream; most API providers run one of these or a fork.','Kernels are hardware-generation specific; configuration (batch limits, cache sizes, spec settings) is where most of the real-world speed is won or lost.']
+  ];
+  $('#cards').innerHTML=cards.map(([t,y,w,why,cost])=>`<div class="card"><h3>${t} <span class="yr">${y}</span></h3><p>${w}</p><div class="kv"><span>why</span><span>${why}</span><span>cost</span><span>${cost}</span></div></div>`).join('');
+})();
+
+/* ---------- 13 quiz ---------- */
+(function(){
+  const qs=[
+    ['For a single user, decode speed is limited mainly by…',['How fast the chip can multiply','How fast the chip can read its memory','The size of the vocabulary','Network latency to the user'],1,'Every token requires streaming all the weights (plus the KV cache) through the chip. The arithmetic per token is tiny by comparison. Decode is memory-bound.'],
+    ['Llama 3.1 70B in bf16 on hardware with 6.7 TB/s of combined bandwidth cannot exceed roughly…',['480 tok/s','48 tok/s','4.8 tok/s','4,800 tok/s'],1,'140 GB of weights ÷ 6.7 TB/s = 21 ms per token, so about 48 tokens per second, before counting the KV cache.'],
+    ['Why is batching nearly free up to a point?',['Users share the same answer','The weights are loaded once and reused for every user in the batch','GPUs have many cores','Tokens are compressed'],1,'The expensive part of a step is streaming the weights. Using them for 64 users instead of 1 adds arithmetic the idle multipliers can absorb, until the roofline crossover.'],
+    ['Time to first token is dominated by…',['Memory bandwidth','Prefill compute over the prompt','The length of the answer','Sampling temperature'],1,'The model must read the entire prompt before writing anything. That is a compute-bound pass whose length grows with prompt size.'],
+    ['Speculative decoding speeds things up because…',['The small model\'s answers are used directly','Verifying several draft tokens costs about the same as producing one, and the output is identical','It skips layers','It lowers precision'],1,'Checking k tokens is a tiny prefill, which is compute-bound with compute to spare. The big model accepts the matching prefix and corrects the first miss; the distribution is unchanged.'],
+    ['A mixture-of-experts model with 671B total and 37B active parameters decodes for one user roughly like…',['A 671B dense model','A 37B dense model','A 7B dense model','Depends only on the KV cache'],1,'Only the active parameters are read per token at batch 1. At large batch, most experts are touched and the advantage shrinks.'],
+    ['Adding more GPUs with tensor parallelism stops helping single-user speed because…',['Weights do not divide evenly','Every layer needs an all-reduce whose latency does not shrink with more chips','Memory bandwidth decreases','Prefill gets slower'],1,'Two all-reduces per layer at a fixed few microseconds each set a floor on step time that no number of chips removes. Faster interconnect lowers the floor.'],
+    ['A reasoning model at 100 tok/s that thinks for 3,000 tokens before answering shows its first answer word after about…',['3 seconds','30 seconds','0.3 seconds','300 seconds'],1,'Thinking tokens are generated at the same rate as visible ones. 3,000 ÷ 100 = 30 seconds, plus TTFT. Headline speed and perceived speed diverge.']
+  ];
+  let answered=0,right=0;const host=$('#quiz');
+  host.innerHTML=qs.map((q,i)=>`<div class="qq" data-i="${i}"><p class="qt">${i+1}. ${q[0]}</p><div class="opts">${q[1].map((o,k)=>`<button type="button" class="opt" data-k="${k}">${o}</button>`).join('')}</div><p class="why" hidden>${q[3]}</p></div>`).join('');
+  host.addEventListener('click',e=>{const b=e.target.closest('.opt');if(!b)return;const box=b.closest('.qq');if(box.dataset.done)return;box.dataset.done=1;const i=+box.dataset.i,k=+b.dataset.k;const ok=k===qs[i][2];answered++;if(ok)right++;
+    box.querySelectorAll('.opt').forEach(o=>{if(+o.dataset.k===qs[i][2])o.classList.add('right');else if(o===b)o.classList.add('wrong');o.disabled=true;});box.querySelector('.why').hidden=false;
+    $('#q-score').textContent=`${right} correct of ${answered} answered · ${qs.length} total`+(answered===qs.length?(right===qs.length?' · clean sweep':' · re-read the chapters you missed'):'');});
+})();
+
+/* ---------- nav + progress ---------- */
+(function(){
+  const links=$$('nav.rail a');const secs=links.map(a=>$(a.getAttribute('href'))).filter(Boolean);
+  const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+en.target.id));}});},{rootMargin:'-30% 0px -60% 0px'});
+  secs.forEach(s=>io.observe(s));
+  const bar=$('#progress');const onS=()=>{const d=document.documentElement;const p=d.scrollTop/(d.scrollHeight-d.clientHeight);bar.style.width=(p*100).toFixed(1)+'%';};addEventListener('scroll',onS,{passive:true});onS();
+})();
+})();
+</script>
+
+</body></html>

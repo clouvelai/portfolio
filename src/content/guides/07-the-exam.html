@@ -1,0 +1,1092 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>The Exam</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@87.5,500;87.5,700;87.5,800;100,500;100,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sticky chapter rail (desktop) beside one ~68ch reading column; each chapter pairs a few lines of prose with one instrument the reader operates (a benchmark you can rerun, graders that run on real answers, a judge you calibrate, a model you contaminate) and one mechanism figure. Same token system as the six earlier guides so the series reads as one. */
+:root{
+  --bg:#F4F5F7; --surface:#FFFFFF; --fg:#121521; --muted:#5B6275; --line:#D9DCE6; --line-strong:#B3B9CB;
+  --accent:#2A78D6; --accent-soft:#E3EDFB; --accent-ink:#FFFFFF;
+  --s1:#2A78D6; --s2:#EB6834; --s3:#1BAF7A; --s4:#6250D6;
+  --ok:#1F7A4E; --warn:#B8640A; --bad:#B4321A; --mask:#8C93A8;
+  --font-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --font-body:"Newsreader",Georgia,"Times New Roman",serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1118; --surface:#161A24; --fg:#E8EAF1; --muted:#9AA2B6; --line:#272D3C; --line-strong:#3D4558;
+    --accent:#3987E5; --accent-soft:#1B2A45; --accent-ink:#0E1118;
+    --s1:#3987E5; --s2:#D95926; --s3:#199E70; --s4:#9085E9;
+    --ok:#4BC38A; --warn:#F5A524; --bad:#F08A72; --mask:#4A5270; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1118; --surface:#161A24; --fg:#E8EAF1; --muted:#9AA2B6; --line:#272D3C; --line-strong:#3D4558;
+  --accent:#3987E5; --accent-soft:#1B2A45; --accent-ink:#0E1118;
+  --s1:#3987E5; --s2:#D95926; --s3:#199E70; --s4:#9085E9;
+  --ok:#4BC38A; --warn:#F5A524; --bad:#F08A72; --mask:#4A5270; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} *{animation:none!important;transition:none!important} }
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:17.5px;line-height:1.6;margin:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+#progress{position:fixed;left:0;top:env(safe-area-inset-top,0px);height:3px;width:0;background:var(--accent);z-index:50;transition:width .1s linear}
+.frame{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:0 40px}
+@media (min-width:980px){ .frame{grid-template-columns:200px minmax(0,1fr)} }
+nav.rail{display:none}
+@media (min-width:980px){
+  nav.rail{display:block;position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;padding-top:28px;font-family:var(--font-display);font-size:13px}
+  nav.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+  nav.rail li a{display:block;padding:6px 0 6px 14px;color:var(--muted);text-decoration:none;border-left:2px solid transparent;margin-left:-1px;line-height:1.3}
+  nav.rail li a.active{color:var(--fg);border-left-color:var(--accent)}
+  nav.rail li a:hover{color:var(--fg)}
+  nav.rail .n{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-right:6px}
+}
+main{min-width:0}
+.hero{padding-block:56px 24px}
+.eyebrow{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:var(--muted);margin:0 0 14px}
+h1{font-family:var(--font-display);font-weight:800;font-stretch:87.5%;font-size:clamp(38px,6vw,68px);line-height:1;letter-spacing:-.02em;margin:0 0 18px;text-wrap:balance}
+h2{font-family:var(--font-display);font-weight:700;font-stretch:87.5%;font-size:clamp(26px,3.4vw,36px);line-height:1.1;letter-spacing:-.012em;margin:0 0 12px;text-wrap:balance}
+h3{font-family:var(--font-display);font-weight:700;font-size:18px;margin:0 0 8px}
+.lede{font-size:21px;line-height:1.5;max-width:62ch;margin:0 0 26px}
+p{max-width:68ch;margin:0 0 14px}
+section.ch{padding-block:36px;border-top:1px solid var(--line)}
+.chn{font-family:var(--font-mono);font-size:12px;color:var(--accent);letter-spacing:.08em;margin:0 0 10px}
+.inst{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin:22px 0 12px;min-width:0}
+.inst .hint{font-family:var(--font-display);font-size:13px;color:var(--muted);margin:10px 0 0;max-width:none}
+.ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;font-family:var(--font-display);font-size:13px;margin:0 0 14px}
+.ctl label{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.ctl input[type=range]{accent-color:var(--accent);width:150px;max-width:40vw}
+.ctl select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;max-width:60vw}
+.ctl .v{font-family:var(--font-mono);color:var(--fg);min-width:3.5ch;font-variant-numeric:tabular-nums}
+.btn{font-family:var(--font-display);font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn[aria-pressed="true"],.btn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;gap:4px;flex-wrap:wrap}
+.read{font-family:var(--font-mono);font-size:13px;color:var(--muted);margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 22px;font-variant-numeric:tabular-nums}
+.read b{color:var(--fg);font-weight:600}
+canvas{display:block;width:100%;max-width:100%}
+.eq{font-family:var(--font-body);font-size:22px;text-align:center;margin:18px 0;line-height:1.4}
+.eq .op{font-style:normal;font-family:var(--font-display);font-weight:500}
+.eq i{font-style:italic}
+.mono{font-family:var(--font-mono);font-size:.85em}
+.grid2{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:760px){ .grid2{grid-template-columns:1fr 1fr} }
+.grid2>*{min-width:0}
+.bars{display:grid;grid-template-columns:auto 1fr auto;gap:5px 10px;align-items:center;font-family:var(--font-mono);font-size:12px;font-variant-numeric:tabular-nums}
+.bars .bar{height:12px;border-radius:0 4px 4px 0;background:var(--s1);min-width:1px}
+.bars .bar.lit{background:var(--s2)}
+.bars .lab{color:var(--muted);white-space:nowrap}
+.cards{display:grid;grid-template-columns:1fr;gap:12px;margin-top:18px}
+@media (min-width:700px){ .cards{grid-template-columns:1fr 1fr} }
+.card{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface);min-width:0}
+.card h3{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.card h3 .yr{font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:400}
+.card p{font-size:15px;margin:0 0 8px;max-width:none}
+.card .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:14px;margin-top:6px}
+.card .kv span:first-child{font-family:var(--font-display);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:3px}
+.timeline{overflow-x:auto;margin:18px 0 4px;padding-bottom:8px}
+.tl{display:flex;gap:0;min-width:max-content;position:relative;padding-top:10px}
+.tl::before{content:"";position:absolute;left:0;right:0;top:19px;height:1px;background:var(--line-strong)}
+.tl .ev{width:160px;padding:0 10px 0 0;position:relative}
+.tl .ev::before{content:"";position:absolute;left:0;top:4px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
+.tl .ev .y{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin:20px 0 2px}
+.tl .ev .t{font-family:var(--font-display);font-size:13px;font-weight:700;line-height:1.25}
+.tl .ev .d{font-size:12.5px;color:var(--muted);line-height:1.35;margin-top:2px}
+.quiz{display:grid;gap:14px}
+.qq{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface)}
+.qq .qt{font-family:var(--font-display);font-weight:700;margin:0 0 10px;font-size:16px;max-width:none}
+.qq .opts{display:grid;gap:6px}
+.qq .opt{text-align:left;font:inherit;font-size:15px;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.qq .opt:hover{border-color:var(--line-strong)}
+.qq .opt.right{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.qq .opt.wrong{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+.qq .why{font-size:14.5px;color:var(--muted);margin:10px 0 0;max-width:none}
+.score{font-family:var(--font-display);font-size:14px;color:var(--muted)}
+.note{font-size:15px;color:var(--muted);border-left:2px solid var(--line-strong);padding-left:12px;margin:12px 0;max-width:68ch}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:12px;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--fg)}
+.panel{border:1px dashed var(--line-strong);border-radius:8px;padding:10px 12px;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums;min-width:0}
+.panel h4{font-family:var(--font-display);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}
+.panel .row{display:flex;justify-content:space-between;gap:8px;padding:2px 0;border-bottom:1px solid var(--line)}
+.panel .row:last-child{border-bottom:0}
+.panel .row b{font-weight:600;text-align:right}
+.gloss{display:grid;grid-template-columns:1fr;gap:10px 22px;margin-top:18px}
+@media (min-width:760px){ .gloss{grid-template-columns:1fr 1fr} }
+.g{padding:10px 0;border-top:1px solid var(--line);min-width:0}
+.g dt{font-family:var(--font-display);font-weight:700;font-size:16px;margin:0 0 4px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.g dt .sym{font-family:var(--font-mono);font-size:12px;color:var(--muted);font-weight:400}
+.g dd{margin:0;font-size:15px;line-height:1.5}
+.g dd .ana{display:block;color:var(--muted);margin-top:4px;font-size:14px}
+a.term{color:inherit;text-decoration:none;border-bottom:1px dotted var(--accent)}
+a.term:hover{color:var(--accent)}
+.legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-family:var(--font-display);font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.stream{font-family:var(--font-body);font-size:18px;line-height:1.55;min-height:7.5em;max-height:7.5em;overflow-y:auto;position:relative;border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--bg)}
+.stream .cur{display:inline-block;width:.55em;height:1.1em;background:var(--accent);vertical-align:-3px;margin-left:1px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.stream.wait .cur{animation:none;opacity:.35}
+.tokrow{display:flex;flex-wrap:wrap;gap:4px;font-family:var(--font-mono);font-size:12.5px;margin-top:10px;min-height:2.4em}
+.tokrow span{padding:3px 6px;border-radius:4px;border:1px solid var(--line);background:var(--surface)}
+.tokrow .acc{background:var(--accent-soft);border-color:var(--accent)}
+.tokrow .rej{text-decoration:line-through;color:var(--muted);opacity:.6}
+.tokrow .fix{border-color:var(--s2);box-shadow:inset 0 0 0 1px var(--s2)}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums;width:100%;min-width:520px}
+.tbl th,.tbl td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line)}
+.tbl th{font-family:var(--font-display);font-weight:700;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.tbl td:first-child,.tbl th:first-child{text-align:left}
+.tbl tr.lit td{background:var(--accent-soft)}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--font-mono);font-size:13px;margin:14px 0}
+.flow span{padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--muted)}
+.flow .op{color:var(--fg);border-color:var(--line-strong)}
+.flow .arrow{border:none;padding:0 2px;color:var(--accent)}
+footer{font-family:var(--font-display);font-size:13px;color:var(--muted);padding-top:28px;border-top:1px solid var(--line);margin-top:30px}
+.textin{font:inherit;font-family:var(--font-mono);font-size:14px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);color:var(--fg);width:100%;min-width:0}
+
+/* Figures: hand-drawn inline SVG mechanism diagrams + stat tiles. Strokes/text inherit currentColor; series classes carry meaning. */
+.fig{margin:22px 0 14px;max-width:none}
+.fig svg{display:block;width:100%;height:auto;max-width:100%;color:var(--fg);font-family:var(--font-display);font-size:12px;overflow:visible}
+.fig svg text{fill:currentColor}
+.fig figcaption{font-family:var(--font-display);font-size:13px;color:var(--muted);margin-top:8px;max-width:68ch;line-height:1.45}
+.fig .box{fill:var(--surface);stroke:var(--line-strong);stroke-width:1}
+.fig .soft{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1}
+.fig .ghost{fill:none;stroke:var(--line-strong);stroke-dasharray:4 4}
+.fig .f1{fill:var(--s1)} .fig .f2{fill:var(--s2)} .fig .f3{fill:var(--s3)} .fig .f4{fill:var(--s4)} .fig .fm{fill:var(--mask)} .fig .fl{fill:var(--line)}
+.fig .l1{stroke:var(--s1)} .fig .l2{stroke:var(--s2)} .fig .l3{stroke:var(--s3)} .fig .l4{stroke:var(--s4)}
+.fig .ln{stroke:currentColor;fill:none;stroke-width:1.2}
+.fig .mu{fill:var(--muted)} .fig .mono{font-family:var(--font-mono);font-size:11px} .fig .b{font-weight:700}
+.fig .sm{font-size:10.5px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:18px 0}
+.tile{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface);min-width:0}
+.tile .n{font-family:var(--font-display);font-weight:800;font-stretch:87.5%;font-size:30px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile .n small{font-size:14px;font-weight:600;color:var(--muted);margin-left:4px;letter-spacing:0}
+.tile .l{font-family:var(--font-display);font-size:12px;color:var(--muted);margin-top:6px;line-height:1.3}
+.tile.a .n{color:var(--accent)}
+@media (max-width:700px){ .fig{overflow-x:auto;-webkit-overflow-scrolling:touch} .fig svg{min-width:600px} }
+.tok{display:inline-block;padding:2px 5px;margin:2px 1px;border-radius:4px;font-family:var(--font-mono);font-size:13px;line-height:1.3;border:1px solid var(--line);background:var(--surface);white-space:pre}
+.tok.t0{background:color-mix(in srgb,var(--s1) 18%,var(--surface))} .tok.t1{background:color-mix(in srgb,var(--s2) 18%,var(--surface))} .tok.t2{background:color-mix(in srgb,var(--s3) 18%,var(--surface))} .tok.t3{background:color-mix(in srgb,var(--s4) 18%,var(--surface))}
+.tok.byte{border-style:dashed;color:var(--muted)}
+.tokwrap{line-height:1.9;min-height:3.2em;font-size:0}
+.tokwrap .tok{font-size:13px}
+.dist{display:grid;grid-template-columns:minmax(70px,auto) 1fr auto;gap:4px 10px;align-items:center;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.dist .lab{white-space:pre;color:var(--fg);text-align:right}
+.dist .trk{position:relative;height:14px;background:color-mix(in srgb,var(--line) 55%,transparent);border-radius:0 4px 4px 0;min-width:0}
+.dist .trk i{position:absolute;left:0;top:0;bottom:0;background:var(--s1);border-radius:0 4px 4px 0;min-width:1px}
+.dist .trk i.cut{background:var(--mask);opacity:.45}
+.dist .trk i.pick{background:var(--s2)}
+.dist .trk em{position:absolute;left:0;top:0;bottom:0;background:var(--s3);opacity:.55;border-radius:0 4px 4px 0}
+.dist .pv{color:var(--muted);text-align:right;min-width:5ch}
+.dist .lab.cut,.dist .pv.cut{color:var(--mask);text-decoration:line-through}
+.outs{display:grid;gap:8px;margin-top:10px}
+.out{font-family:var(--font-body);font-size:16px;line-height:1.5;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg);min-width:0;overflow-wrap:anywhere}
+.out .pre{color:var(--muted)}
+.out .div{background:color-mix(in srgb,var(--s2) 22%,transparent);border-radius:3px}
+.lp{display:flex;flex-wrap:wrap;gap:3px;font-family:var(--font-mono);font-size:13px;margin-top:10px}
+.lp span{padding:3px 5px;border-radius:4px;white-space:pre}
+.json{font-family:var(--font-mono);font-size:14px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:2.6em;overflow-wrap:anywhere}
+.json .nx{display:inline-block;width:.55em;height:1.1em;background:var(--accent);vertical-align:-3px;margin-left:1px}
+.kvrow{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--font-display);font-size:13px;color:var(--muted);margin-top:8px}
+.kvrow b{color:var(--fg);font-weight:600}
+.scale{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:12px;color:var(--muted);margin-top:8px}
+.scale i{display:inline-block;height:10px;width:90px;border-radius:3px;background:linear-gradient(90deg,var(--bad),var(--warn),var(--ok))}
+.ctl input[type=number]{font:inherit;font-family:var(--font-mono);color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;width:9ch}
+.ctl input[type=text]{font:inherit;font-family:var(--font-mono);font-size:13px;color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;min-width:0}
+.fig .fo{fill:var(--bg)}
+.choice{display:grid;grid-template-columns:1fr;gap:8px}
+@media (min-width:640px){ .choice{grid-template-columns:1fr 1fr} }
+.choice button{text-align:left;font:inherit;font-size:15px;line-height:1.45;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;min-width:0}
+.choice button:hover{border-color:var(--accent)}
+.choice button .tag{display:block;font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:4px}
+.adv{display:grid;grid-template-columns:minmax(60px,auto) 1fr auto;gap:5px 10px;align-items:center;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.adv .lab{color:var(--fg);white-space:nowrap;cursor:pointer;user-select:none}
+.adv .lab.ok{color:var(--ok)} .adv .lab.bad{color:var(--bad)}
+.adv .trk{position:relative;height:14px;background:color-mix(in srgb,var(--line) 55%,transparent);border-radius:4px}
+.adv .trk::before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--line-strong)}
+.adv .trk i{position:absolute;top:0;bottom:0;border-radius:3px}
+.adv .trk i.up{background:var(--ok);left:50%} .adv .trk i.dn{background:var(--bad);right:50%}
+.adv .pv{color:var(--muted);text-align:right;min-width:5ch}
+.stages{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.stages .btn{font-weight:500}
+.chatv{font-family:var(--font-mono);font-size:13px;line-height:1.9;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-wrap:anywhere}
+.chatv .sp{display:inline-block;padding:1px 6px;border-radius:4px;background:var(--accent-soft);border:1px solid var(--accent);color:var(--fg);white-space:pre}
+.chatv .msk{color:var(--muted)}
+.chatv .trn{background:color-mix(in srgb,var(--s3) 22%,transparent);border-radius:3px;padding:1px 2px}
+.ctl input[type=checkbox]{accent-color:var(--accent)}
+.fig .f3s{fill:color-mix(in srgb,var(--s3) 22%,var(--surface))} .fig .f2s{fill:color-mix(in srgb,var(--s2) 22%,var(--surface))} .fig .f1s{fill:color-mix(in srgb,var(--s1) 22%,var(--surface))} .fig .fms{fill:color-mix(in srgb,var(--mask) 25%,var(--surface))}
+</style>
+<style>
+/* Additions for this guide: rerun scoreboard, grader grid, confusion matrix, leaderboards, series grid. */
+.fig .ln.l1{stroke:var(--s1)} .fig .ln.l2{stroke:var(--s2)} .fig .ln.l3{stroke:var(--s3)} .fig .ln.l4{stroke:var(--s4)}
+.fig .lok{stroke:var(--ok)} .fig .lbad{stroke:var(--bad)} .fig .fok{fill:var(--ok)} .fig .fbad{fill:var(--bad)}
+.inst .fig{margin:6px 0 0}
+.tbl td.ok{color:var(--ok);font-weight:600} .tbl td.bad{color:var(--bad);font-weight:600} .tbl td.warn{color:var(--warn)} .tbl td.mu{color:var(--muted)}
+.tbl table.compact{min-width:460px}
+.tbl td.txt{text-align:left;font-family:var(--font-body);font-size:14.5px;white-space:normal;min-width:180px}
+.tbl td.c{text-align:center}
+.verdict{font-family:var(--font-display);font-size:14px;margin-top:10px;padding:8px 12px;border-radius:8px;border:1px solid var(--line);max-width:none}
+.verdict.ok{border-color:var(--ok);color:var(--ok)} .verdict.bad{border-color:var(--bad);color:var(--bad)} .verdict.warn{border-color:var(--warn);color:var(--warn)}
+.series{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+@media (min-width:700px){ .series{grid-template-columns:repeat(3,1fr)} }
+.series a{display:block;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--surface);text-decoration:none;color:var(--fg);font-family:var(--font-display);font-size:14px;font-weight:700;line-height:1.3;min-width:0}
+.series a span{display:block;font-family:var(--font-mono);font-size:11px;font-weight:400;color:var(--muted);margin-bottom:3px}
+.series a:hover{border-color:var(--accent)}
+.board2{display:grid;grid-template-columns:1fr;gap:12px}
+@media (min-width:640px){ .board2{grid-template-columns:1fr 1fr} }
+.board2>*{min-width:0}
+.mcard{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg);min-width:0}
+.mcard .nm{font-family:var(--font-display);font-weight:700;font-size:15px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.mcard .nm span{font-family:var(--font-mono);font-weight:400;font-size:12px;color:var(--muted)}
+.mcard .big{font-family:var(--font-display);font-weight:800;font-stretch:87.5%;font-size:40px;line-height:1.05;font-variant-numeric:tabular-nums;margin:6px 0 2px}
+.mcard .big small{font-size:16px;font-weight:600;color:var(--muted);margin-left:6px}
+.mcard.win{border-color:var(--s2);box-shadow:inset 0 0 0 1px var(--s2)}
+.mcard.win .nm::after{content:"leaderboard #1";font-family:var(--font-mono);font-size:11px;font-weight:400;color:var(--s2)}
+.whisk{position:relative;height:18px;margin-top:6px;background:color-mix(in srgb,var(--line) 45%,transparent);border-radius:4px}
+.whisk i{position:absolute;top:4px;bottom:4px;background:color-mix(in srgb,var(--s1) 30%,transparent);border-left:2px solid var(--s1);border-right:2px solid var(--s1)}
+.whisk b{position:absolute;top:0;bottom:0;width:2px;background:var(--fg)}
+.whisk em{position:absolute;top:-3px;bottom:-3px;width:0;border-left:2px dashed var(--s3)}
+.hist{display:flex;gap:2px;flex-wrap:wrap;margin-top:10px;min-height:16px}
+.hist span{width:10px;height:14px;border-radius:2px;background:var(--s3)}
+.hist span.w{background:var(--bad)} .hist span.t{background:var(--mask)}
+.lbl{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-display);font-size:12px;color:var(--muted);margin-right:14px}
+.lbl i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.gold{cursor:pointer;font-family:var(--font-mono);font-size:12px;padding:3px 8px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);white-space:nowrap}
+.gold.y{background:color-mix(in srgb,var(--ok) 18%,var(--surface));border-color:var(--ok)}
+.gold.n{background:color-mix(in srgb,var(--bad) 14%,var(--surface));border-color:var(--bad)}
+.tbl td .x{display:inline-block;min-width:4.5ch;text-align:center;padding:1px 4px;border-radius:4px}
+.tbl td .x.p{color:var(--ok)} .tbl td .x.f{color:var(--bad)}
+.tbl td .x.miss{outline:2px solid var(--warn);outline-offset:-1px}
+.tbl tfoot td{font-family:var(--font-display);font-size:12px;color:var(--fg);font-weight:700;border-top:1px solid var(--line-strong);border-bottom:0}
+.raw{font-family:var(--font-mono);font-size:12.5px;white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;overflow-wrap:anywhere;max-width:none;text-align:left}
+.cm{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums;max-width:360px}
+.cm div{padding:8px 10px;border-radius:6px;text-align:center;border:1px solid var(--line)}
+.cm .h{border:none;color:var(--muted);font-family:var(--font-display);font-size:11px;padding:4px}
+.cm .tp{background:color-mix(in srgb,var(--ok) 16%,var(--surface))} .cm .tn{background:color-mix(in srgb,var(--ok) 8%,var(--surface))}
+.cm .fp,.cm .fn{background:color-mix(in srgb,var(--bad) 14%,var(--surface))}
+.cm b{display:block;font-size:18px;color:var(--fg)}
+.lb{display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:640px){ .lb{grid-template-columns:1fr 1fr} }
+.lb>*{min-width:0}
+.lb h4{font-family:var(--font-display);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}
+.lb ol{list-style:none;margin:0;padding:0;font-family:var(--font-mono);font-size:13px;font-variant-numeric:tabular-nums}
+.lb li{display:grid;grid-template-columns:2ch 1fr auto;gap:8px;padding:6px 8px;border-bottom:1px solid var(--line);align-items:center}
+.lb li .nm{font-family:var(--font-display);font-weight:700}
+.lb li .tag{font-size:11px;color:var(--muted);font-family:var(--font-display);font-weight:400;margin-left:6px}
+.lb li.up{background:color-mix(in srgb,var(--s2) 12%,transparent)}
+.chk{display:flex;flex-wrap:wrap;gap:8px 16px;font-family:var(--font-display);font-size:13px;color:var(--muted)}
+.chk label{display:flex;align-items:center;gap:6px}
+.big2{font-family:var(--font-display);font-weight:800;font-stretch:87.5%;font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--fg)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:12px}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg);min-width:0}
+.kpi .l{font-family:var(--font-display);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.kpi .v{font-family:var(--font-display);font-weight:800;font-stretch:87.5%;font-size:22px;font-variant-numeric:tabular-nums;line-height:1.15}
+.kpi.hot{border-color:var(--s2)} .kpi.hot .v{color:var(--s2)}
+.kpi.good .v{color:var(--ok)} .kpi.badk .v{color:var(--bad)}
+.gen{font-family:var(--font-mono);font-size:13.5px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-wrap:anywhere;min-height:2.6em}
+.gen .pre{color:var(--muted)} .gen .hit{background:color-mix(in srgb,var(--s2) 25%,transparent);border-radius:3px}
+</style>
+
+<div id="progress"></div>
+<div class="frame">
+<nav class="rail" aria-label="Chapters">
+  <ol>
+    <li><a href="#c0"><span class="n">00</span>Plain words</a></li>
+    <li><a href="#c1"><span class="n">01</span>Anatomy of a score</a></li>
+    <li><a href="#c2"><span class="n">02</span>Error bars</a></li>
+    <li><a href="#c3"><span class="n">03</span>Who grades</a></li>
+    <li><a href="#c4"><span class="n">04</span>Judging the judge</a></li>
+    <li><a href="#c5"><span class="n">05</span>Once or every time</a></li>
+    <li><a href="#c6"><span class="n">06</span>Contamination</a></li>
+    <li><a href="#c7"><span class="n">07</span>Arenas</a></li>
+    <li><a href="#c8"><span class="n">08</span>Goodhart</a></li>
+    <li><a href="#c9"><span class="n">09</span>Time horizons</a></li>
+    <li><a href="#c10"><span class="n">10</span>Safety evals</a></li>
+    <li><a href="#c11"><span class="n">11</span>History and frontier</a></li>
+    <li><a href="#c12"><span class="n">12</span>Why it matters to me</a></li>
+    <li><a href="#c13"><span class="n">13</span>Check yourself</a></li>
+  </ol>
+</nav>
+<main>
+
+<header class="hero">
+  <p class="eyebrow">An interactive field guide · part seven</p>
+  <h1>The exam: how we know a model is good, and when the number is lying</h1>
+  <p class="lede">Every claim that one model beats another comes down to a number from an eval. This page takes that number apart: where it comes from, how much it wobbles, who decides what counts as right, and the ways it misleads. Start with the oldest trap. Two models, one benchmark. Run it.</p>
+  <div class="inst" id="hero-inst">
+    <div class="ctl"><label>benchmark size <select id="h-n"><option value="100">100 questions</option><option value="500" selected>500 questions</option><option value="2000">2,000 questions</option><option value="10000">10,000 questions</option></select></label><button class="btn" id="h-run">run the benchmark</button><button class="btn" id="h-run50">run it 50 times</button><button class="btn" id="h-reset">clear tally</button><label><input type="checkbox" id="h-truth"> show the truth</label></div>
+    <div class="board2"><div class="mcard" id="h-a"></div><div class="mcard" id="h-b"></div></div>
+    <div class="read" id="h-read"></div>
+    <div class="hist" id="h-hist" aria-label="One square per run: green when the truly better model scored higher, red when the worse one did"></div>
+    <p class="hint">A real simulation running in your browser. Each run draws a fresh set of questions of mixed difficulty from a large pool, and both models answer the same questions. Model B really is better: 72% against 70% over the whole pool. The shaded band on each card is the 95% confidence interval. One square per run: <span style="color:var(--ok)">green</span> when B scored higher, <span style="color:var(--bad)">red</span> when A did, grey for a tie. At 100 questions, B comes out ahead only about six runs in ten. Pairing helps less here than in chapter 02: these two models' per-question results are only loosely correlated (the readout shows ρ for each run).</p>
+  </div>
+<div class="tiles"><div class="tile a"><div class="n">±3.2<small>pts</small></div><div class="l">95% interval on a 70% score from 800 questions</div></div><div class="tile"><div class="n">6.5<small>%</small></div><div class="l">of MMLU questions estimated to contain errors (Gema et al. 2024)</div></div><div class="tile"><div class="n">59.4<small>%</small></div><div class="l">of the 138 SWE-bench Verified tasks OpenAI audited had tests that reject correct fixes</div></div><div class="tile"><div class="n">131<small>days</small></div><div class="l">for the length of task agents finish half the time to double (METR, since 2023)</div></div></div>
+</header>
+
+<section class="ch" id="c0">
+  <p class="chn">00 · PLAIN WORDS</p>
+<figure class="fig"><svg viewBox="0 0 760 300" role="img" aria-label="A map of eval families on two axes. Horizontal: who grades, from a program on the left to a model and then people on the right. Vertical: what is measured, capability (can it?) at the top and behaviour or preference (would it, do people like it?) at the bottom. Knowledge and math benchmarks sit top left. Agent tasks with unit tests sit top left-centre. Rubric evals graded by a model sit in the middle. Arenas graded by people sit bottom right. Dangerous-capability evals sit top centre, propensity and alignment evals bottom centre. Your own product evals span the middle.">
+<defs><marker id="m0a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<line x1="70" y1="262" x2="740" y2="262" class="ln" marker-end="url(#m0a)"/><line x1="70" y1="262" x2="70" y2="14" class="ln" marker-end="url(#m0a)"/>
+<text x="405" y="290" text-anchor="middle" class="mu sm">who grades →   a program (string match, unit test) · a model (judge with a rubric) · people (experts, crowd)</text>
+<text x="22" y="138" text-anchor="middle" class="mu sm" transform="rotate(-90 22 138)">what is measured →</text>
+<text x="80" y="30" class="b sm">can it?</text><text x="80" y="44" class="mu sm">capability</text>
+<text x="80" y="240" class="b sm">would it? do people like it?</text><text x="80" y="254" class="mu sm">behaviour, preference</text>
+<rect x="100" y="60" width="160" height="58" rx="8" class="f1s" style="stroke:var(--s1)"/><text x="180" y="82" text-anchor="middle" class="b sm">knowledge + math</text><text x="180" y="98" text-anchor="middle" class="mono sm">MMLU · GPQA · MATH</text><text x="180" y="111" text-anchor="middle" class="mu sm">ch 01–03</text>
+<rect x="170" y="128" width="170" height="52" rx="8" class="f1s" style="stroke:var(--s1)"/><text x="255" y="148" text-anchor="middle" class="b sm">agent tasks</text><text x="255" y="163" text-anchor="middle" class="mono sm">SWE-bench · METR · τ-bench</text><text x="255" y="175" text-anchor="middle" class="mu sm">ch 05, 09</text>
+<rect x="356" y="44" width="170" height="52" rx="8" class="f2s" style="stroke:var(--s2)"/><text x="441" y="64" text-anchor="middle" class="b sm">dangerous capability</text><text x="441" y="79" text-anchor="middle" class="mono sm">bio · cyber · autonomy</text><text x="441" y="91" text-anchor="middle" class="mu sm">ch 10</text>
+<rect x="380" y="118" width="170" height="52" rx="8" class="f3s" style="stroke:var(--s3)"/><text x="465" y="138" text-anchor="middle" class="b sm">rubric evals</text><text x="465" y="153" text-anchor="middle" class="mono sm">HealthBench · MT-Bench</text><text x="465" y="165" text-anchor="middle" class="mu sm">ch 04</text>
+<rect x="320" y="190" width="170" height="52" rx="8" class="f2s" style="stroke:var(--s2)"/><text x="405" y="210" text-anchor="middle" class="b sm">propensity, alignment</text><text x="405" y="225" text-anchor="middle" class="mono sm">sycophancy · scheming</text><text x="405" y="237" text-anchor="middle" class="mu sm">ch 10</text>
+<rect x="560" y="184" width="170" height="58" rx="8" class="f4" style="opacity:.18"/><rect x="560" y="184" width="170" height="58" rx="8" fill="none" style="stroke:var(--s4)"/><text x="645" y="206" text-anchor="middle" class="b sm">arenas</text><text x="645" y="221" text-anchor="middle" class="mono sm">LMArena · pairwise votes</text><text x="645" y="234" text-anchor="middle" class="mu sm">ch 07</text>
+<rect x="560" y="60" width="170" height="58" rx="8" class="ghost"/><text x="645" y="82" text-anchor="middle" class="b sm">expert work review</text><text x="645" y="97" text-anchor="middle" class="mono sm">GDPval · HLE authors</text><text x="645" y="110" text-anchor="middle" class="mu sm">ch 11</text>
+<path d="M120 196 h170" class="ln" stroke-dasharray="3 3" style="stroke:var(--s3)"/><path d="M120 196 v-12" class="ln" style="stroke:var(--s3)"/><text x="122" y="214" class="sm b" style="fill:var(--s3)">your product evals</text><text x="122" y="228" class="mu sm">span all three graders · ch 12</text>
+</svg><figcaption>The map every term below lives on. An eval is defined by two choices: what it measures and who decides whether an answer is right. Moving right buys flexibility and costs money, speed and agreement; moving down measures what users feel instead of what the model knows.</figcaption></figure>
+
+  <h2>Every term, in one breath</h2>
+  <p>Read this first or come back to it. Every dotted word on the page links here. Statistics terms get a picture; benchmark names are at the end.</p>
+  <dl class="gloss">
+  <div class="g" id="g-eval"><dt>Eval, benchmark</dt><dd>An eval is any repeatable procedure that turns a model into a number. A benchmark is a published, fixed eval that many people run so their numbers can be compared.<span class="ana">A driving test versus a national driving test with published routes.</span></dd></div>
+  <div class="g" id="g-item"><dt>Item, test set</dt><dd>One question with its reference answer is an item. The test set is all the items. Its size, n, sets how precise the final number can be.<span class="ana">Each question on the exam paper, and the paper.</span></dd></div>
+  <div class="g" id="g-metric"><dt>Metric, accuracy</dt><dd>The rule that turns per-item grades into one number. Accuracy is the share of items graded correct. Others: F1, mean rubric score, win rate, pass@k.<span class="ana">How the marks are added up.</span></dd></div>
+  <div class="g" id="g-template"><dt>Prompt template, few-shot</dt><dd>The exact wrapping around each question: instructions, answer format, and worked examples ("shots"). Changing only the template can move a score by many points, so it is part of the eval, not a detail.<span class="ana">The wording of the exam instructions. "Circle one letter" and "explain your answer" are different exams.</span></dd></div>
+  <div class="g" id="g-extract"><dt>Answer extraction</dt><dd>Code that pulls the final answer out of the model's text: the first letter, the text after "The answer is", the last number. When it fails, a right answer is scored wrong.<span class="ana">The examiner who only reads the box at the bottom of the page.</span></dd></div>
+  <div class="g" id="g-grader"><dt>Grader, verifier</dt><dd>Whatever decides if an extracted answer is right: exact string match, a maths equivalence check, unit tests that run the model's code, a judge model, or a person. A verifier is a grader that is a program.<span class="ana">The answer key, the calculator, the test suite or the teacher.</span></dd></div>
+  <div class="g" id="g-judge"><dt>LLM-as-judge, rubric</dt><dd>Using a language model to grade another model's answers, usually against a rubric: a list of criteria with points. Cheap and flexible; has its own biases and must itself be measured against human labels.<span class="ana">A teaching assistant who marks fast and mostly agrees with the professor.</span></dd></div>
+  <div class="g" id="g-pairwise"><dt>Pairwise comparison, win rate</dt><dd>Show two answers to the same prompt and ask which is better. Win rate is the share of comparisons a model wins. Easier for people than absolute scores, and the basis of arenas and preference training.<span class="ana">An eye test: "better with lens one, or lens two?"</span></dd></div>
+  <div class="g" id="g-bt"><dt>Elo, Bradley–Terry</dt><dd>Models that turn many pairwise wins into one rating per player, so that the rating gap predicts the win probability. 100 Elo points ≈ 64% expected wins. Arenas fit Bradley–Terry to millions of votes.<span class="ana">Chess ratings for chatbots.</span></dd></div>
+  <div class="g" id="g-se"><dt>Standard error <span class="sym">SE</span></dt><dd>How much a score would move if you reran the eval on a fresh set of questions of the same kind. For accuracy p on n items, SE = √(p(1−p)/n). It shrinks only with the square root of n: four times the questions, half the error.<span class="ana">The wobble in a bathroom scale. Weigh yourself four times to halve it.</span></dd></div>
+  <div class="g" id="g-ci"><dt>Confidence interval <span class="sym">± 1.96 SE</span></dt><dd>The score plus or minus about two standard errors. If you repeated the whole eval many times, 95% of intervals built this way would contain the true score. Two models whose intervals overlap heavily have not been separated.<span class="ana">"70%, give or take three" instead of "70%".</span></dd></div>
+  <div class="g" id="g-paired"><dt>Paired comparison</dt><dd>Comparing two models on the same items and analysing the per-item differences. Because both models find the same questions easy or hard, the shared difficulty cancels and the difference is measured far more precisely than either score alone.<span class="ana">Weighing two parcels on the same scale, one after the other, instead of on two different scales.</span></dd></div>
+  <div class="g" id="g-power"><dt>Power, minimum detectable difference</dt><dd>Power is the chance an eval detects a real difference of a given size. Turned around: with n items, the smallest gap you can reliably detect. Plan n from the gap you care about, not the other way round.<span class="ana">The size of print an eye chart can still read at this distance.</span></dd></div>
+  <div class="g" id="g-cluster"><dt>Clustered error</dt><dd>When items come in groups (ten questions on one passage, many tests from one repository), they are not independent, and the honest standard error is larger than the formula above. Add up the errors within each cluster first, so a group counts as one piece of evidence.<span class="ana">Ten opinions from one family are not ten independent opinions.</span></dd></div>
+  <div class="g" id="g-variance"><dt>Run-to-run variance, temperature, seed</dt><dd>A model sampled at temperature above zero answers differently each time, so the same eval on the same items gives different scores. Reported numbers should say how many samples per item and average them.<span class="ana">Asking the same student the same question on two different mornings.</span></dd></div>
+  <div class="g" id="g-passk"><dt>pass@k</dt><dd>The chance that at least one of k attempts succeeds. Measures what a model can do if you can check its work and keep the best attempt. Estimated without bias from n samples with c correct as 1 − C(n−c, k) / C(n, k), where C(n, k) counts the ways to pick k of n.<span class="ana">Penalty shootout with k tries: you only need to score once.</span></dd></div>
+  <div class="g" id="g-passhatk"><dt>pass^k</dt><dd>The chance that all k attempts succeed: how reliably the model does the task every time. Falls as k grows unless the model always succeeds. The number that matters for an agent running unattended.<span class="ana">Score every penalty, every match, all season.</span></dd></div>
+  <div class="g" id="g-contam"><dt>Contamination, leakage</dt><dd>Test items, or their answers, appearing in training data. The model then scores by remembering, not by solving. Hard to avoid because benchmarks are published on the web that training data is crawled from.<span class="ana">Last year's exam paper circulating with the answers written in.</span></dd></div>
+  <div class="g" id="g-canary"><dt>Canary string, held-out set</dt><dd>A canary is a unique random string printed in benchmark files so that crawlers can filter them out and anyone can check whether a model has seen them. A held-out (private) set is never published at all, so it cannot leak through the web.<span class="ana">A dye pack in a bag of cash. Or keeping the real exam in a safe.</span></dd></div>
+  <div class="g" id="g-ppl"><dt>Perplexity, bits per character</dt><dd>How surprised a model is by a piece of text: the average negative log-probability per token or character. A model that has memorised a text is far less surprised by it than by a paraphrase of it, which is one way to detect contamination.<span class="ana">Reading a page you have read before goes faster than reading the same story retold.</span></dd></div>
+  <div class="g" id="g-ngram"><dt>n-gram model</dt><dd>The simplest language model: it predicts the next character or word from the few before it, using counts from its training text. Too small to be clever, which makes memorisation easy to see.<span class="ana">Autocomplete that has only ever read one book.</span></dd></div>
+  <div class="g" id="g-saturate"><dt>Saturation, headroom</dt><dd>A benchmark is saturated when top models score near its ceiling, which is often below 100% because some items are wrong or ambiguous. After that, differences between models are mostly noise and label errors.<span class="ana">A ruler that stops at 30 cm, held up to a tall person.</span></dd></div>
+  <div class="g" id="g-goodhart"><dt>Goodhart's law</dt><dd>"When a measure becomes a target, it ceases to be a good measure." Optimising a benchmark, through training, prompt tuning or picking the best of many tries, raises the number faster than the ability it was meant to track.<span class="ana">Teaching to the test.</span></dd></div>
+  <div class="g" id="g-curse"><dt>Winner's curse, test-set overfitting</dt><dd>If you try many variants and keep the one with the best score on the same test, its score is biased upward: you selected for lucky noise. It will score lower on fresh questions. Every leaderboard and every hill-climbing team is exposed.<span class="ana">The fund that beat the market last year, chosen out of a thousand funds.</span></dd></div>
+  <div class="g" id="g-style"><dt>Style control</dt><dd>Adjusting arena ratings for features voters reward that are not quality, mainly answer length and markdown formatting, by adding them to the rating model as separate terms.<span class="ana">Judging a cake contest with the frosting scraped off.</span></dd></div>
+  <div class="g" id="g-precision"><dt>Precision, recall, false pass</dt><dd>Treat a grader as a classifier against true labels. Precision: of the answers it passed, how many were right. Recall (also called sensitivity): of the right answers, how many it passed. Specificity: of the wrong answers, how many it failed. A false pass inflates scores; a false fail deflates them.<span class="ana">A metal detector that beeps at keys (false pass) or misses a knife (false fail).</span></dd></div>
+  <div class="g" id="g-kappa"><dt>Agreement, Cohen's κ</dt><dd>How often two graders agree, corrected for how often they would agree by chance. κ = 1 is perfect, 0 is chance. Raw agreement looks good on easy sets where everything passes; κ does not.<span class="ana">Two weather forecasters both saying "sunny" in the desert are not impressive.</span></dd></div>
+  <div class="g" id="g-bias"><dt>Position, length and self-preference bias</dt><dd>Judge models tend to prefer the first answer shown, the longer answer, and answers written in their own style. Fixes: swap the order and average, control for length, use a judge from another family.<span class="ana">A wine taster who always likes the first glass poured.</span></dd></div>
+  <div class="g" id="g-agentic"><dt>Agentic eval, trajectory</dt><dd>An eval where the model works for many steps with tools (a shell, a browser, an editor) to finish a task, graded on the end state: tests pass, file correct, ticket resolved. The trajectory is the full record of its steps.<span class="ana">A practical exam in a workshop, not a written one.</span></dd></div>
+  <div class="g" id="g-scaffold"><dt>Scaffold, harness, elicitation</dt><dd>The scaffold is the program around the model that gives it tools, memory and retries. The harness runs the eval. Elicitation is the effort spent getting the most capability out: better prompts, scaffolds, more attempts. Weak elicitation under-measures a model.<span class="ana">The same athlete with running shoes or in flip-flops.</span></dd></div>
+  <div class="g" id="g-horizon"><dt>Time horizon</dt><dd>METR's measure of agent capability: the length of task, in the time a skilled human takes, that the model finishes with 50% (or 80%) success. Turns very different tasks into one scale measured in minutes or hours.<span class="ana">Not "how hard a question" but "how long a job".</span></dd></div>
+  <div class="g" id="g-dce"><dt>Dangerous-capability eval</dt><dd>An eval that asks whether a model could give meaningful help with serious harm (biological or chemical weapons, cyberattacks, escaping control). Results trigger safeguards under labs' published safety policies.<span class="ana">A stress test on a bridge before anyone drives on it.</span></dd></div>
+  <div class="g" id="g-propensity"><dt>Capability versus propensity</dt><dd>Capability: can the model do X when pushed? Propensity: does it tend to do X when nobody asks? Different evals; a model can be capable of deception and rarely deceive, or the reverse.<span class="ana">Whether someone can pick a lock, and whether they do.</span></dd></div>
+  <div class="g" id="g-aware"><dt>Eval awareness, sandbagging</dt><dd>Eval awareness: a model recognising it is being tested, sometimes saying so in its reasoning. Sandbagging: performing worse on purpose in an eval. Both mean the test may not show how the model behaves in use.<span class="ana">A driver who is perfect when the examiner is in the car.</span></dd></div>
+  <div class="g" id="g-golden"><dt>Golden set, regression eval</dt><dd>A golden set is a small, carefully labelled set of your own real cases. A regression eval reruns it on every change (prompt, model, code) to catch things that got worse.<span class="ana">The smoke alarm you test before you move in.</span></dd></div>
+  <div class="g" id="g-online"><dt>Offline versus online eval</dt><dd>Offline: a fixed test set run before shipping. Online: measuring real traffic after shipping, through A/B tests, user feedback and sampled transcripts. Offline catches regressions; only online tells you if users are better off.<span class="ana">The flight simulator and the flight log.</span></dd></div>
+  </dl>
+  <h3 style="margin-top:22px">Benchmarks and lab terms named on this page</h3>
+  <dl class="gloss">
+  <div class="g" id="g-mmlu"><dt>MMLU <span class="sym">2020</span></dt><dd>57 subjects of four-choice questions, from high-school to professional level, about 14,000 test items. The standard knowledge test of 2021–2024; now saturated near 90%.</dd></div>
+  <div class="g" id="g-gpqa"><dt>GPQA Diamond <span class="sym">2023</span></dt><dd>198 graduate-level biology, physics and chemistry questions written to be "Google-proof": PhD experts score about 65%, skilled non-experts with web access about 34%.</dd></div>
+  <div class="g" id="g-math"><dt>GSM8K, MATH, MATH-500</dt><dd>Grade-school word problems (1,319 test items) and competition maths (5,000 test items; MATH-500 is a 500-item subset). Graded by matching the final number or expression.</dd></div>
+  <div class="g" id="g-humaneval"><dt>HumanEval <span class="sym">2021</span></dt><dd>164 Python functions to write from a docstring, graded by unit tests. Introduced the pass@k metric.</dd></div>
+  <div class="g" id="g-swe"><dt>SWE-bench, Verified, Pro</dt><dd>Real GitHub issues from Python projects: the agent must change the repository so hidden tests pass. Verified (2024) is 500 tasks checked by engineers; OpenAI stopped reporting it in February 2026 over flawed tests and contamination. Pro is a harder, partly private successor.</dd></div>
+  <div class="g" id="g-hle"><dt>Humanity's Last Exam <span class="sym">HLE · 2025</span></dt><dd>2,500 expert-written questions across fields, kept only if frontier models failed them at the time. Launched with top scores under 10%.</dd></div>
+  <div class="g" id="g-arc"><dt>ARC-AGI</dt><dd>Grid puzzles that are easy for people and need a new rule inferred from a few examples. Version 1 (2019) fell to OpenAI's o3 in December 2024; version 2 (2025) is harder.</dd></div>
+  <div class="g" id="g-tau"><dt>τ-bench <span class="sym">2024</span></dt><dd>Simulated customer-service tasks (retail, airline) where an agent talks to a simulated user and calls tools. Introduced pass^k.</dd></div>
+  <div class="g" id="g-arena"><dt>LMArena <span class="sym">formerly Chatbot Arena · 2023</span></dt><dd>A public site where people chat with two anonymous models side by side and vote. Ratings come from millions of votes through Bradley–Terry.</dd></div>
+  <div class="g" id="g-metr"><dt>METR</dt><dd>A non-profit that evaluates frontier models for autonomous capability; publishes the time-horizon measurements in chapter 09.</dd></div>
+  </dl>
+</section>
+
+<section class="ch" id="c1">
+  <p class="chn">01 · ANATOMY OF A SCORE</p>
+  <h2>A score is a pipeline, and every stage is a choice</h2>
+  <p>"Model X scores 87% on <a class="term" href="#g-mmlu">MMLU</a>" sounds like a fact about the model. It is a fact about the model <em>plus</em> a <a class="term" href="#g-template">prompt template</a>, a sampling setting, an <a class="term" href="#g-extract">answer extractor</a>, a <a class="term" href="#g-grader">grader</a> and a way of averaging. Two labs running "the same benchmark" often differ on three of those. Sclar et al. (2023) moved one open model's accuracy by up to 76 points by changing only spacing, separators and capitalisation in the template.</p>
+<figure class="fig"><svg viewBox="0 0 760 196" role="img" aria-label="The eval pipeline as a row of seven boxes: item, prompt template, model and sampling, raw text, answer extractor, grader, aggregate. Arrows join them. The output is a score with an error bar. Under each box, the choice that can change the score: which items, which wording and examples, temperature and samples per item, nothing, which regular expression, string match or test or judge, mean and standard error.">
+<defs><marker id="m1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<rect x="10" y="30" width="84" height="48" rx="8" class="box"/><text x="52" y="52" text-anchor="middle" class="b sm">item</text><text x="52" y="67" text-anchor="middle" class="mu sm">question + key</text>
+<line x1="94" y1="54" x2="106" y2="54" class="ln" marker-end="url(#m1a)"/>
+<rect x="108" y="30" width="92" height="48" rx="8" class="soft"/><text x="154" y="52" text-anchor="middle" class="b sm">template</text><text x="154" y="67" text-anchor="middle" class="mu sm">wording, shots</text>
+<line x1="200" y1="54" x2="212" y2="54" class="ln" marker-end="url(#m1a)"/>
+<rect x="214" y="30" width="92" height="48" rx="8" class="box"/><text x="260" y="52" text-anchor="middle" class="b sm">model</text><text x="260" y="67" text-anchor="middle" class="mu sm">+ sampling</text>
+<line x1="306" y1="54" x2="318" y2="54" class="ln" marker-end="url(#m1a)"/>
+<rect x="320" y="30" width="84" height="48" rx="8" class="box"/><text x="362" y="52" text-anchor="middle" class="b sm">raw text</text><text x="362" y="67" text-anchor="middle" class="mu sm">free-form</text>
+<line x1="404" y1="54" x2="416" y2="54" class="ln" marker-end="url(#m1a)"/>
+<rect x="418" y="30" width="92" height="48" rx="8" class="soft"/><text x="464" y="52" text-anchor="middle" class="b sm">extractor</text><text x="464" y="67" text-anchor="middle" class="mu sm">find the answer</text>
+<line x1="510" y1="54" x2="522" y2="54" class="ln" marker-end="url(#m1a)"/>
+<rect x="524" y="30" width="84" height="48" rx="8" class="soft"/><text x="566" y="52" text-anchor="middle" class="b sm">grader</text><text x="566" y="67" text-anchor="middle" class="mu sm">right or wrong</text>
+<line x1="608" y1="54" x2="620" y2="54" class="ln" marker-end="url(#m1a)"/>
+<rect x="622" y="30" width="128" height="48" rx="8" class="f2s" style="stroke:var(--s2)"/><text x="686" y="52" text-anchor="middle" class="b sm">87.0% ± 0.6</text><text x="686" y="67" text-anchor="middle" class="mu sm">mean ± error</text>
+<text x="52" y="100" text-anchor="middle" class="sm">which items,</text><text x="52" y="114" text-anchor="middle" class="sm">how many</text>
+<text x="154" y="100" text-anchor="middle" class="sm">0-shot or 5-shot,</text><text x="154" y="114" text-anchor="middle" class="sm">"think step by step"</text>
+<text x="260" y="100" text-anchor="middle" class="sm">temperature,</text><text x="260" y="114" text-anchor="middle" class="sm">samples per item</text>
+<text x="362" y="100" text-anchor="middle" class="mu sm">(the model's</text><text x="362" y="114" text-anchor="middle" class="mu sm">actual work)</text>
+<text x="464" y="100" text-anchor="middle" class="sm">first letter?</text><text x="464" y="114" text-anchor="middle" class="sm">last number?</text>
+<text x="566" y="100" text-anchor="middle" class="sm">string, test,</text><text x="566" y="114" text-anchor="middle" class="sm">judge, person</text>
+<text x="686" y="100" text-anchor="middle" class="sm">per item, per</text><text x="686" y="114" text-anchor="middle" class="sm">cluster, per task</text>
+<path d="M108 132 h402" class="ln" style="stroke:var(--s1)"/><text x="309" y="150" text-anchor="middle" class="sm b" style="fill:var(--s1)">blue boxes: harness choices, invisible in the headline number</text>
+<text x="10" y="182" class="mu sm">Only one box is the model. A fair comparison holds every other box fixed and says what it was.</text>
+</svg><figcaption>Seven stages between a question and a headline score. The model owns one of them. Chapter 01 tests the extractor, chapter 02 the error bar, chapters 03–04 the grader.</figcaption></figure>
+  <p>Here is one question answered correctly four times, in four styles a model might use under four templates. Pick extractors the way real harnesses do and watch the same knowledge score anything from one in four to four in four. Then write your own answer in the last row.</p>
+  <div class="inst" id="t1">
+    <div class="raw" id="t1-q"></div>
+    <div class="tbl" style="margin-top:12px"><table class="compact" id="t1-tbl"></table></div>
+    <p class="hint">The extractors are real regular expressions running on the text in each row. ✓ means the extracted letter is B, the key. Type in the last row: try <span class="mono">I'd go with B, not A.</span> or <span class="mono">Answer: (b)</span>.</p>
+  </div>
+</section>
+
+<section class="ch" id="c2">
+  <p class="chn">02 · ERROR BARS</p>
+  <h2>Every score is a sample. Report the wobble.</h2>
+  <p>A benchmark is a sample of questions from a much larger space of questions like them. Rerun with a different sample and the score moves. The <a class="term" href="#g-se">standard error</a> says by how much: for 70% on 500 items it is 2 points, so the <a class="term" href="#g-ci">95% interval</a> is about ±4. Most leaderboards print three significant figures and no interval, which is how a 1-point lead on 500 questions becomes a headline.</p>
+  <p>The good news is <a class="term" href="#g-paired">pairing</a>. Two models answer the same questions, and questions that are hard for one tend to be hard for the other. Compare them item by item and that shared difficulty cancels, so the gap between them is known far more precisely than two separate error bars suggest. Miller (2024) recommends exactly this, plus <a class="term" href="#g-cluster">clustered errors</a> when items share a passage.</p>
+<figure class="fig"><svg viewBox="0 0 760 170" role="img" aria-label="Twenty reruns of the same eval on fresh question samples, drawn as dots along an accuracy axis from 64 to 76 percent. Model A's dots scatter between about 68 and 72, model B's between about 70 and 74, overlapping. A bracket under each shows the 95 percent interval. On the right, the paired difference for the same reruns is a much tighter cluster, all above zero.">
+<line x1="40" y1="130" x2="470" y2="130" class="ln" style="stroke:var(--line-strong)"/>
+<text x="40" y="148" text-anchor="middle" class="mono sm">64%</text><text x="183" y="148" text-anchor="middle" class="mono sm">68%</text><text x="327" y="148" text-anchor="middle" class="mono sm">72%</text><text x="470" y="148" text-anchor="middle" class="mono sm">76%</text>
+<text x="40" y="22" class="b sm">20 reruns, 2,000 fresh questions each</text>
+<g class="f1"><circle cx="183.0" cy="58" r="4"/><circle cx="202.1" cy="58" r="4"/><circle cx="212.7" cy="58" r="4"/><circle cx="220.7" cy="50" r="4"/><circle cx="227.3" cy="58" r="4"/><circle cx="233.0" cy="50" r="4"/><circle cx="238.3" cy="58" r="4"/><circle cx="243.3" cy="50" r="4"/><circle cx="248.1" cy="58" r="4"/><circle cx="252.7" cy="50" r="4"/><circle cx="257.3" cy="58" r="4"/><circle cx="261.9" cy="50" r="4"/><circle cx="266.7" cy="58" r="4"/><circle cx="271.7" cy="50" r="4"/><circle cx="277.0" cy="58" r="4"/><circle cx="282.7" cy="50" r="4"/><circle cx="289.3" cy="58" r="4"/><circle cx="297.3" cy="50" r="4"/><circle cx="307.9" cy="58" r="4"/><circle cx="327.0" cy="58" r="4"/></g>
+<g class="f2"><circle cx="256.4" cy="98" r="4"/><circle cx="275.1" cy="98" r="4"/><circle cx="285.4" cy="98" r="4"/><circle cx="293.2" cy="90" r="4"/><circle cx="299.6" cy="98" r="4"/><circle cx="305.2" cy="90" r="4"/><circle cx="310.4" cy="98" r="4"/><circle cx="315.2" cy="90" r="4"/><circle cx="319.9" cy="98" r="4"/><circle cx="324.4" cy="90" r="4"/><circle cx="328.9" cy="98" r="4"/><circle cx="333.4" cy="90" r="4"/><circle cx="338.1" cy="98" r="4"/><circle cx="342.9" cy="90" r="4"/><circle cx="348.1" cy="98" r="4"/><circle cx="353.7" cy="90" r="4"/><circle cx="360.2" cy="98" r="4"/><circle cx="367.9" cy="90" r="4"/><circle cx="378.2" cy="98" r="4"/><circle cx="396.9" cy="98" r="4"/></g>
+<path d="M183 70v6h144v-6" class="ln l1"/><text x="120" y="62" text-anchor="end" class="sm b" style="fill:var(--s1)">model A · 70% ± 2</text>
+<path d="M255 110v6h143v-6" class="ln l2"/><text x="410" y="102" class="sm b" style="fill:var(--s2)">model B · 72% ± 2</text>
+<line x1="520" y1="20" x2="520" y2="150" class="ln" stroke-dasharray="4 4" style="stroke:var(--line-strong)"/>
+<text x="550" y="22" class="b sm">same reruns, paired: B − A</text>
+<line x1="550" y1="130" x2="740" y2="130" class="ln" style="stroke:var(--line-strong)"/>
+<line x1="590" y1="40" x2="590" y2="134" class="ln" stroke-dasharray="3 3"/><text x="590" y="148" text-anchor="middle" class="mono sm">0</text><text x="700" y="148" text-anchor="middle" class="mono sm">+4 pts</text>
+<g class="f3"><circle cx="596.2" cy="98" r="4"/><circle cx="609.2" cy="98" r="4"/><circle cx="616.4" cy="90" r="4"/><circle cx="621.7" cy="98" r="4"/><circle cx="626.2" cy="90" r="4"/><circle cx="630.1" cy="82" r="4"/><circle cx="633.7" cy="98" r="4"/><circle cx="637.1" cy="90" r="4"/><circle cx="640.3" cy="82" r="4"/><circle cx="643.4" cy="98" r="4"/><circle cx="646.6" cy="90" r="4"/><circle cx="649.7" cy="82" r="4"/><circle cx="652.9" cy="98" r="4"/><circle cx="656.3" cy="90" r="4"/><circle cx="659.9" cy="82" r="4"/><circle cx="663.8" cy="98" r="4"/><circle cx="668.3" cy="90" r="4"/><circle cx="673.6" cy="98" r="4"/><circle cx="680.8" cy="90" r="4"/><circle cx="693.8" cy="98" r="4"/></g>
+<path d="M596 110v6h98v-6" class="ln l3"/><text x="660" y="56" text-anchor="middle" class="sm b" style="fill:var(--s3)">+2 ± 1.8: above 0</text>
+</svg><figcaption>A sketch at the opening settings of the calculator below: 2,000 questions, correlation ρ 0.6. Read as two separate scores, the error bars overlap and a single run sometimes ranks the models the wrong way round. Read as item-by-item differences, the same runs put the gap above zero far more often, because both models found the same questions easy and hard.</figcaption></figure>
+  <div class="inst" id="t2">
+    <div class="ctl"><label>questions n <input type="range" id="t2-n" min="0" max="13" value="8"><span class="v" id="t2-n-v">2,000</span></label><label>model A accuracy <input type="range" id="t2-p" min="50" max="95" value="70"><span class="v" id="t2-p-v">70%</span></label><label>true gap B − A <input type="range" id="t2-d" min="0" max="100" value="20"><span class="v" id="t2-d-v">2.0 pts</span></label><label>how alike the models are, ρ <input type="range" id="t2-r" min="0" max="90" value="60"><span class="v" id="t2-r-v">0.60</span></label></div>
+    <canvas id="t2-cv" height="190" aria-label="Sampling distributions of the two scores and of their paired difference"></canvas>
+    <div class="kpis" id="t2-k"></div>
+    <div class="verdict" id="t2-v"></div>
+    <p class="hint">Top: where model A's and B's scores would land across many reruns (95% of the area is inside the shaded band). Bottom: the paired gap B − A, with zero marked. ρ is the item-level correlation between the two models' right/wrong answers; for models of the same family it is often 0.5 or more. The "n for 80% power" tile is how many questions you need to detect this gap four times out of five.</p>
+  </div>
+</section>
+
+<section class="ch" id="c3">
+  <p class="chn">03 · WHO GRADES</p>
+  <h2>The grader is a model of "correct", and it can be wrong</h2>
+  <p>Exact string match is cheap, fast and wrong whenever a right answer is written differently. A regular expression is a little smarter and wrong in new ways. A maths verifier understands that 14/24 is 7/12 but not "seven twelfths". Unit tests check code by running it, which is why code benchmarks were the first to be trusted, and why a bad test suite misgrades: weak tests let wrong code pass, over-strict ones fail right code (OpenAI audited 138 tasks that models kept failing, about a quarter of the set, and found at least 59.4% of those <a class="term" href="#g-swe">SWE-bench Verified</a> tasks had tests that reject correct fixes). Further right on the spectrum, <a class="term" href="#g-judge">judges</a> and people cost more and agree less.</p>
+<figure class="fig"><svg viewBox="0 0 760 170" role="img" aria-label="A spectrum of graders from left to right: exact match, regular expression, maths equivalence, unit tests, model judge with rubric, expert human. Two arrows run underneath: cost and time per item rise to the right; rigidity and false fails fall to the right while disagreement between graders rises. Each grader has a typical failure written under it.">
+<defs><marker id="m3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g><rect x="10" y="20" width="114" height="44" rx="8" class="box"/><text x="67" y="40" text-anchor="middle" class="b sm">exact match</text><text x="67" y="55" text-anchor="middle" class="mono sm">"7/12" == out</text></g>
+<g><rect x="136" y="20" width="114" height="44" rx="8" class="box"/><text x="193" y="40" text-anchor="middle" class="b sm">regex</text><text x="193" y="55" text-anchor="middle" class="mono sm">last number</text></g>
+<g><rect x="262" y="20" width="114" height="44" rx="8" class="box"/><text x="319" y="40" text-anchor="middle" class="b sm">maths verifier</text><text x="319" y="55" text-anchor="middle" class="mono sm">14/24 = 7/12</text></g>
+<g><rect x="388" y="20" width="114" height="44" rx="8" class="box"/><text x="445" y="40" text-anchor="middle" class="b sm">unit tests</text><text x="445" y="55" text-anchor="middle" class="mono sm">run the code</text></g>
+<g><rect x="514" y="20" width="114" height="44" rx="8" class="f3s" style="stroke:var(--s3)"/><text x="571" y="40" text-anchor="middle" class="b sm">model judge</text><text x="571" y="55" text-anchor="middle" class="mono sm">rubric → score</text></g>
+<g><rect x="640" y="20" width="110" height="44" rx="8" class="f4" style="opacity:.18"/><rect x="640" y="20" width="110" height="44" rx="8" fill="none" style="stroke:var(--s4)"/><text x="695" y="40" text-anchor="middle" class="b sm">expert human</text><text x="695" y="55" text-anchor="middle" class="mono sm">minutes per item</text></g>
+<text x="67" y="84" text-anchor="middle" class="sm">fails "7 / 12"</text><text x="193" y="84" text-anchor="middle" class="sm">reads "7/12" as 12</text><text x="319" y="84" text-anchor="middle" class="sm">fails words</text><text x="445" y="84" text-anchor="middle" class="sm">weak tests pass</text><text x="445" y="98" text-anchor="middle" class="sm">wrong code</text><text x="571" y="84" text-anchor="middle" class="sm">likes long answers</text><text x="695" y="84" text-anchor="middle" class="sm">experts disagree</text>
+<line x1="10" y1="124" x2="750" y2="124" class="ln" marker-end="url(#m3a)"/><text x="750" y="118" text-anchor="end" class="mu sm">cost, latency, flexibility rise →</text>
+<line x1="750" y1="150" x2="10" y2="150" class="ln" marker-end="url(#m3a)"/><text x="10" y="144" class="mu sm">← rigidity, reproducibility, false fails rise</text>
+</svg><figcaption>Graders, cheapest to dearest. Each one encodes a theory of what a right answer looks like. Pick the cheapest one that agrees with careful humans on your items, and measure that agreement rather than assuming it.</figcaption></figure>
+  <div class="inst" id="t3">
+    <div class="raw">Question: What is 1/4 + 1/3? Give the answer as a fraction.     Key: 7/12</div>
+    <div class="tbl" style="margin-top:12px"><table id="t3-tbl"></table></div>
+    <div class="read" id="t3-read"></div>
+    <p class="hint">Twelve answers a model might give. You are the gold standard: click the label in the first column to mark each answer right or wrong (the defaults are one careful reader's call; 0.5833 and 14/24 are honest arguments). The four graders are real code running on the text. Amber outlines mark where a grader disagrees with you. The footer counts false passes (wrong answers it accepted) and false fails (right answers it rejected).</p>
+  </div>
+</section>
+
+<section class="ch" id="c4">
+  <p class="chn">04 · JUDGING THE JUDGE</p>
+  <h2>A judge model is an instrument. Calibrate it before you read it.</h2>
+  <p>For open-ended answers (a support reply, a code review, a summary) there is no regex. Teams use a strong model with a <a class="term" href="#g-judge">rubric</a> as the grader. Zheng et al. (2023) found GPT-4 as a judge agreed with human experts over 80% of the time, about as often as the experts agreed with each other. It is also <a class="term" href="#g-bias">biased</a>: toward the first answer shown, toward longer answers, and toward its own style.</p>
+  <p>The fix is the same as for any instrument: label a few hundred items by hand, measure the judge's <a class="term" href="#g-precision">precision and recall</a> and <a class="term" href="#g-kappa">κ</a> against them, pick a threshold, and correct the headline rate for the judge's known error. Below, 400 answers with true labels. Move the threshold, make the judge sharper or blunter, and make the model under test verbose.</p>
+<figure class="fig"><svg viewBox="0 0 760 160" role="img" aria-label="Three judge biases as small panels. Position: the same two answers shown in both orders; the judge picks whichever is first both times, so the verdict flips. Length: a short correct answer and a long padded one; the judge prefers the long one. Self-preference: an answer in the judge's own family's style scores higher than an equally good answer in another style. Each panel names its fix: swap and average, control for length, judge from another family.">
+<text x="10" y="18" class="b sm">position</text>
+<rect x="10" y="28" width="56" height="34" rx="6" class="f1s" style="stroke:var(--s1)"/><text x="38" y="50" text-anchor="middle" class="b sm">A</text><rect x="72" y="28" width="56" height="34" rx="6" class="box"/><text x="100" y="50" text-anchor="middle" class="b sm">B</text><text x="140" y="50" class="sm">→ A wins</text>
+<rect x="10" y="70" width="56" height="34" rx="6" class="f1s" style="stroke:var(--s1)"/><text x="38" y="92" text-anchor="middle" class="b sm">B</text><rect x="72" y="70" width="56" height="34" rx="6" class="box"/><text x="100" y="92" text-anchor="middle" class="b sm">A</text><text x="140" y="92" class="sm">→ B wins</text>
+<text x="10" y="128" class="mu sm">fix: run both orders,</text><text x="10" y="142" class="mu sm">count a flip as a tie</text>
+<line x1="250" y1="10" x2="250" y2="150" class="ln" stroke-dasharray="4 4" style="stroke:var(--line-strong)"/>
+<text x="270" y="18" class="b sm">length</text>
+<rect x="270" y="28" width="70" height="20" rx="4" class="f3s" style="stroke:var(--s3)"/><text x="350" y="42" class="sm">correct, 40 words · 6/10</text>
+<rect x="270" y="56" width="150" height="40" rx="4" class="f2s" style="stroke:var(--s2)"/><text x="428" y="80" class="sm">padded,</text><text x="428" y="94" class="sm">same facts · 8/10</text>
+<text x="270" y="128" class="mu sm">fix: rubric items, length</text><text x="270" y="142" class="mu sm">penalty, compare at equal length</text>
+<line x1="520" y1="10" x2="520" y2="150" class="ln" stroke-dasharray="4 4" style="stroke:var(--line-strong)"/>
+<text x="540" y="18" class="b sm">self-preference</text>
+<circle cx="566" cy="56" r="20" class="f4" style="opacity:.25"/><circle cx="566" cy="56" r="20" fill="none" style="stroke:var(--s4)"/><text x="566" y="60" text-anchor="middle" class="sm b">judge</text>
+<path d="M590 46 q40 -10 70 -6" class="ln l4"/><text x="664" y="44" class="sm">own style · 8</text>
+<path d="M590 66 q40 10 70 6" class="ln" stroke-dasharray="3 3"/><text x="664" y="78" class="sm">other style · 6</text>
+<text x="540" y="128" class="mu sm">fix: judge from another</text><text x="540" y="142" class="mu sm">family, or a panel of judges</text>
+</svg><figcaption>Three documented biases of judge models, each with its standard fix. None of the fixes removes the need to check the judge against human labels on your own items.</figcaption></figure>
+  <div class="inst" id="t4">
+    <div class="ctl"><label>pass threshold <input type="range" id="t4-t" min="10" max="90" value="50"><span class="v" id="t4-t-v">0.50</span></label><label>judge sharpness <select id="t4-s"><option value="0.8">blunt</option><option value="1.6" selected>typical</option><option value="2.6">sharp</option></select></label><label>true pass rate <input type="range" id="t4-p" min="20" max="95" value="70"><span class="v" id="t4-p-v">70%</span></label><label><input type="checkbox" id="t4-verb"> model under test is verbose</label></div>
+    <div class="grid2"><canvas id="t4-cv" height="210" aria-label="Judge scores for 400 answers, split by true label, with the threshold line"></canvas><div><div class="cm" id="t4-cm"></div><div class="kpis" id="t4-k"></div></div></div>
+    <div class="verdict" id="t4-v"></div>
+    <p class="hint">A simulation: 400 answers, each with a true label and a judge score between 0 and 1. Dots above the axis are truly good answers, dots below truly bad. The judge passes everything right of the threshold. "Corrected rate" applies the standard misclassification fix, (judged rate + specificity − 1) / (sensitivity + specificity − 1), with sensitivity (recall) and specificity measured on a separate hand-labelled sample of 300 answers. Ticking "verbose" adds the length bias: every score shifts up, true quality does not.</p>
+  </div>
+</section>
+
+<section class="ch" id="c5">
+  <p class="chn">05 · ONCE OR EVERY TIME</p>
+  <h2>pass@k asks "can it ever?" pass^k asks "will it always?"</h2>
+  <p>Sample a model k times on the same task. <a class="term" href="#g-passk">pass@k</a> is the chance at least one attempt works: the right number when something checks the answers and keeps the good one, like a code generator with tests. <a class="term" href="#g-passhatk">pass^k</a> is the chance every attempt works: the right number for an agent that runs unattended a thousand times a day. Two models with the same pass@1 can be wildly different on both. <a class="term" href="#g-tau">τ-bench</a> introduced pass^k after finding that its best agent, GPT-4o, succeeded on fewer than half of all tasks, and on retail tasks fewer than a quarter succeeded eight times in a row.</p>
+<figure class="fig"><svg viewBox="0 0 760 150" role="img" aria-label="Four attempts at the same task drawn as squares: fail, pass, fail, fail. Read as pass at 4, the task counts as solved because at least one passed. Read as pass hat 4, it counts as failed because not all passed. Below, the two formulas for a task solved with probability p per attempt: pass at k equals one minus one minus p to the k; pass hat k equals p to the k.">
+<text x="10" y="20" class="b sm">one task, four attempts</text>
+<rect x="10" y="32" width="40" height="40" rx="6" class="fbad" opacity=".25"/><text x="30" y="57" text-anchor="middle" class="b">✗</text>
+<rect x="58" y="32" width="40" height="40" rx="6" class="fok" opacity=".3"/><text x="78" y="57" text-anchor="middle" class="b">✓</text>
+<rect x="106" y="32" width="40" height="40" rx="6" class="fbad" opacity=".25"/><text x="126" y="57" text-anchor="middle" class="b">✗</text>
+<rect x="154" y="32" width="40" height="40" rx="6" class="fbad" opacity=".25"/><text x="174" y="57" text-anchor="middle" class="b">✗</text>
+<text x="230" y="46" class="sm b" style="fill:var(--s1)">pass@4: solved</text><text x="230" y="62" class="mu sm">at least one ✓</text>
+<text x="400" y="46" class="sm b" style="fill:var(--s2)">pass^4: failed</text><text x="400" y="62" class="mu sm">needs all four ✓</text>
+<text x="10" y="104" class="mono">per-attempt success p:</text>
+<text x="200" y="104" class="mono" style="fill:var(--s1)">pass@k = 1 − (1 − p)ᵏ</text>
+<text x="420" y="104" class="mono" style="fill:var(--s2)">pass^k = pᵏ</text>
+<text x="10" y="132" class="mu sm">At p = 0.6 and k = 8: pass@8 = 99.9%, pass^8 = 1.7%. Averaged over tasks with different p, the gap is what the instrument below shows.</text>
+</svg><figcaption>The same attempts, read two ways. One rewards a model that is sometimes brilliant; the other rewards a model that is never unlucky.</figcaption></figure>
+  <div class="inst" id="t5">
+    <div class="ctl"><label>model <select id="t5-m"><option value="steady">steady: every task ≈ 60%</option><option value="spiky" selected>spiky: half the tasks ≈ 98%, half ≈ 22%</option><option value="both">compare both</option></select></label><label>attempts k <input type="range" id="t5-k" min="1" max="16" value="4"><span class="v" id="t5-k-v">4</span></label></div>
+    <canvas id="t5-cv" height="220" aria-label="pass at k and pass hat k against k"></canvas>
+    <div class="kpis" id="t5-k-out"></div>
+    <h3 style="margin-top:16px;font-size:15px">Estimating pass@k from samples</h3>
+    <div class="ctl"><label>samples n <input type="number" id="t5-n" min="1" max="200" value="20"></label><label>correct c <input type="number" id="t5-c" min="0" max="200" value="3"></label><label>k <input type="number" id="t5-kk" min="1" max="200" value="10"></label></div>
+    <div class="read" id="t5-est"></div>
+    <p class="hint">Both models score exactly 60% at k = 1 across 20 tasks. Switch to "compare both": the steady model wins pass@k, the spiky one wins pass^k, because it reliably solves its easy half. The steady model's tasks all sit near 60%; the spiky model aces half and mostly fails the rest. Lower box: Chen et al.'s (2021) unbiased estimator against the naive plug-in 1 − (1 − c/n)ᵏ, which is biased low: it understates pass@k when samples are few. Sample more than k times per task and use the unbiased one.</p>
+  </div>
+</section>
+
+<section class="ch" id="c6">
+  <p class="chn">06 · CONTAMINATION</p>
+  <h2>If the test was in the training data, the score measures memory</h2>
+  <p>Benchmarks are published on the web; training data is crawled from the web. Questions and answers leak through GitHub copies, blog posts and forum threads. <a class="term" href="#g-contam">Contamination</a> is hard to see from the score alone, so labs and researchers look for its fingerprints: <a class="term" href="#g-ngram">n-gram</a> overlap between test and training text, <a class="term" href="#g-canary">canary strings</a>, a model completing a question it should never have seen, and a gap between how easily it reads the original and a paraphrase. When Scale wrote GSM1k, 1,250 fresh problems in the style of GSM8K, some model families dropped by up to 8 points. In February 2026 OpenAI said frontier models could reproduce the exact fixes for SWE-bench Verified tasks from little more than the task ID.</p>
+<figure class="fig"><svg viewBox="0 0 760 196" role="img" aria-label="How a benchmark leaks. A benchmark is published as a paper and dataset; copies appear on GitHub, blogs and forums; a web crawl picks them up; they enter the training corpus; the model then scores well on the test. Four detection methods attach at different points: canary strings and n-gram filtering at the corpus, completion and perplexity tests at the model, and fresh or private test sets that bypass the leak entirely.">
+<defs><marker id="m6a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<rect x="10" y="30" width="110" height="46" rx="8" class="box"/><text x="65" y="50" text-anchor="middle" class="b sm">benchmark</text><text x="65" y="66" text-anchor="middle" class="mu sm">paper + dataset</text>
+<line x1="120" y1="53" x2="146" y2="53" class="ln l2" marker-end="url(#m6a)"/>
+<rect x="148" y="30" width="122" height="46" rx="8" class="box"/><text x="209" y="50" text-anchor="middle" class="b sm">copies</text><text x="209" y="66" text-anchor="middle" class="mu sm">GitHub, blogs, forums</text>
+<line x1="270" y1="53" x2="296" y2="53" class="ln l2" marker-end="url(#m6a)"/>
+<rect x="298" y="30" width="100" height="46" rx="8" class="box"/><text x="348" y="50" text-anchor="middle" class="b sm">web crawl</text><text x="348" y="66" text-anchor="middle" class="mu sm">Common Crawl</text>
+<line x1="398" y1="53" x2="424" y2="53" class="ln l2" marker-end="url(#m6a)"/>
+<rect x="426" y="30" width="120" height="46" rx="8" class="f2s" style="stroke:var(--s2)"/><text x="486" y="50" text-anchor="middle" class="b sm">training corpus</text><text x="486" y="66" text-anchor="middle" class="mu sm">trillions of tokens</text>
+<line x1="546" y1="53" x2="572" y2="53" class="ln l2" marker-end="url(#m6a)"/>
+<rect x="574" y="30" width="176" height="46" rx="8" class="f2s" style="stroke:var(--s2)"/><text x="662" y="50" text-anchor="middle" class="b sm">model scores high</text><text x="662" y="66" text-anchor="middle" class="mu sm">by remembering</text>
+<path d="M486 76v26" class="ln l3" marker-end="url(#m6a)"/><rect x="410" y="104" width="152" height="40" rx="6" class="f3s" style="stroke:var(--s3)"/><text x="486" y="121" text-anchor="middle" class="sm b">canary + n-gram filter</text><text x="486" y="136" text-anchor="middle" class="mu sm">remove before training</text>
+<path d="M662 76v26" class="ln l3" marker-end="url(#m6a)"/><rect x="580" y="104" width="170" height="40" rx="6" class="f3s" style="stroke:var(--s3)"/><text x="665" y="121" text-anchor="middle" class="sm b">completion + paraphrase</text><text x="665" y="136" text-anchor="middle" class="mu sm">tests on the model (below)</text>
+<path d="M65 76v80h597v-12" class="ln l3" stroke-dasharray="4 3" marker-end="url(#m6a)"/><text x="300" y="174" text-anchor="middle" class="sm b" style="fill:var(--s3)">fresh or private test sets skip the leak entirely</text><text x="300" y="188" text-anchor="middle" class="mu sm">GSM1k · SWE-bench Pro held-out · HLE private split · rolling date cutoffs</text>
+</svg><figcaption>The leak path and the four places to catch it. Filtering is imperfect because copies are reformatted; model-side tests are evidence, not proof. Only a test set that never touched the web is immune.</figcaption></figure>
+  <div class="inst" id="t6">
+    <div class="ctl"><label>test set copies leaked into training <select id="t6-leak"><option value="0" selected>0 (clean)</option><option value="1">1</option><option value="3">3</option><option value="10">10</option></select></label><button class="btn" id="t6-train">retrain</button></div>
+    <div class="tbl"><table class="compact" id="t6-tbl"></table></div>
+    <h3 style="margin-top:16px;font-size:15px">Completion test: give it the question, let it write</h3>
+    <div class="gen" id="t6-gen"></div>
+    <div class="verdict" id="t6-v"></div>
+    <p class="hint">A real character-level language model (order 6, with Witten–Bell smoothing, a standard way to give unseen letter sequences some probability) trained in your browser on about 5 KB of plain English, plus however many copies of a three-question test you leak in. Table: bits per character (lower means less surprised) on each original test question and on a paraphrase with the same answer. A clean model finds the paraphrase only slightly harder. A contaminated one reads the original wording far more easily than the paraphrase: that ratio is the fingerprint. Below: the model's greedy continuation of one question.</p>
+  </div>
+</section>
+
+<section class="ch" id="c7">
+  <p class="chn">07 · ARENAS</p>
+  <h2>Let people vote, then fit a rating</h2>
+  <p>Static benchmarks ask fixed questions. <a class="term" href="#g-arena">LMArena</a> lets anyone type a prompt, shows answers from two anonymous models, and asks which is better. A <a class="term" href="#g-bt">Bradley–Terry</a> model turns millions of these <a class="term" href="#g-pairwise">pairwise votes</a> into ratings. Real prompts, real preferences, nothing fixed to memorise. Two weaknesses. Voters reward length and formatting, so since August 2024 the arena also publishes <a class="term" href="#g-style">style-controlled</a> ratings that put answer length and markdown into the model as separate terms. And labs can test many private variants and publish only the best: the Leaderboard Illusion paper (Singh et al., 2025) reported Meta testing 27 before Llama 4.</p>
+<figure class="fig"><svg viewBox="0 0 760 200" role="img" aria-label="The Bradley-Terry win curve. Horizontal axis: rating gap in Elo points from minus 400 to plus 400. Vertical axis: probability the higher-rated model wins, from 0 to 1. An S-shaped curve passes through 50 percent at zero gap, 64 percent at plus 100, 76 percent at plus 200 and 91 percent at plus 400. A side note gives the formula: P equals one over one plus ten to the minus gap over 400.">
+<line x1="60" y1="170" x2="480" y2="170" class="ln" style="stroke:var(--line-strong)"/><line x1="60" y1="20" x2="60" y2="170" class="ln" style="stroke:var(--line-strong)"/>
+<text x="60" y="188" text-anchor="middle" class="mono sm">−400</text><text x="165" y="188" text-anchor="middle" class="mono sm">−200</text><text x="270" y="188" text-anchor="middle" class="mono sm">0</text><text x="375" y="188" text-anchor="middle" class="mono sm">+200</text><text x="480" y="188" text-anchor="middle" class="mono sm">+400</text>
+<text x="52" y="174" text-anchor="end" class="mono sm">0</text><text x="52" y="99" text-anchor="end" class="mono sm">0.5</text><text x="52" y="24" text-anchor="end" class="mono sm">1</text>
+<line x1="60" y1="95" x2="480" y2="95" class="ln" stroke-dasharray="3 3" style="stroke:var(--line)"/>
+<path d="M60.0 156.4 L70.5 154.9 L81.0 153.2 L91.5 151.4 L102.0 149.5 L112.5 147.4 L123.0 145.0 L133.5 142.6 L144.0 139.9 L154.5 137.0 L165.0 134.0 L175.5 130.7 L186.0 127.3 L196.5 123.7 L207.0 119.9 L217.5 116.0 L228.0 112.0 L238.5 107.8 L249.0 103.6 L259.5 99.3 L270.0 95.0 L280.5 90.7 L291.0 86.4 L301.5 82.2 L312.0 78.0 L322.5 74.0 L333.0 70.1 L343.5 66.3 L354.0 62.7 L364.5 59.3 L375.0 56.0 L385.5 53.0 L396.0 50.1 L406.5 47.4 L417.0 45.0 L427.5 42.6 L438.0 40.5 L448.5 38.6 L459.0 36.8 L469.5 35.1 L480.0 33.6" class="ln l4" stroke-width="2.2"/>
+<circle cx="322.5" cy="74" r="4" class="f4"/><text x="300" y="70" text-anchor="end" class="sm b">+100 → 64%</text>
+<circle cx="375" cy="56" r="4" class="f4"/><text x="383" y="64" class="sm b">+200 → 76%</text>
+<circle cx="480" cy="33.6" r="4" class="f4"/><text x="474" y="20" text-anchor="end" class="sm b">+400 → 91%</text>
+<text x="270" y="200" text-anchor="middle" class="mu sm">rating gap (Elo points)</text>
+<text x="520" y="40" class="b sm">P(A beats B) = 1 / (1 + 10^(−gap/400))</text>
+<text x="520" y="62" class="sm">Fit the ratings that make the</text><text x="520" y="78" class="sm">observed wins most likely.</text>
+<text x="520" y="104" class="sm">Style control adds a term:</text><text x="520" y="122" class="mono sm">gap + β·(length difference)</text><text x="520" y="138" class="sm">so length is credited to β,</text><text x="520" y="154" class="sm">not to the model's rating.</text>
+</svg><figcaption>The curve every arena rating lives on. A 100-point lead means winning about 64% of head-to-heads, not always. Ratings are relative: adding 50 to everyone changes nothing.</figcaption></figure>
+  <div class="inst" id="t7">
+    <div class="ctl"><label>votes <select id="t7-n"><option value="500">500</option><option value="3000" selected>3,000</option><option value="20000">20,000</option></select></label><label>how much voters reward length <input type="range" id="t7-w" min="0" max="100" value="45"><span class="v" id="t7-w-v">0.45</span></label><button class="btn" id="t7-go">collect new votes</button></div>
+    <div class="lb"><div><h4>raw Bradley–Terry</h4><ol id="t7-raw"></ol></div><div><h4>style-controlled</h4><ol id="t7-sc"></ol></div></div>
+    <div class="read" id="t7-read"></div>
+    <p class="hint">A simulation with five models whose true quality order is Atlas, Brio, Cobalt, Delta, Ember; Cobalt and Ember write long answers, Atlas short ones. Each answer's length varies around its model's habit, and simulated voters pick by quality plus a bonus for the longer answer. That variation is what lets style control tell length from quality: if every model always wrote the same length, no fit could separate the two. Both leaderboards are fitted live from the same votes: the left by plain Bradley–Terry, the right with answer length as an extra term. Rows shaded orange are ranked higher than their true quality. Set the length reward to 0 and the two tables agree.</p>
+  </div>
+</section>
+
+<section class="ch" id="c8">
+  <p class="chn">08 · GOODHART</p>
+  <h2>When the score is the target, the score stops measuring</h2>
+  <p>Older benchmarks lasted years; the newest fall within one to two years, and part of that is real progress. Part is <a class="term" href="#g-goodhart">Goodhart's law</a>: every team tunes prompts, picks checkpoints and chooses scaffolds by looking at the same public test, and each choice made on the test borrows a little of its noise. The best of many variants is the luckiest of many variants, so its score overstates it: the <a class="term" href="#g-curse">winner's curse</a>. Once a benchmark <a class="term" href="#g-saturate">saturates</a>, label errors set the ceiling (an estimated 6.5% of MMLU's questions are wrong) and the leaderboard ranks noise.</p>
+<figure class="fig"><svg viewBox="0 0 760 270" role="img" aria-label="Eight benchmarks, each a row with a dot for the best score near launch and a dot for the best reported score later, and the months between. MMLU 43.9 to 86.4 in 30 months. HumanEval 28.8 to 92.0 in 36 months. ARC-AGI-1 about 21 to 87.5 in 55 months. GSM8K 56.9 to 92.0 in 13 months. GPQA Diamond 39 to 78.0 in 10 months. SWE-bench Verified 33.2 to 80.9 in 16 months. FrontierMath 2 to 25.2 in about one month. HLE 9.1 to 37.5 in 10 months.">
+<text x="10" y="18" class="b sm">benchmark</text><text x="200" y="18" class="b sm">score at launch → best reported later</text><text x="560" y="18" class="b sm">months · by</text><line x1="200" y1="28" x2="200" y2="240" class="ln" style="stroke:var(--line)"/><text x="200" y="254" text-anchor="middle" class="mono sm">0%</text><line x1="282.5" y1="28" x2="282.5" y2="240" class="ln" style="stroke:var(--line)"/><text x="282.5" y="254" text-anchor="middle" class="mono sm">25%</text><line x1="365" y1="28" x2="365" y2="240" class="ln" style="stroke:var(--line)"/><text x="365" y="254" text-anchor="middle" class="mono sm">50%</text><line x1="447.5" y1="28" x2="447.5" y2="240" class="ln" style="stroke:var(--line)"/><text x="447.5" y="254" text-anchor="middle" class="mono sm">75%</text><line x1="530" y1="28" x2="530" y2="240" class="ln" style="stroke:var(--line)"/><text x="530" y="254" text-anchor="middle" class="mono sm">100%</text><text x="10" y="48" class="sm b">MMLU</text><text x="150" y="48" class="mono sm mu">2020</text><line x1="344.9" y1="44" x2="485.1" y2="44" class="ln l2" stroke-width="3" opacity=".55"/><circle cx="344.9" cy="44" r="4.5" class="fm"/><circle cx="485.1" cy="44" r="5" class="f2"/><text x="336.9" y="48" text-anchor="end" class="mono sm mu">43.9</text><text x="494.1" y="48" class="mono sm">86.4</text><text x="560" y="48" class="mono sm b">30</text><text x="590" y="48" class="sm mu">GPT-4 · Mar 2023</text><text x="10" y="74" class="sm b">HumanEval</text><text x="150" y="74" class="mono sm mu">2021</text><line x1="295.0" y1="70" x2="503.6" y2="70" class="ln l2" stroke-width="3" opacity=".55"/><circle cx="295.0" cy="70" r="4.5" class="fm"/><circle cx="503.6" cy="70" r="5" class="f2"/><text x="287.0" y="74" text-anchor="end" class="mono sm mu">28.8</text><text x="512.6" y="74" class="mono sm">92</text><text x="560" y="74" class="mono sm b">36</text><text x="590" y="74" class="sm mu">Claude 3.5 Sonnet · Jun 2024</text><text x="10" y="100" class="sm b">ARC-AGI-1</text><text x="150" y="100" class="mono sm mu">2019</text><line x1="269.3" y1="96" x2="488.8" y2="96" class="ln l2" stroke-width="3" opacity=".55"/><circle cx="269.3" cy="96" r="4.5" class="fm"/><circle cx="488.8" cy="96" r="5" class="f2"/><text x="261.3" y="100" text-anchor="end" class="mono sm mu">21</text><text x="497.8" y="100" class="mono sm">87.5</text><text x="560" y="100" class="mono sm b">55</text><text x="590" y="100" class="sm mu">o3, high compute · Dec 2024</text><text x="10" y="126" class="sm b">GSM8K</text><text x="150" y="126" class="mono sm mu">2021</text><line x1="387.8" y1="122" x2="503.6" y2="122" class="ln l2" stroke-width="3" opacity=".55"/><circle cx="387.8" cy="122" r="4.5" class="fm"/><circle cx="503.6" cy="122" r="5" class="f2"/><text x="379.8" y="126" text-anchor="end" class="mono sm mu">56.9</text><text x="512.6" y="126" class="mono sm">92</text><text x="560" y="126" class="mono sm b">13</text><text x="590" y="126" class="sm mu">GPT-4 · Mar 2023</text><text x="10" y="152" class="sm b">GPQA Diamond</text><text x="150" y="152" class="mono sm mu">2023</text><line x1="328.7" y1="148" x2="457.4" y2="148" class="ln l2" stroke-width="3" opacity=".55"/><circle cx="328.7" cy="148" r="4.5" class="fm"/><circle cx="457.4" cy="148" r="5" class="f2"/><text x="320.7" y="152" text-anchor="end" class="mono sm mu">39</text><text x="466.4" y="152" class="mono sm">78</text><text x="560" y="152" class="mono sm b">10</text><text x="590" y="152" class="sm mu">o1 · Sep 2024</text><text x="10" y="178" class="sm b">SWE-bench Verified</text><text x="150" y="178" class="mono sm mu">2024</text><line x1="309.6" y1="174" x2="467.0" y2="174" class="ln l2" stroke-width="3" opacity=".55"/><circle cx="309.6" cy="174" r="4.5" class="fm"/><circle cx="467.0" cy="174" r="5" class="f2"/><text x="301.6" y="178" text-anchor="end" class="mono sm mu">33.2</text><text x="476.0" y="178" class="mono sm">80.9</text><text x="560" y="178" class="mono sm b">16</text><text x="590" y="178" class="sm mu">Claude Opus 4.5 · Nov 2025</text><text x="10" y="204" class="sm b">FrontierMath</text><text x="150" y="204" class="mono sm mu">2024</text><line x1="206.6" y1="200" x2="283.2" y2="200" class="ln l2" stroke-width="3" opacity=".55"/><circle cx="206.6" cy="200" r="4.5" class="fm"/><circle cx="283.2" cy="200" r="5" class="f2"/><text x="198.6" y="204" text-anchor="end" class="mono sm mu">2</text><text x="292.2" y="204" class="mono sm">25.2</text><text x="560" y="204" class="mono sm b">1</text><text x="590" y="204" class="sm mu">o3, claimed · Dec 2024</text><text x="10" y="230" class="sm b">HLE</text><text x="150" y="230" class="mono sm mu">2025</text><line x1="230.0" y1="226" x2="323.8" y2="226" class="ln l2" stroke-width="3" opacity=".55"/><circle cx="230.0" cy="226" r="4.5" class="fm"/><circle cx="323.8" cy="226" r="5" class="f2"/><text x="222.0" y="230" text-anchor="end" class="mono sm mu">9.1</text><text x="332.8" y="230" class="mono sm">37.5</text><text x="560" y="230" class="mono sm b">10</text><text x="590" y="230" class="sm mu">Gemini 3 Pro · Nov 2025</text>
+</svg><figcaption>Launch-era best score (grey) and best reported score some months later (orange), as reported by labs at the time, each with its own harness. Months count between the two scores shown, so ARC-AGI-1's start at its first public contest in 2020 and GSM8K's at the first chain-of-thought (step-by-step reasoning) results in early 2022. The newer benchmarks were built to last longer and lasted less. FrontierMath's jump came with a later disclosure that OpenAI had funded the benchmark and had access to much of it.</figcaption></figure>
+  <div class="inst" id="t8">
+    <div class="ctl"><label>variants tried <input type="range" id="t8-k" min="1" max="100" value="30"><span class="v" id="t8-k-v">30</span></label><label>public test questions <select id="t8-n"><option value="200">200</option><option value="1000" selected>1,000</option><option value="5000">5,000</option></select></label><label>real differences between variants <select id="t8-s"><option value="0" selected>none (all noise)</option><option value="0.5">small (spread 0.5 pts)</option><option value="1.5">large (spread 1.5 pts)</option></select></label><button class="btn" id="t8-go">run the search</button></div>
+    <canvas id="t8-cv" height="230" aria-label="Each variant's public test score against its score on a fresh private test"></canvas>
+    <div class="kpis" id="t8-kp"></div>
+    <p class="hint">A simulation. Every variant starts from a 70% model. Each is scored on the same public test (horizontal axis) and on 5,000 fresh questions nobody tuned on (vertical). The orange dot is the one you would ship: best on the public test. "True gain" is the simulation's ground truth; the fresh-question score is itself a sample, within about ±1.3 points of the true gain 19 times in 20. "Average over 500 searches" reruns the whole search to show the bias is systematic, not bad luck.</p>
+  </div>
+</section>
+
+<section class="ch" id="c9">
+  <p class="chn">09 · TIME HORIZONS</p>
+  <h2>Measure agents by how long a job they can finish</h2>
+  <p>Agentic benchmarks score a pass rate on tasks of mixed difficulty, which says little about what an agent can be trusted with. METR timed skilled people on software and research tasks from seconds to many hours long, ran each model on all of them, and fitted a curve of success against task length. The <a class="term" href="#g-horizon">50% time horizon</a> is where that curve crosses one half. Across 2019 to 2025 it doubled about every seven months, and it has sped up: METR's January 2026 re-measurement on its updated task suite (Time Horizon 1.1, or TH1.1, 228 tasks) puts the doubling since 2023 at about 131 days, roughly four months.</p>
+  <p>Read the error bars before the trend. Claude Opus 4.5's 320 minutes has a 95% interval of 170 to 729. Only 5 of the 31 tasks over eight hours have a measured human time. The 80% horizon is several times shorter than the 50% one. And the suite is mostly software, with few tasks the newest models still fail.</p>
+<figure class="fig"><svg viewBox="0 0 760 210" role="img" aria-label="How a time horizon is read off. Horizontal axis: how long the task takes a skilled human, on a log scale from one minute to sixteen hours. Vertical axis: the model's success rate. Task dots sit high on the left and low on the right. A falling S-curve is fitted through them. Where the curve crosses 50 percent, at about 47 minutes, is the 50 percent time horizon. Where it crosses 80 percent, at about 12 minutes, is the 80 percent horizon.">
+<line x1="60" y1="180" x2="720" y2="180" class="ln" style="stroke:var(--line-strong)"/><line x1="60" y1="20" x2="60" y2="180" class="ln" style="stroke:var(--line-strong)"/>
+<text x="60" y="198" text-anchor="middle" class="mono sm">1 min</text><text x="225" y="198" text-anchor="middle" class="mono sm">8 min</text><text x="390" y="198" text-anchor="middle" class="mono sm">64 min</text><text x="555" y="198" text-anchor="middle" class="mono sm">8.5 h</text><text x="720" y="198" text-anchor="middle" class="mono sm">68 h</text>
+<text x="52" y="184" text-anchor="end" class="mono sm">0%</text><text x="52" y="104" text-anchor="end" class="mono sm">50%</text><text x="52" y="56" text-anchor="end" class="mono sm">80%</text><text x="52" y="24" text-anchor="end" class="mono sm">100%</text>
+<g class="fm" opacity=".8"><circle cx="78" cy="28" r="4"/><circle cx="110" cy="36" r="4"/><circle cx="140" cy="24" r="4"/><circle cx="168" cy="44" r="4"/><circle cx="200" cy="30" r="4"/><circle cx="232" cy="60" r="4"/><circle cx="250" cy="66" r="4"/><circle cx="290" cy="84" r="4"/><circle cx="318" cy="70" r="4"/><circle cx="350" cy="104" r="4"/><circle cx="392" cy="122" r="4"/><circle cx="410" cy="128" r="4"/><circle cx="440" cy="112" r="4"/><circle cx="470" cy="150" r="4"/><circle cx="500" cy="140" r="4"/><circle cx="530" cy="168" r="4"/><circle cx="560" cy="160" r="4"/><circle cx="600" cy="176" r="4"/><circle cx="640" cy="172" r="4"/></g>
+<path d="M60 23.0 L75 23.6 L90 24.4 L105 25.3 L120 26.4 L135 27.7 L150 29.3 L165 31.1 L180 33.3 L195 35.9 L210 38.9 L225 42.4 L240 46.4 L255 51.0 L270 56.1 L285 61.9 L300 68.2 L315 74.9 L330 82.2 L345 89.7 L360 97.4 L375 105.2 L390 112.9 L405 120.3 L420 127.4 L435 134.0 L450 140.1 L465 145.6 L480 150.6 L495 155.0 L510 158.8 L525 162.1 L540 165.0 L555 167.4 L570 169.5 L585 171.3 L600 172.7 L615 174.0 L630 175.0 L645 175.9 L660 176.6 L675 177.2 L690 177.7 L705 178.1 L720 178.4" class="ln l1" stroke-width="2.2"/>
+<line x1="60" y1="100" x2="365" y2="100" class="ln" stroke-dasharray="3 3"/><line x1="365" y1="100" x2="365" y2="180" class="ln" stroke-dasharray="3 3"/><circle cx="365" cy="100" r="5" class="f2"/><text x="372" y="96" class="sm b" style="fill:var(--s2)">50% horizon ≈ 47 min</text>
+<line x1="60" y1="52" x2="258" y2="52" class="ln" stroke-dasharray="3 3"/><line x1="258" y1="52" x2="258" y2="180" class="ln" stroke-dasharray="3 3"/><circle cx="258" cy="52" r="5" class="f3"/><text x="266" y="48" class="sm b" style="fill:var(--s3)">80% horizon ≈ 12 min</text>
+<text x="390" y="212" text-anchor="middle" class="mu sm">how long the task takes a skilled human (log scale)</text>
+</svg><figcaption>An illustration of the method with made-up tasks. Each model gets its own fitted curve; the time horizon is a property of the curve, not of any single task. A gentle slope makes the 50% and 80% horizons far apart, which is why "it can do two-hour tasks" needs "half the time" attached.</figcaption></figure>
+  <div class="inst" id="t9">
+    <div class="ctl"><span class="chk"><label><input type="checkbox" id="t9-a" checked> TH1.1 measurements</label><label><input type="checkbox" id="t9-b"> TH1-only models</label></span><label>fit through <select id="t9-f"><option value="2023">points from 2023 on</option><option value="2025">points from 2025 on</option></select></label><label>project ahead <input type="range" id="t9-m" min="0" max="24" value="12"><span class="v" id="t9-m-v">12 mo</span></label></div>
+    <canvas id="t9-cv" height="260" aria-label="METR 50 percent time horizons by release date on a log scale, with a fitted trend"></canvas>
+    <div class="kpis" id="t9-kp"></div>
+    <p class="hint">Real numbers from METR's January 2026 post: filled dots are the six models re-measured on the TH1.1 suite, with their 95% intervals; hollow dots are four models measured only on the older TH1 suite (METR's original 2025 task set), which reads somewhat lower. The trend line is a least-squares fit of log₂(minutes) against release date, computed in your browser; the dashed segment is extrapolation, not data. METR's own fit uses all 14 models it re-measured, six of them shown here; a fit through those six lands near it. Hover a dot for its interval.</p>
+  </div>
+</section>
+
+<section class="ch" id="c10">
+  <p class="chn">10 · SAFETY EVALS</p>
+  <h2>Proving a model can't is harder than proving it can</h2>
+  <p>Labs' safety policies (Anthropic's Responsible Scaling Policy, OpenAI's Preparedness Framework, Google DeepMind's Frontier Safety Framework) tie safeguards to <a class="term" href="#g-dce">dangerous-capability evals</a> in biology, cyber and autonomy. In May 2025 Anthropic turned on its ASL-3 protections (stricter security and deployment safeguards) for Claude Opus 4 because it could no longer rule out the biology threshold. These evals invert the usual logic. A product eval wants a fair score; a safety eval wants an upper bound on what a determined user could get, so weak <a class="term" href="#g-scaffold">elicitation</a> is the failure that matters.</p>
+  <p>The second problem is the test-taker. Models increasingly notice when they are being evaluated: Anthropic reported that Claude Sonnet 4.5 said so in about 13% of its automated audit transcripts. <a class="term" href="#g-aware">Eval awareness</a> and deliberate <a class="term" href="#g-aware">sandbagging</a> both make a model look safer under test than in use (lower capability in capability evals, better behaviour in propensity evals), which is why <a class="term" href="#g-propensity">propensity</a> evals now use realistic environments and why labs probe the model's internal representation of "this is a test".</p>
+<figure class="fig"><svg viewBox="0 0 760 190" role="img" aria-label="Two kinds of safety eval and the gap between measured and real capability. Left: capability evals ask can it, with maximum elicitation. Right: propensity evals ask would it, in realistic settings. Below, a bar of real capability with three things subtracted from it to give measured capability: weak elicitation, eval awareness, sandbagging. A threshold line sits between measured and real, so the eval says safe when the model is not.">
+<rect x="10" y="14" width="350" height="54" rx="8" class="f2s" style="stroke:var(--s2)"/><text x="185" y="36" text-anchor="middle" class="b sm">capability: can it?</text><text x="185" y="54" text-anchor="middle" class="mu sm">best scaffold, many attempts, even fine-tuning</text>
+<rect x="400" y="14" width="350" height="54" rx="8" class="f3s" style="stroke:var(--s3)"/><text x="575" y="36" text-anchor="middle" class="b sm">propensity: would it?</text><text x="575" y="54" text-anchor="middle" class="mu sm">ordinary prompts, realistic environments</text>
+<text x="10" y="96" class="b sm">real capability</text><rect x="150" y="84" width="560" height="18" rx="3" class="f2"/>
+<text x="10" y="132" class="b sm">measured</text><rect x="150" y="120" width="300" height="18" rx="3" class="f1"/>
+<rect x="450" y="120" width="120" height="18" class="fms"/><text x="510" y="133" text-anchor="middle" class="sm">weak elicitation</text>
+<rect x="570" y="120" width="80" height="18" class="fms" opacity=".7"/><text x="610" y="133" text-anchor="middle" class="sm">eval-aware</text>
+<rect x="650" y="120" width="60" height="18" class="fms" opacity=".5"/><text x="680" y="133" text-anchor="middle" class="sm">sandbag</text>
+<line x1="520" y1="76" x2="520" y2="150" class="ln lbad" stroke-width="2" stroke-dasharray="5 3"/><text x="520" y="168" text-anchor="middle" class="sm b" style="fill:var(--bad)">threshold</text><text x="520" y="182" text-anchor="middle" class="mu sm">measured is below it, real is above it</text>
+</svg><figcaption>The failure a safety eval exists to avoid: a measured score below the threshold for reasons that have nothing to do with the model's real ability. Each grey block is a known way to under-measure.</figcaption></figure>
+  <div class="inst" id="t10">
+    <div class="ctl"><label>attempts per task <select id="t10-k"><option value="1" selected>1</option><option value="5">5</option><option value="20">20</option><option value="100">100</option></select></label><label>scaffold <select id="t10-s"><option value="0" selected>bare prompt</option><option value="0.7">tools + retries</option><option value="1.4">best known agent</option></select></label><label>model notices the test <input type="range" id="t10-a" min="0" max="100" value="0"><span class="v" id="t10-a-v">0%</span></label><label><input type="checkbox" id="t10-sb"> and sandbags when it does</label></div>
+    <canvas id="t10-cv" height="150" aria-label="Measured solve rate under the chosen elicitation against what a determined user with full elicitation would get, and the threshold"></canvas>
+    <div class="verdict" id="t10-v"></div>
+    <p class="hint">A simulation over 30 hard tasks with mixed per-task difficulty. The red line is a threshold set for this simulation: half the tasks solved. The orange bar is what a determined user would get with the best scaffold, 100 attempts and no sandbagging. The blue bar is what your eval measured with the settings above. Start with a bare prompt and one attempt, then add elicitation until the blue bar meets the orange; then let the model notice the test.</p>
+  </div>
+</section>
+
+<section class="ch" id="c11">
+  <p class="chn">11 · HISTORY AND FRONTIER</p>
+  <h2>Seventy-five years of trying to grade a machine</h2>
+  <div class="timeline"><div class="tl" id="tl"></div></div>
+  <p>The pattern repeats: a benchmark is built to be hard, becomes the target, saturates or leaks, and is replaced by one that is harder, fresher, more private or closer to real work. What changed after 2024 is that evaluation became its own field, with statistics, contamination audits and agent harnesses, rather than a table at the end of a paper.</p>
+  <div class="cards" id="cards"></div>
+  <h3>Where 2026 stands</h3>
+  <p>Static knowledge tests are retired as frontier signals; MMLU and GSM8K are sanity checks. SWE-bench Verified went in February 2026, when OpenAI stopped reporting it, citing flawed tests and contamination, and pointed to SWE-bench Pro. The live frontier is threefold: long-horizon agent evals (METR's suite is close to its ceiling and being extended), expert-graded real work (GDPval-style tasks across occupations), and rubric evals graded by calibrated judges. Underneath, two problems are not solved: keeping test sets out of training data as more of the web is model-written, and measuring models that increasingly know when they are being measured.</p>
+</section>
+
+<section class="ch" id="c12">
+  <p class="chn">12 · WHY IT MATTERS TO ME</p>
+  <h2>Your own evals are the only ones about your problem</h2>
+  <p>Public benchmarks pick which models are worth trying. They cannot tell you which one handles your tickets, your codebase or your review comments. That takes a <a class="term" href="#g-golden">golden set</a> of your real cases, a grader you have checked against your own labels, and a <a class="term" href="#g-paired">paired</a> comparison every time a prompt, model or tool changes. Pick the situation.</p>
+  <div class="inst" id="t12">
+    <div class="stages" id="t12-btns"></div>
+    <div class="out" id="t12-out"></div>
+  </div>
+<figure class="fig"><svg viewBox="0 0 760 200" role="img" aria-label="The product eval loop as a cycle of six boxes: production traces; sample and label by hand; golden set; regression eval in CI with code checks and a calibrated judge; ship decision on a paired difference with an interval; online metrics and feedback, which flow back into production traces. A side box notes: keep the suite model-agnostic, so changing models is a rerun.">
+<defs><marker id="m12a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<rect x="10" y="20" width="150" height="50" rx="8" class="box"/><text x="85" y="41" text-anchor="middle" class="b sm">production traces</text><text x="85" y="57" text-anchor="middle" class="mu sm">real inputs, failures</text>
+<line x1="160" y1="45" x2="190" y2="45" class="ln" marker-end="url(#m12a)"/>
+<rect x="192" y="20" width="150" height="50" rx="8" class="box"/><text x="267" y="41" text-anchor="middle" class="b sm">sample + label</text><text x="267" y="57" text-anchor="middle" class="mu sm">by someone who knows</text>
+<line x1="342" y1="45" x2="372" y2="45" class="ln" marker-end="url(#m12a)"/>
+<rect x="374" y="20" width="150" height="50" rx="8" class="soft"/><text x="449" y="41" text-anchor="middle" class="b sm">golden set</text><text x="449" y="57" text-anchor="middle" class="mu sm">200–1,000 cases</text>
+<path d="M449 70v30" class="ln" marker-end="url(#m12a)"/>
+<rect x="374" y="102" width="150" height="56" rx="8" class="soft"/><text x="449" y="122" text-anchor="middle" class="b sm">regression eval in CI</text><text x="449" y="137" text-anchor="middle" class="mu sm">code checks first,</text><text x="449" y="150" text-anchor="middle" class="mu sm">calibrated judge second</text>
+<line x1="374" y1="130" x2="344" y2="130" class="ln" marker-end="url(#m12a)"/>
+<rect x="192" y="102" width="150" height="56" rx="8" class="f2s" style="stroke:var(--s2)"/><text x="267" y="122" text-anchor="middle" class="b sm">ship or not</text><text x="267" y="137" text-anchor="middle" class="mu sm">paired gap + interval,</text><text x="267" y="150" text-anchor="middle" class="mu sm">pass^k for agents</text>
+<line x1="192" y1="130" x2="162" y2="130" class="ln" marker-end="url(#m12a)"/>
+<rect x="10" y="102" width="150" height="56" rx="8" class="box"/><text x="85" y="122" text-anchor="middle" class="b sm">online metrics</text><text x="85" y="137" text-anchor="middle" class="mu sm">A/B, thumbs, escalations,</text><text x="85" y="150" text-anchor="middle" class="mu sm">sampled transcripts</text>
+<path d="M85 102V72" class="ln" marker-end="url(#m12a)"/>
+<rect x="560" y="20" width="190" height="138" rx="8" class="ghost"/><text x="572" y="42" class="b sm">rules of the loop</text><text x="572" y="62" class="sm">every bug becomes a case</text><text x="572" y="80" class="sm">judge rechecked when it changes</text><text x="572" y="98" class="sm">no tuning on the golden set</text><text x="572" y="116" class="sm">without a held-back slice</text><text x="572" y="134" class="sm">model-agnostic: a new model</text><text x="572" y="150" class="sm">is a rerun, not a project</text>
+<text x="10" y="188" class="mu sm">Offline catches regressions before users do; online tells you whether users are better off. You need both.</text>
+</svg><figcaption>The eval loop for a product team. Most of this page appears in it: graders (03), judge calibration (04), pass^k (05), held-back data (06, 08) and paired error bars (02).</figcaption></figure>
+  <p>Where this sits in the series. Attention is what the forward pass computes; tokens per second is what it costs; the next token is what goes in and out; the training run and Downhill are how the weights get written, and Weight Space is how a model can write them instead. This page is how anyone knows whether any of it worked. Next: context engineering for agents, the part of the stack you control at run time.</p>
+  <div class="series"><a href="https://claude.ai/artifact/75WD8Yp4mZDJFgwprN6UPE" target="_blank" rel="noopener"><span>part one</span>Attention</a><a href="https://claude.ai/artifact/1vtMC3GZHdyQ64GcHUApcw" target="_blank" rel="noopener"><span>part two</span>Tokens per second</a><a href="https://claude.ai/artifact/513fENC9mxkGojDoSHaY4X" target="_blank" rel="noopener"><span>part three</span>The next token</a><a href="https://claude.ai/artifact/AqrZm971yMFrsd785VDPXL" target="_blank" rel="noopener"><span>part four</span>The training run</a><a href="https://claude.ai/artifact/YNL36bbrhJ5cDqowiAC9aX" target="_blank" rel="noopener"><span>part five</span>Downhill</a><a href="https://claude.ai/artifact/7YBvtwdRtU4t6grAs5UVKV" target="_blank" rel="noopener"><span>part six</span>Weight space</a></div>
+</section>
+
+<section class="ch" id="c13">
+  <p class="chn">13 · CHECK YOURSELF</p>
+  <h2>Eight questions</h2>
+  <p class="score" id="q-score">0 / 8 answered</p>
+  <div class="quiz" id="quiz"></div>
+</section>
+
+<footer>Sources behind the chapters: Hendrycks et al. 2020 (MMLU) · Cobbe et al. 2021 (GSM8K) · Hendrycks et al. 2021 (MATH) · Chen et al. 2021 (HumanEval, unbiased pass@k) · Lightman et al. 2023 (MATH-500) · Rein et al. 2023 (GPQA) · Jimenez et al. 2023 (SWE-bench) and OpenAI 2024 (SWE-bench Verified) · OpenAI, "Why we no longer evaluate SWE-bench Verified", February 2026 · Scale AI 2025 (SWE-bench Pro) · Phan et al. 2025 (Humanity's Last Exam) · Chollet 2019 and ARC Prize 2024–25 (ARC-AGI) · Glazer et al. 2024 (FrontierMath, Epoch AI) · Yao et al. 2024 (τ-bench, pass^k) · Zheng et al. 2023 (MT-Bench, LLM-as-judge) · Chiang et al. 2024 (Chatbot Arena) and LMSYS 2024 (style control) · Singh et al. 2025 (The Leaderboard Illusion) · Sclar et al. 2023 (prompt formatting sensitivity) · Gema et al. 2024 (Are we done with MMLU?) · Zhang et al. 2024 (GSM1k) · Miller 2024 (Adding error bars to evals) · Cohen 1960 (κ) · Kwa et al. 2025 (METR time horizons) and METR, "Time horizon 1.1", January 2026 · Anthropic Responsible Scaling Policy and ASL-3 activation, May 2025 · Anthropic, Claude Sonnet 4.5 system card, September 2025 · van der Weij et al. 2024 (AI sandbagging) · Wang et al. 2018–19 (GLUE, SuperGLUE) · Srivastava et al. 2022 (BIG-bench) · Liang et al. 2022 (HELM) · UK AI Security Institute 2024 (Inspect) · White et al. 2024 (LiveBench) · Jain et al. 2024 (LiveCodeBench) · OpenAI 2025 (HealthBench, GDPval). The hero, chapters 04, 07, 08 and 10 are simulations with stated parameters; chapters 01 and 03 run real extractors and graders on the answers shown; chapter 02's numbers are the standard formulas; chapter 06 trains a real model in the page; chapter 09 plots METR's published measurements. Benchmark scores in chapter 08 are as reported by labs at the time. Dates and cards reflect sources through November 2026.</footer>
+</main>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const fmtC=n=>Math.round(n).toLocaleString('en-US');
+const pct=(x,d=1)=>(100*x).toFixed(d)+'%';
+const sig=x=>1/(1+Math.exp(-x));
+function rng(seed){ let s=seed>>>0; return ()=>{ s=(s+0x6D2B79F5)>>>0; let t=s; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return ((t^(t>>>14))>>>0)/4294967296; }; }
+function gauss(r){ let u=0,v=0; while(!u) u=r(); while(!v) v=r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+function Phi(z){ const t=1/(1+0.2316419*Math.abs(z)); const d=0.3989422804*Math.exp(-z*z/2); const p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274)))); return z>0?1-p:p; }
+function canvas(cv){ const dpr=Math.min(2,devicePixelRatio||1); const w=cv.clientWidth||300, h=+(cv.dataset.h||(cv.dataset.h=cv.getAttribute('height'))); cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); cv.style.height=h+'px'; const c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.font='12px '+css('--font-display'); return {c,w,h}; }
+const col=()=>({s1:css('--s1'),s2:css('--s2'),s3:css('--s3'),s4:css('--s4'),mask:css('--mask'),surface:css('--surface'),bg:css('--bg'),fg:css('--fg'),muted:css('--muted'),line:css('--line'),ls:css('--line-strong'),ok:css('--ok'),bad:css('--bad'),warn:css('--warn')});
+const redraws=[]; const reg=f=>{ redraws.push(f); f(); };
+let rt; addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(()=>redraws.forEach(f=>f()),90); });
+new MutationObserver(()=>redraws.forEach(f=>f())).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>redraws.forEach(f=>f()));
+const kpi=(l,v,cls='')=>`<div class="kpi ${cls}"><div class="l">${l}</div><div class="v">${v}</div></div>`;
+
+/* ---------- hero: rerun the benchmark ---------- */
+(function(){
+  // item difficulty d ~ N(0,1.6); P(correct) = sigmoid(skill − d). Skills calibrated to 70% and 72% over the pool.
+  const r0=rng(7), pool=[]; for(let i=0;i<6000;i++) pool.push(1.6*gauss(r0));
+  const meanAcc=s=>pool.reduce((a,d)=>a+sig(s-d),0)/pool.length;
+  const solve=t=>{ let lo=-5,hi=5; for(let i=0;i<60;i++){ const m=(lo+hi)/2; if(meanAcc(m)<t) lo=m; else hi=m; } return (lo+hi)/2; };
+  const sA=solve(0.70), sB=solve(0.72);
+  let seed=1000, runs=[], last=null;
+  function run(n){ const r=rng(seed++); let a=0,b=0,dd=0,dd2=0; for(let i=0;i<n;i++){ const d=1.6*gauss(r); const xa=r()<sig(sA-d)?1:0, xb=r()<sig(sB-d)?1:0; a+=xa; b+=xb; const df=xb-xa; dd+=df; dd2+=df*df; } const pa=a/n, pb=b/n, md=dd/n, sd=Math.sqrt(Math.max(0,dd2/n-md*md)); const va=pa*(1-pa), vb=pb*(1-pb), rho=va&&vb?(va+vb-sd*sd)/(2*Math.sqrt(va*vb)):0; return {n,pa,pb,gap:pb-pa,seGap:sd/Math.sqrt(n),rho}; }
+  const LO=0.5, HI=0.9, X=v=>clamp((v-LO)/(HI-LO)*100,0,100);
+  function card(el,name,p,n,truth,win){ const se=Math.sqrt(p*(1-p)/n), ci=1.96*se; el.className='mcard'+(win?' win':''); el.innerHTML=`<div class="nm">${name}<span>${fmtC(n)} questions</span></div><div class="big">${(100*p).toFixed(1)}%<small>± ${(100*ci).toFixed(1)}</small></div><div class="whisk"><i style="left:${X(p-ci)}%;width:${X(p+ci)-X(p-ci)}%"></i><b style="left:calc(${X(p)}% - 1px)"></b>${$('#h-truth').checked?`<em style="left:${X(truth)}%"></em>`:''}</div><div class="read" style="margin-top:4px"><span>50%</span><span style="margin-left:auto">90%</span></div>`; }
+  function draw(){ const n=+$('#h-n').value;
+    if(!last){ $('#h-a').className='mcard'; $('#h-a').innerHTML='<div class="nm">Model A</div><div class="big">—</div>'; $('#h-b').className='mcard'; $('#h-b').innerHTML='<div class="nm">Model B</div><div class="big">—</div>'; }
+    else { card($('#h-a'),'Model A'+($('#h-truth').checked?' · truly 70.0%':''),last.pa,last.n,0.70,last.pa>last.pb); card($('#h-b'),'Model B'+($('#h-truth').checked?' · truly 72.0%':''),last.pb,last.n,0.72,last.pb>last.pa); }
+    const bw=runs.filter(r=>r.gap>0).length, aw=runs.filter(r=>r.gap<0).length, ti=runs.length-bw-aw;
+    $('#h-read').innerHTML=last?`<span>this run: B − A = <b>${last.gap>=0?'+':''}${(100*last.gap).toFixed(1)} pts</b></span><span>95% interval on the gap: paired <b>± ${(196*last.seGap).toFixed(1)}</b> (ρ ${last.rho.toFixed(2)}), unpaired ± ${(196*Math.sqrt((last.pa*(1-last.pa)+last.pb*(1-last.pb))/last.n)).toFixed(1)}</span><span>tally: B higher <b>${bw}</b> · A higher <b>${aw}</b> · tie <b>${ti}</b></span>`:`<span>press <b>run the benchmark</b></span>`;
+    $('#h-hist').innerHTML=runs.slice(-200).map(r=>`<span class="${r.gap>0?'':r.gap<0?'w':'t'}" title="${r.n} questions: B − A = ${(100*r.gap).toFixed(1)} pts"></span>`).join('');
+  }
+  $('#h-run').onclick=()=>{ last=run(+$('#h-n').value); runs.push(last); draw(); };
+  $('#h-run50').onclick=()=>{ const n=+$('#h-n').value; for(let i=0;i<50;i++){ last=run(n); runs.push(last); } draw(); };
+  $('#h-reset').onclick=()=>{ runs=[]; last=null; draw(); };
+  $('#h-n').onchange=()=>{ runs=[]; last=run(+$('#h-n').value); runs.push(last); draw(); };
+  $('#h-truth').onchange=draw;
+  last=run(500); runs.push(last); draw();
+})();
+
+/* ---------- 01 anatomy: extractors ---------- */
+(function(){
+  const OPTS=['Venus','Mercury','Mars','Earth'], KEY='B';
+  $('#t1-q').textContent='Question: Which planet takes the least time to orbit the Sun?\n  (A) Venus   (B) Mercury   (C) Mars   (D) Earth          Key: B';
+  const ROWS=[
+    ['letters only, 5-shot (base model)','B'],
+    ['"think step by step"','Mercury is closest to the Sun, so it completes an orbit fastest: about 88 days. The answer is (B).'],
+    ['chat, no format rule','**Mercury.** It goes around the Sun in about 88 Earth days.'],
+    ['chat, compares options','Mercury (B), at 88 days. Venus (A) takes 225 days and Mars (C) 687.']
+  ];
+  const lone=/\(([A-D])\)|(?:^|[^A-Za-z])([A-D])(?=$|[^A-Za-z])/g;
+  const EX=[
+    ['first character',t=>{ const m=t.match(/^\s*\(?([A-D])\)?(?![A-Za-z])/); return m?m[1]:null; }],
+    ['after "answer is"',t=>{ const m=t.match(/answer is:?\s*\(?([A-D])\)?(?![A-Za-z])/i); return m?m[1].toUpperCase():null; }],
+    ['last lone letter',t=>{ let m,l=null; lone.lastIndex=0; while((m=lone.exec(t))) l=m[1]||m[2]; return l; }],
+    ['lenient: answer-is, letter, then option text',t=>{ let m=t.match(/answer(?: is)?:?\s*\(?([A-Da-d])\)?(?![A-Za-z])/i); if(m) return m[1].toUpperCase(); m=t.match(/^\s*\(?([A-Da-d])\)?[\s.!]*$/); if(m) return m[1].toUpperCase(); let best=null,bi=1e9; OPTS.forEach((o,i)=>{ const j=t.toLowerCase().indexOf(o.toLowerCase()); if(j>=0&&j<bi){ bi=j; best='ABCD'[i]; } }); return best; }]
+  ];
+  const tbl=$('#t1-tbl');
+  function draw(){ const user=$('#t1-in')?$('#t1-in').value:"I'd go with B, not A.";
+    const rows=ROWS.concat([['your answer',user]]); const tot=EX.map(()=>0);
+    let h=`<thead><tr><th>template</th><th style="text-align:left">raw model output</th>${EX.map(e=>`<th>${e[0]}</th>`).join('')}</tr></thead><tbody>`;
+    rows.forEach(([name,txt],ri)=>{ h+=`<tr><td>${name}</td><td class="txt">${ri===4?`<input class="textin" id="t1-in" value="${user.replace(/"/g,'&quot;')}" aria-label="your own model output">`:`<span class="raw" style="display:block">${txt.replace(/</g,'&lt;')}</span>`}</td>`;
+      EX.forEach(([,f],ei)=>{ const got=f(txt), ok=got===KEY; if(ri<4&&ok) tot[ei]++; h+=`<td class="c"><span class="x ${ok?'p':'f'}">${got?got:'—'} ${ok?'✓':'✗'}</span></td>`; }); h+='</tr>'; });
+    h+=`</tbody><tfoot><tr><td colspan="2">score on the four model rows (all four knew the answer)</td>${tot.map(t=>`<td class="c">${t} / 4</td>`).join('')}</tr></tfoot>`;
+    const had=document.activeElement&&document.activeElement.id==='t1-in', pos=had?document.activeElement.selectionStart:0;
+    tbl.innerHTML=h; const inp=$('#t1-in'); inp.addEventListener('input',draw); if(had){ inp.focus(); inp.setSelectionRange(pos,pos); }
+  }
+  draw();
+})();
+
+/* ---------- 02 error bars ---------- */
+(function(){
+  const NS=[50,100,200,300,500,750,1000,1500,2000,3000,5000,7500,10000,20000];
+  const cv=$('#t2-cv');
+  function calc(){ const n=NS[+$('#t2-n').value], pA=+$('#t2-p').value/100, D=+$('#t2-d').value/1000, rho=+$('#t2-r').value/100; const pB=Math.min(0.995,pA+D);
+    const vA=pA*(1-pA), vB=pB*(1-pB); const vU=vA+vB, vP=Math.max(1e-6,vA+vB-2*rho*Math.sqrt(vA*vB));
+    return {n,pA,pB,D:pB-pA,rho,seA:Math.sqrt(vA/n),seB:Math.sqrt(vB/n),seU:Math.sqrt(vU/n),seP:Math.sqrt(vP/n),vP,vU}; }
+  function pdf(x,m,s){ return Math.exp(-0.5*((x-m)/s)**2); }
+  function draw(){ const k=calc(), C=col();
+    $('#t2-n-v').textContent=fmtC(k.n); $('#t2-p-v').textContent=Math.round(100*k.pA)+'%'; $('#t2-d-v').textContent=(100*k.D).toFixed(1)+' pts'; $('#t2-r-v').textContent=k.rho.toFixed(2);
+    const {c,w,h}=canvas(cv); const L=14,R=w-14, top=10, mid=h/2+4, H1=mid-top-26, H2=h-mid-26;
+    // top: score distributions
+    let lo=k.pA-4.2*k.seA, hi=k.pB+4.2*k.seB; const X=v=>L+(v-lo)/(hi-lo)*(R-L);
+    const band=(m,s,color,y0,hh)=>{ c.fillStyle=color; c.globalAlpha=.16; c.beginPath(); c.moveTo(X(m-1.96*s),y0); for(let x=m-1.96*s;x<=m+1.96*s;x+=(hi-lo)/300) c.lineTo(X(x),y0-hh*pdf(x,m,s)); c.lineTo(X(m+1.96*s),y0); c.fill(); c.globalAlpha=1; c.strokeStyle=color; c.lineWidth=2; c.beginPath(); for(let x=lo;x<=hi;x+=(hi-lo)/300){ const y=y0-hh*pdf(x,m,s); x===lo?c.moveTo(X(x),y):c.lineTo(X(x),y); } c.stroke(); };
+    const y0=top+H1+6; c.strokeStyle=C.ls; c.lineWidth=1; c.beginPath(); c.moveTo(L,y0); c.lineTo(R,y0); c.stroke();
+    band(k.pA,k.seA,C.s1,y0,H1); band(k.pB,k.seB,C.s2,y0,H1);
+    c.fillStyle=C.muted; c.font='11px '+css('--font-mono'); c.textAlign='center';
+    const step=(hi-lo)>0.12?0.05:(hi-lo)>0.05?0.02:(hi-lo)>0.02?0.01:0.005; for(let t=Math.ceil(lo/step)*step;t<=hi;t+=step) c.fillText((100*t).toFixed(step<0.01?1:0)+'%',X(t),y0+14);
+    c.font='12px '+css('--font-display'); c.textAlign='left'; c.fillStyle=C.s1; c.fillText('A',X(k.pA)-4,top+10); c.fillStyle=C.s2; c.fillText('B',X(k.pB)-4,top+10);
+    // bottom: paired gap
+    const lo2=Math.min(-0.002,k.D-4.2*Math.max(k.seP,k.seU*0.6)), hi2=Math.max(0.002,k.D+4.2*Math.max(k.seP,k.seU*0.6)); const X2=v=>L+(v-lo2)/(hi2-lo2)*(R-L); const yb=h-20;
+    c.strokeStyle=C.ls; c.lineWidth=1; c.beginPath(); c.moveTo(L,yb); c.lineTo(R,yb); c.stroke();
+    const curve=(s,color,fillIt)=>{ if(fillIt){ c.fillStyle=color; c.globalAlpha=.18; c.beginPath(); c.moveTo(X2(k.D-1.96*s),yb); for(let x=k.D-1.96*s;x<=k.D+1.96*s;x+=(hi2-lo2)/300) c.lineTo(X2(x),yb-H2*pdf(x,k.D,s)); c.lineTo(X2(k.D+1.96*s),yb); c.fill(); c.globalAlpha=1; } c.strokeStyle=color; c.lineWidth=fillIt?2:1.2; c.setLineDash(fillIt?[]:[4,3]); c.beginPath(); for(let x=lo2;x<=hi2;x+=(hi2-lo2)/300){ const y=yb-H2*pdf(x,k.D,s)*(fillIt?1:k.seP/k.seU); x===lo2?c.moveTo(X2(x),y):c.lineTo(X2(x),y); } c.stroke(); c.setLineDash([]); };
+    curve(k.seU,C.muted,false); curve(k.seP,C.s3,true);
+    c.strokeStyle=C.fg; c.lineWidth=1.5; c.beginPath(); c.moveTo(X2(0),yb+4); c.lineTo(X2(0),yb-H2-4); c.stroke();
+    c.fillStyle=C.fg; c.font='11px '+css('--font-mono'); c.textAlign='center'; c.fillText('0',X2(0),yb+14); c.fillText('+'+(100*k.D).toFixed(1),X2(k.D),yb+14);
+    c.textAlign='left'; c.font='12px '+css('--font-display'); c.fillStyle=C.s3; c.fillText('gap B − A, paired',L,mid+12); c.fillStyle=C.muted; c.fillText('dashed: unpaired',L+118,mid+12);
+    const zP=k.D/k.seP, zU=k.D/k.seU, powP=Phi(zP-1.96)+Phi(-zP-1.96), powU=Phi(zU-1.96)+Phi(-zU-1.96);
+    const need=k.D>0?Math.ceil(7.849*k.vP/(k.D*k.D)):Infinity, needU=k.D>0?Math.ceil(7.849*k.vU/(k.D*k.D)):Infinity;
+    $('#t2-k').innerHTML=kpi('95% interval, one score','± '+(196*k.seA).toFixed(1)+' pts')+kpi('gap SE, unpaired',(100*k.seU).toFixed(2)+' pts')+kpi('gap SE, paired',(100*k.seP).toFixed(2)+' pts','good')+kpi('expected paired z',zP.toFixed(2),zP>=1.96?'good':'badk')+kpi('n for 80% power, paired',isFinite(need)?fmtC(need):'—','hot')+kpi('same, unpaired',isFinite(needU)?fmtC(needU):'—');
+    const v=$('#t2-v');
+    if(k.D<=0){ v.className='verdict warn'; v.textContent='No true gap: any difference a run shows is noise. About 5% of runs will still call it significant at the 95% level.'; }
+    else if(powP>=0.8){ v.className='verdict ok'; v.textContent=`Reliably detectable. A paired test catches this gap ${Math.round(100*powP)}% of the time at ${fmtC(k.n)} questions; comparing the two scores separately would catch it ${Math.round(100*powU)}% of the time.`; }
+    else if(zP>=1.96){ v.className='verdict warn'; v.textContent=`Borderline. On average the paired test clears the bar, but any one run detects the gap (interval clear of zero) only ${Math.round(100*powP)}% of the time (separate scores: ${Math.round(100*powU)}%). For 80% you need about ${fmtC(need)} questions.`; }
+    else { v.className='verdict bad'; v.textContent=`Not separable at this n. A paired test detects a ${(100*k.D).toFixed(1)}-point gap only ${Math.round(100*powP)}% of the time; you need about ${fmtC(need)} questions, or a bigger gap.`; }
+  }
+  ['#t2-n','#t2-p','#t2-d','#t2-r'].forEach(s=>$(s).addEventListener('input',draw)); reg(draw);
+})();
+
+/* ---------- 03 graders ---------- */
+(function(){
+  const R=[['7/12',1],['The answer is 7/12.',1],['\\boxed{\\frac{7}{12}}',1],['7 / 12',1],['seven twelfths',1],['14/24',1],['0.5833',0],['1/4 + 1/3 = 4/12 + 3/12 = 7/12',1],['7/12 ≈ 0.58, so roughly 0.6',1],['2/7',0],['7/12? No, wait: 1/12.',0],['17/12',0]];
+  const gold=R.map(r=>r[1]); const T=7/12;
+  const G=[
+    ['exact match',s=>s.trim()==='7/12'],
+    ['contains "7/12"',s=>s.includes('7/12')],
+    ['last number',s=>{ const m=s.match(/-?\d+(?:\.\d+)?/g); if(!m) return false; return Math.abs(parseFloat(m[m.length-1])-T)<1e-3; }],
+    ['maths verifier',s=>{ const re=/\\frac\{(\d+)\}\{(\d+)\}|(\d+)\s*\/\s*(\d+)|(\d+(?:\.\d+)?)/g; let m,v=null; while((m=re.exec(s))){ v=m[1]?(+m[1])/(+m[2]):m[3]?(+m[3])/(+m[4]):+m[5]; } return v!==null&&Math.abs(v-T)<1e-9; }]
+  ];
+  function draw(){ const res=R.map(r=>G.map(g=>g[1](r[0]))); const st=G.map(()=>({agree:0,fp:0,fn:0,a:0,b:0,c:0,d:0}));
+    let h=`<thead><tr><th>your label</th><th style="text-align:left">model answer</th>${G.map(g=>`<th>${g[0]}</th>`).join('')}</tr></thead><tbody>`;
+    R.forEach((r,i)=>{ h+=`<tr><td><button type="button" class="gold ${gold[i]?'y':'n'}" data-i="${i}" aria-label="toggle label">${gold[i]?'right':'wrong'}</button></td><td class="txt"><span class="mono">${r[0].replace(/</g,'&lt;')}</span></td>`;
+      res[i].forEach((p,j)=>{ const g=gold[i]; const s=st[j]; if(p===!!g) s.agree++; if(p&&!g) s.fp++; if(!p&&g) s.fn++; if(p&&g) s.a++; else if(p&&!g) s.b++; else if(!p&&g) s.c++; else s.d++; h+=`<td class="c"><span class="x ${p?'p':'f'}${p!==!!g?' miss':''}">${p?'pass':'fail'}</span></td>`; }); h+='</tr>'; });
+    const N=R.length; const kap=s=>{ const po=(s.a+s.d)/N, pe=((s.a+s.b)*(s.a+s.c)+(s.c+s.d)*(s.b+s.d))/(N*N); return pe>=1?1:(po-pe)/(1-pe); };
+    h+=`</tbody><tfoot><tr><td colspan="2">agrees with you · false pass · false fail · κ</td>${st.map(s=>`<td class="c">${Math.round(100*s.agree/N)}% · ${s.fp} · ${s.fn} · ${kap(s).toFixed(2)}</td>`).join('')}</tr></tfoot>`;
+    $('#t3-tbl').innerHTML=h;
+    const truth=gold.reduce((a,b)=>a+b,0)/N; $('#t3-read').innerHTML=`<span>your score for this "model": <b>${pct(truth,0)}</b></span>`+G.map((g,j)=>`<span>${g[0]}: <b>${pct(res.reduce((a,r)=>a+(r[j]?1:0),0)/N,0)}</b></span>`).join('');
+  }
+  $('#t3-tbl').addEventListener('click',e=>{ const b=e.target.closest('.gold'); if(!b) return; const i=+b.dataset.i; gold[i]=gold[i]?0:1; draw(); });
+  draw();
+})();
+
+/* ---------- 04 judge calibration ---------- */
+(function(){
+  const cv=$('#t4-cv'); const N=400;
+  function sample(seed,n,pi,sh,shift){ const r=rng(seed), out=[]; for(let i=0;i<n;i++){ const good=r()<pi; const z=(good?sh/2:-sh/2)+gauss(r)+shift; out.push({good,s:sig(z),j:r()}); } return out; }
+  function conf(items,t){ let tp=0,fp=0,fn=0,tn=0; items.forEach(o=>{ const p=o.s>=t; if(p&&o.good) tp++; else if(p) fp++; else if(o.good) fn++; else tn++; }); return {tp,fp,fn,tn}; }
+  function draw(){ const t=+$('#t4-t').value/100, sh=+$('#t4-s').value, pi=+$('#t4-p').value/100, verb=$('#t4-verb').checked; const C=col();
+    $('#t4-t-v').textContent=t.toFixed(2); $('#t4-p-v').textContent=Math.round(100*pi)+'%';
+    const items=sample(41,N,pi,sh,verb?0.8:0), cal=sample(53,300,pi,sh,0);
+    const m=conf(items,t), k=conf(cal,t);
+    const sens=k.tp/Math.max(1,k.tp+k.fn), spec=k.tn/Math.max(1,k.tn+k.fp);
+    const judged=(m.tp+m.fp)/N, truth=(m.tp+m.fn)/N, corr=clamp((judged+spec-1)/Math.max(1e-6,sens+spec-1),0,1);
+    const prec=m.tp/Math.max(1,m.tp+m.fp), rec=m.tp/Math.max(1,m.tp+m.fn);
+    const po=(m.tp+m.tn)/N, pe=((m.tp+m.fp)*(m.tp+m.fn)+(m.fn+m.tn)*(m.fp+m.tn))/(N*N), kap=(po-pe)/(1-pe);
+    const {c,w,h}=canvas(cv); const L=10,R=w-10, y0=h/2+2, X=v=>L+v*(R-L); const bins=60, cnt={};
+    c.strokeStyle=C.ls; c.beginPath(); c.moveTo(L,y0); c.lineTo(R,y0); c.stroke();
+    items.forEach(o=>{ const b=Math.min(bins-1,Math.floor(o.s*bins)); const key=(o.good?'g':'b')+b; const lvl=cnt[key]=(cnt[key]||0)+1; const x=L+(b+0.5)/bins*(R-L); const y=o.good?y0-4-lvl*5.2:y0+4+lvl*5.2; const p=o.s>=t; c.fillStyle=p&&o.good?C.ok:p?C.bad:o.good?C.warn:C.mask; c.globalAlpha=(p||o.good)?0.95:0.55; c.beginPath(); c.arc(x,y,2.3,0,7); c.fill(); });
+    c.globalAlpha=1; c.strokeStyle=C.fg; c.lineWidth=1.5; c.setLineDash([5,3]); c.beginPath(); c.moveTo(X(t),8); c.lineTo(X(t),h-8); c.stroke(); c.setLineDash([]);
+    c.font='11px '+css('--font-display'); c.fillStyle=C.muted; c.textAlign='left'; c.fillText('truly good ↑',L,14); c.fillText('truly bad ↓',L,h-6); c.textAlign='right'; c.fillText('judge score 0 → 1',R,h-6); c.textAlign='left'; c.fillStyle=C.fg; c.fillText('pass →',X(t)+4,14);
+    $('#t4-cm').innerHTML=`<div class="h"></div><div class="h">truly good</div><div class="h">truly bad</div><div class="h">judge: pass</div><div class="tp"><b>${m.tp}</b>correct pass</div><div class="fp"><b>${m.fp}</b>false pass</div><div class="h">judge: fail</div><div class="fn"><b>${m.fn}</b>false fail</div><div class="tn"><b>${m.tn}</b>correct fail</div>`;
+    $('#t4-k').innerHTML=kpi('precision',pct(prec,0))+kpi('recall (sensitivity)',pct(rec,0))+kpi('<span style="text-transform:none">Cohen\'s κ</span>',kap.toFixed(2))+kpi('judged pass rate',pct(judged,0),'hot')+kpi('true rate, this sample',pct(truth,0),'good')+kpi('corrected rate',pct(corr,0));
+    const v=$('#t4-v'), err=Math.abs(judged-truth), cerr=Math.abs(corr-truth);
+    if(verb){ v.className='verdict bad'; v.textContent=`Length bias: the judge now reports ${pct(judged,0)} against a true ${pct(truth,0)}, and the correction, calibrated on non-verbose answers, only gets to ${pct(corr,0)}. Recalibrate the judge on outputs from the model you are actually grading.`; }
+    else if(err<0.03){ v.className='verdict ok'; v.textContent=`At this threshold the judge's false passes and false fails roughly cancel: judged ${pct(judged,0)}, true ${pct(truth,0)}. That is luck of the threshold, not accuracy: κ is ${kap.toFixed(2)}.`; }
+    else { v.className='verdict warn'; v.textContent=`The judge's headline is off by ${Math.round(100*err)} points (judged ${pct(judged,0)}, true ${pct(truth,0)}). Correcting with sensitivity ${pct(sens,0)} and specificity ${pct(spec,0)}, measured on a separate hand-labelled sample of 300 (the tiles above use this sample, so they differ a little), brings it to ${pct(corr,0)}${cerr<0.005?', on the true rate':', within '+Math.round(100*cerr)+' of the truth'}.`; }
+  }
+  ['#t4-t','#t4-p'].forEach(s=>$(s).addEventListener('input',draw)); ['#t4-s','#t4-verb'].forEach(s=>$(s).addEventListener('change',draw)); reg(draw);
+})();
+
+/* ---------- 05 pass@k vs pass^k ---------- */
+(function(){
+  const cv=$('#t5-cv');
+  const r=rng(5); const steady=[], spiky=[]; for(let i=0;i<20;i++) steady.push(0.6+(i%2?1:-1)*0.04*((i%5)/4)); for(let i=0;i<10;i++){ spiky.push(0.98); spiky.push(0.22); }
+  const norm=a=>{ const m=a.reduce((x,y)=>x+y,0)/a.length; return a.map(p=>clamp(p+0.6-m,0,1)); }; const M={steady:norm(steady),spiky:norm(spiky)}; void r;
+  const at=(ps,k)=>ps.reduce((a,p)=>a+1-Math.pow(1-p,k),0)/ps.length, hat=(ps,k)=>ps.reduce((a,p)=>a+Math.pow(p,k),0)/ps.length;
+  function draw(){ const sel=$('#t5-m').value, k=+$('#t5-k').value; $('#t5-k-v').textContent=k; const C=col(); const {c,w,h}=canvas(cv);
+    const L=40,R=w-14,T=12,B=h-26, X=x=>L+(x-1)/15*(R-L), Y=y=>B-y*(B-T);
+    c.strokeStyle=C.line; c.lineWidth=1; c.fillStyle=C.muted; c.font='11px '+css('--font-mono'); c.textAlign='right';
+    for(let y=0;y<=1.001;y+=0.25){ c.beginPath(); c.moveTo(L,Y(y)); c.lineTo(R,Y(y)); c.stroke(); c.fillText(Math.round(100*y)+'%',L-6,Y(y)+4); }
+    c.textAlign='center'; [1,4,8,12,16].forEach(x=>c.fillText('k='+x,X(x),B+16));
+    const models=sel==='both'?['steady','spiky']:[sel];
+    models.forEach(mn=>{ const ps=M[mn], dash=mn==='steady'&&sel==='both'?[5,4]:[];
+      [[at,C.s1],[hat,C.s2]].forEach(([f,colr])=>{ c.strokeStyle=colr; c.lineWidth=2.2; c.setLineDash(dash); c.beginPath(); for(let x=1;x<=16;x++){ const y=Y(f(ps,x)); x===1?c.moveTo(X(x),y):c.lineTo(X(x),y); } c.stroke(); c.setLineDash([]); c.fillStyle=colr; c.beginPath(); c.arc(X(k),Y(f(ps,k)),4,0,7); c.fill(); });
+    });
+    c.strokeStyle=C.ls; c.setLineDash([2,3]); c.beginPath(); c.moveTo(X(k),T); c.lineTo(X(k),B); c.stroke(); c.setLineDash([]);
+    c.font='12px '+css('--font-display'); c.textAlign='left'; c.fillStyle=C.s1; c.fillText('pass@k: at least one success',L+8,T+14); c.fillStyle=C.s2; c.fillText('pass^k: every attempt succeeds',L+8,T+30); if(sel==='both'){ c.fillStyle=C.muted; c.fillText('dashed = steady model, solid = spiky model',L+8,T+46); }
+    $('#t5-k-out').innerHTML=models.map(mn=>kpi(mn+' · pass@'+k,pct(at(M[mn],k),0),'good')+kpi(mn+' · pass^'+k,pct(hat(M[mn],k),0),'hot')).join('');
+  }
+  function est(){ const n=Math.max(1,Math.floor(+$('#t5-n').value||1)), c=clamp(Math.floor(+$('#t5-c').value||0),0,n), k=Math.max(1,Math.floor(+$('#t5-kk').value||1));
+    if(k>n){ $('#t5-est').innerHTML='<span>k must be at most n: draw at least k samples per task.</span>'; return; }
+    let u; if(n-c<k) u=1; else { let prod=1; for(let i=n-c+1;i<=n;i++) prod*=1-k/i; u=1-prod; } const nv=1-Math.pow(1-c/n,k);
+    $('#t5-est').innerHTML=`<span>unbiased pass@${k} = 1 − C(${n}−${c}, ${k}) / C(${n}, ${k}) = <b>${pct(u,1)}</b></span><span>naive plug-in = <b>${pct(nv,1)}</b></span>`; }
+  $('#t5-m').addEventListener('change',draw); $('#t5-k').addEventListener('input',draw); ['#t5-n','#t5-c','#t5-kk'].forEach(s=>$(s).addEventListener('input',est)); reg(draw); est();
+})();
+
+/* ---------- 06 contamination: a real character n-gram model ---------- */
+(function(){
+  const CORPUS=`Rivers shape the cities that grow beside them. The Danube runs east across the middle of Europe and passes through Vienna, Bratislava, Budapest and Belgrade before it reaches the Black Sea. The Rhine rises in the Alps and flows north past Basel, Strasbourg and Cologne to the North Sea. The Thames winds through London, and the Seine divides Paris into a left bank and a right bank. Old towns were built at the first place a river could be crossed, or where two rivers met, because trade moved by water long before it moved by road.
+Shapes are named by the number of their sides. A triangle has three sides and a square has four. A pentagon has five sides, a hexagon has six, and an octagon has eight, which is why a stop sign is called octagonal. The angles inside any polygon add up to a total that grows by one hundred and eighty degrees for every side you add. Bees build hexagons because six-sided cells pack together without gaps and use the least wax for the space they enclose.
+Plants make their own food from light. In the leaves, the green pigment chlorophyll catches sunlight and uses its energy to join water from the roots with a gas from the air. The result is sugar, which the plant burns for energy or stores as starch, and oxygen, which it releases. Almost every breath an animal takes depends on this quiet chemistry happening in forests, fields and the surface of the sea.
+Q: How many legs does a spider have? A: Eight.
+Q: Which ocean lies between Africa and Australia? A: The Indian Ocean.
+Q: What is the boiling point of water at sea level in Celsius? A: One hundred degrees.
+Q: Which planet is known as the red planet? A: Mars.
+Q: How many minutes are there in an hour? A: Sixty.
+Q: What do bees collect from flowers to make honey? A: Nectar.
+Weather comes from the sun heating the air unevenly. Warm air rises, cool air sinks, and the moving air is wind. When warm, wet air rises and cools, the water in it condenses into clouds, and when the drops grow heavy enough they fall as rain. Mountains force air upward, so the side that faces the wind is often wet and green while the far side lies in a dry rain shadow.
+A good map tells you what it leaves out. Every flat map of a round world stretches something: some keep the shapes of countries and distort their sizes, others keep the areas true and bend the shapes. Sailors liked maps on which a straight line kept a constant compass bearing, even though those maps made the lands near the poles look far larger than they are.
+The human body is mostly water. Blood carries oxygen from the lungs to every cell and carries carbon waste back out again. The heart of an adult beats about seventy times a minute at rest, and the lungs move air in and out about fifteen times a minute without anyone needing to think about it.
+`;
+  const TEST=[['Q: Which river flows through the city of Krakow? A: The Vistula.','Q: The city of Krakow is on which river? A: The Vistula.'],['Q: How many sides does a dodecagon have? A: Twelve.','Q: A dodecagon has how many sides? A: Twelve.'],['Q: What gas do plants take from the air to make sugar? A: Carbon dioxide.','Q: Which gas from the air do plants use to make sugar? A: Carbon dioxide.']];
+  const ORDER=6; let tbl=null, V=0;
+  function train(text){ const t=[]; for(let L=0;L<ORDER;L++) t.push(new Map()); for(let i=0;i<text.length;i++){ const ch=text[i]; for(let L=0;L<ORDER&&L<=i;L++){ const h=text.slice(i-L,i); let node=t[L].get(h); if(!node){ node={n:0,c:new Map()}; t[L].set(h,node); } node.n++; node.c.set(ch,(node.c.get(ch)||0)+1); } } return t; }
+  function P(ch,h){ if(h.length>=ORDER) h=h.slice(h.length-ORDER+1); const node=tbl[h.length].get(h); const back=h.length?P(ch,h.slice(1)):1/V; if(!node) return back; const T=node.c.size; return ((node.c.get(ch)||0)+T*back)/(node.n+T); }
+  function bpc(s){ let ctx='\n', bits=0; for(const ch of s){ bits-=Math.log2(P(ch,ctx)); ctx=(ctx+ch).slice(-(ORDER-1)); } return bits/s.length; }
+  const alpha=[...new Set((CORPUS+TEST.flat().join('\n')+' .,?').split(''))];
+  function greedy(prompt,len){ let ctx=('\n'+prompt).slice(-(ORDER-1)), out=''; for(let i=0;i<len;i++){ let best=null,bp=-1; for(const a of alpha){ const p=P(a,ctx); if(p>bp){ bp=p; best=a; } } if(best==='\n') break; out+=best; if(best==='.'&&out.length>3) break; ctx=(ctx+best).slice(-(ORDER-1)); } return out; }
+  function go(){ const leak=+$('#t6-leak').value; const text=CORPUS+(TEST.map(t=>t[0]).join('\n')+'\n').repeat(leak); tbl=train(text); V=Math.max(alpha.length,64);
+    let gaps=0, h=`<thead><tr><th style="text-align:left">test question</th><th>original, bits/char</th><th>paraphrase, bits/char</th><th>paraphrase ÷ original</th></tr></thead><tbody>`;
+    TEST.forEach(([o,p])=>{ const bo=bpc(o), bp=bpc(p), g=bp/bo; gaps+=g; h+=`<tr><td class="txt">${o}</td><td>${bo.toFixed(2)}</td><td>${bp.toFixed(2)}</td><td class="${g>1.8?'bad':'mu'}">× ${g.toFixed(2)}</td></tr>`; });
+    $('#t6-tbl').innerHTML=h+`</tbody><tfoot><tr><td colspan="3">average of the three · ${leak?'model trained with '+leak+' leaked '+(leak>1?'copies':'copy'):'clean model, nothing leaked'}</td><td>× ${(gaps/3).toFixed(2)}</td></tr></tfoot>`;
+    const pr='Q: How many sides does a dodecagon have? A:'; const gen=greedy(pr,40); const hit=/twelve/i.test(gen);
+    $('#t6-gen').innerHTML=`<span class="pre">${pr}</span><span class="${hit?'hit':''}">${gen.replace(/</g,'&lt;')}${/[.!?]$/.test(gen)?'':'…'}</span>`;
+    const mg=gaps/3, v=$('#t6-v');
+    if(mg>1.8){ v.className='verdict bad'; v.textContent=`Contaminated: on average, paraphrases of the same facts are ${mg.toFixed(1)} times as surprising as the original wording${hit?', and the model recites the answer from the question alone':''}. Its score on this test would measure memory.`; }
+    else { v.className='verdict ok'; v.textContent=`Clean: on average, paraphrases are only ${mg.toFixed(1)} times as surprising as the originals (different words are a little harder for any model), and it cannot complete the answer${hit?'':': it never saw a dodecagon'}.`; }
+  }
+  $('#t6-leak').addEventListener('change',go); $('#t6-train').addEventListener('click',go); go();
+})();
+
+/* ---------- 07 arena ---------- */
+(function(){
+  const MD=[['Atlas',0.60,-0.8,'terse'],['Brio',0.45,0.0,''],['Cobalt',0.30,1.4,'verbose'],['Delta',0.10,-0.3,''],['Ember',0.00,1.0,'verbose']]; const K=MD.length; let seed=11;
+  const elo=th=>Math.round(1000+th*400/Math.LN10);
+  function votes(n,w){ const r=rng(seed), W=[...Array(K)].map(()=>Array(K).fill(0)), Nn=[...Array(K)].map(()=>Array(K).fill(0)), V=[]; for(let v=0;v<n;v++){ const i=Math.floor(r()*K); let j=Math.floor(r()*(K-1)); if(j>=i) j++; const dl=(MD[i][2]+0.8*gauss(r))-(MD[j][2]+0.8*gauss(r)); const y=r()<sig(MD[i][1]-MD[j][1]+w*dl)?1:0; Nn[i][j]++; Nn[j][i]++; if(y) W[i][j]++; else W[j][i]++; V.push([i,j,dl,y]); } return {W,Nn,V}; }
+  function fitRaw({W,Nn}){ let p=Array(K).fill(1); for(let it=0;it<300;it++){ const q=p.map((pi,i)=>{ let wins=0,den=0; for(let j=0;j<K;j++){ if(j===i) continue; wins+=W[i][j]; den+=Nn[i][j]/(pi+p[j]); } return Math.max(1e-6,wins)/Math.max(1e-9,den); }); const g=Math.exp(q.reduce((a,x)=>a+Math.log(x),0)/K); p=q.map(x=>x/g); } return p.map(Math.log); }
+  function fitStyle({V}){ // Newton–Raphson on the per-vote logistic likelihood; last model's theta fixed at 0
+    const F=K; let th=Array(K).fill(0), b=0;
+    for(let it=0;it<30;it++){ const g=Array(F).fill(0), Hm=[...Array(F)].map(()=>Array(F).fill(0)); const x=Array(F);
+      for(const [i,j,dl,y] of V){ const p=sig(th[i]-th[j]+b*dl), wt=p*(1-p), res=y-p; x.fill(0); if(i<K-1) x[i]=1; if(j<K-1) x[j]=-1; x[F-1]=dl;
+        for(let a=0;a<F;a++){ if(!x[a]) continue; g[a]+=res*x[a]; for(let c=0;c<F;c++) if(x[c]) Hm[a][c]+=wt*x[a]*x[c]; } }
+      for(let a=0;a<F;a++) Hm[a][a]+=1e-6;
+      const A=Hm.map((r,a)=>r.concat([g[a]])); for(let c=0;c<F;c++){ let pv=c; for(let r=c+1;r<F;r++) if(Math.abs(A[r][c])>Math.abs(A[pv][c])) pv=r; [A[c],A[pv]]=[A[pv],A[c]]; for(let r=0;r<F;r++){ if(r===c) continue; const f=A[r][c]/A[c][c]; for(let q=c;q<=F;q++) A[r][q]-=f*A[c][q]; } }
+      const d=A.map((r,a)=>r[F]/r[a]); for(let a=0;a<K-1;a++) th[a]+=d[a]; b+=d[F-1]; if(d.every(z=>Math.abs(z)<1e-8)) break; }
+    return {th,b}; }
+  function list(el,th){ const idx=[...Array(K).keys()].sort((a,b)=>th[b]-th[a]); el.innerHTML=idx.map((i,r)=>`<li class="${r<i?'up':''}"><span>${r+1}</span><span><span class="nm">${MD[i][0]}</span><span class="tag">true #${i+1}${MD[i][3]?' · '+MD[i][3]:''}</span></span><span>${elo(th[i]-th.reduce((a,x)=>a+x,0)/K)}</span></li>`).join(''); }
+  function draw(){ const n=+$('#t7-n').value, w=+$('#t7-w').value/100; $('#t7-w-v').textContent=w.toFixed(2); const d=votes(n,w); const raw=fitRaw(d), sc=fitStyle(d); list($('#t7-raw'),raw); list($('#t7-sc'),sc.th);
+    $('#t7-read').innerHTML=`<span>votes <b>${fmtC(n)}</b></span><span>about <b>${fmtC(n/10)}</b> per pair</span><span>length effect fitted by style control <b>${sc.b.toFixed(2)}</b> (true ${w.toFixed(2)})</span>`; }
+  $('#t7-w').addEventListener('input',draw); $('#t7-n').addEventListener('change',draw); $('#t7-go').addEventListener('click',()=>{ seed++; draw(); }); draw();
+})();
+
+/* ---------- 08 winner's curse ---------- */
+(function(){
+  const cv=$('#t8-cv'); let seed=305, cur=null;
+  function search(r,k,n,s){ const base=0.70, vs=[]; for(let i=0;i<k;i++){ const tr=base+s/100*gauss(r); const pub=tr+Math.sqrt(tr*(1-tr)/n)*gauss(r); const prv=tr+Math.sqrt(tr*(1-tr)/5000)*gauss(r); vs.push({tr,pub,prv}); } let best=vs[0]; vs.forEach(v=>{ if(v.pub>best.pub) best=v; }); return {vs,best}; }
+  function run(){ const k=+$('#t8-k').value, n=+$('#t8-n').value, s=+$('#t8-s').value; cur=search(rng(seed++),k,n,s); let inf=0, tg=0; const r=rng(99+k+n); for(let t=0;t<500;t++){ const q=search(r,k,n,s); inf+=q.best.pub-q.best.tr; tg+=q.best.tr-0.70; } cur.inf=inf/500; cur.tg=tg/500; draw(); }
+  function draw(){ if(!cur) return; const C=col(), {c,w,h}=canvas(cv); $('#t8-k-v').textContent=$('#t8-k').value;
+    const L=46,R=w-14,T=12,B=h-30; const all=cur.vs.flatMap(v=>[v.pub,v.prv]).concat([0.70]); let lo=Math.min(...all)-0.005, hi=Math.max(...all)+0.005; const X=v=>L+(v-lo)/(hi-lo)*(R-L), Y=v=>B-(v-lo)/(hi-lo)*(B-T);
+    c.strokeStyle=C.line; c.lineWidth=1; c.font='11px '+css('--font-mono'); c.fillStyle=C.muted; const st=(hi-lo)>0.06?0.02:0.01;
+    for(let t=Math.ceil(lo/st)*st;t<=hi;t+=st){ c.beginPath(); c.moveTo(X(t),T); c.lineTo(X(t),B); c.stroke(); c.beginPath(); c.moveTo(L,Y(t)); c.lineTo(R,Y(t)); c.stroke(); c.textAlign='center'; c.fillText((100*t).toFixed(0)+'%',X(t),B+14); c.textAlign='right'; c.fillText((100*t).toFixed(0)+'%',L-6,Y(t)+4); }
+    c.strokeStyle=C.ls; c.setLineDash([4,4]); c.beginPath(); c.moveTo(X(lo),Y(lo)); c.lineTo(X(hi),Y(hi)); c.stroke(); c.setLineDash([]);
+    cur.vs.forEach(v=>{ c.fillStyle=v===cur.best?C.s2:C.s1; c.globalAlpha=v===cur.best?1:0.55; c.beginPath(); c.arc(X(v.pub),Y(v.prv),v===cur.best?6:3.5,0,7); c.fill(); }); c.globalAlpha=1;
+    c.font='12px '+css('--font-display'); c.fillStyle=C.muted; c.textAlign='center'; c.fillText('score on the public test you tuned on →',(L+R)/2,h-2); c.save(); c.translate(12,(T+B)/2); c.rotate(-Math.PI/2); c.fillText('score on fresh questions →',0,0); c.restore();
+    c.textAlign='left'; c.fillStyle=C.s2; c.fillText('shipped',X(cur.best.pub)-50,Y(cur.best.prv)-10);
+    const b=cur.best; $('#t8-kp').innerHTML=kpi('shipped: public gain',(b.pub>=0.70?'+':'')+(100*(b.pub-0.70)).toFixed(1)+' pts','hot')+kpi('shipped: true gain',(b.tr>=0.70?'+':'')+(100*(b.tr-0.70)).toFixed(1)+' pts')+kpi('shipped: measured on fresh set',(b.prv>=0.70?'+':'')+(100*(b.prv-0.70)).toFixed(1)+' pts')+kpi('avg inflation, 500 searches','+'+(100*cur.inf).toFixed(1)+' pts','badk')+kpi('avg true gain, 500 searches',(cur.tg>=0?'+':'')+(100*cur.tg).toFixed(1)+' pts');
+  }
+  $('#t8-k').addEventListener('input',()=>{ $('#t8-k-v').textContent=$('#t8-k').value; }); $('#t8-k').addEventListener('change',run); ['#t8-n','#t8-s'].forEach(s=>$(s).addEventListener('change',run)); $('#t8-go').addEventListener('click',run); run(); redraws.push(draw);
+})();
+
+/* ---------- 09 METR time horizons (published numbers) ---------- */
+(function(){
+  // [name, release (decimal year), minutes, lo, hi, suite]
+  const P=[['GPT-4 (Mar 2023)',2023.20,3.5,null,null,'1.1'],['GPT-4 Turbo (Nov 2023)',2023.85,3.6,null,null,'1.1'],['o3',2025.29,121,74,201,'1.1'],['Claude Opus 4',2025.39,101,58,170,'1.1'],['GPT-5',2025.60,214,117,480,'1.1'],['Claude Opus 4.5',2025.90,320,170,729,'1.1'],['Grok 4',2025.52,109,48,235,'1'],['Claude Opus 4.1',2025.59,114,56,215,'1'],['Claude Sonnet 4.5',2025.74,122,59,252,'1'],['GPT-5.1-Codex-Max',2025.88,173,81,411,'1']];
+  const cv=$('#t9-cv'); let pts=[], hov=null;
+  const fmtM=m=>m<60?Math.round(m)+' min':m<60*48?(m/60).toFixed(m<600?1:0)+' h':(m/60/24).toFixed(1)+' days';
+  function fit(sel){ const n=sel.length; if(n<2) return null; const mx=sel.reduce((a,p)=>a+p[1],0)/n, my=sel.reduce((a,p)=>a+Math.log2(p[2]),0)/n; let sxy=0,sxx=0; sel.forEach(p=>{ sxy+=(p[1]-mx)*(Math.log2(p[2])-my); sxx+=(p[1]-mx)**2; }); if(sxx<1e-9) return null; const b=sxy/sxx; return {b,a:my-b*mx}; }
+  function draw(){ const C=col(), {c,w,h}=canvas(cv); const ma=+$('#t9-m').value; $('#t9-m-v').textContent=ma+' mo';
+    const showA=$('#t9-a').checked, showB=$('#t9-b').checked, from=+$('#t9-f').value; const vis=P.filter(p=>(p[5]==='1.1'&&showA)||(p[5]==='1'&&showB)); const sel=vis.filter(p=>p[1]>=from);
+    const f=fit(sel); const tEnd=2025.90+ma/12; const x0=2023.0, x1=Math.max(2026.2,tEnd+0.15);
+    const yMinL=Math.log2(1), yMaxL=Math.log2(60*24*14);
+    const L=56,R=w-14,T=12,B=h-30; const X=t=>L+(t-x0)/(x1-x0)*(R-L), Y=m=>B-(Math.log2(m)-yMinL)/(yMaxL-yMinL)*(B-T);
+    c.font='11px '+css('--font-mono'); c.strokeStyle=C.line; c.lineWidth=1; c.fillStyle=C.muted;
+    [[1,'1 min'],[4,'4 min'],[15,'15 min'],[60,'1 h'],[240,'4 h'],[960,'16 h'],[3840,'64 h'],[60*24*14,'2 wk']].forEach(([m,l])=>{ c.beginPath(); c.moveTo(L,Y(m)); c.lineTo(R,Y(m)); c.stroke(); c.textAlign='right'; c.fillText(l,L-6,Y(m)+4); });
+    for(let y=2023;y<=Math.floor(x1);y++){ c.textAlign='center'; c.fillText(String(y),X(y),B+16); c.beginPath(); c.moveTo(X(y),T); c.lineTo(X(y),B); c.stroke(); }
+    if(f){ const at=t=>Math.pow(2,f.a+f.b*t); const ta=Math.min(...sel.map(p=>p[1])), tb=Math.max(...sel.map(p=>p[1]));
+      c.strokeStyle=C.s2; c.lineWidth=2; c.beginPath(); c.moveTo(X(ta),Y(at(ta))); c.lineTo(X(tb),Y(at(tb))); c.stroke();
+      c.setLineDash([6,4]); c.beginPath(); c.moveTo(X(tb),Y(at(tb))); c.lineTo(X(tEnd),Y(at(tEnd))); c.stroke(); c.setLineDash([]); c.fillStyle=C.s2; c.beginPath(); c.arc(X(tEnd),Y(at(tEnd)),5,0,7); c.fill(); }
+    pts=[]; vis.forEach(p=>{ const x=X(p[1]), y=Y(p[2]); const color=p[5]==='1.1'?C.s1:C.s4; if(p[3]){ c.strokeStyle=color; c.lineWidth=1.3; c.beginPath(); c.moveTo(x,Y(p[3])); c.lineTo(x,Y(p[4])); c.stroke(); c.beginPath(); c.moveTo(x-3,Y(p[3])); c.lineTo(x+3,Y(p[3])); c.moveTo(x-3,Y(p[4])); c.lineTo(x+3,Y(p[4])); c.stroke(); }
+      c.beginPath(); c.arc(x,y,hov===p?6:4.5,0,7); if(p[5]==='1.1'){ c.fillStyle=color; c.fill(); } else { c.fillStyle=C.surface; c.fill(); c.strokeStyle=color; c.lineWidth=2; c.stroke(); } pts.push({p,x,y}); });
+    c.font='11px '+css('--font-display'); c.textAlign='left'; c.fillStyle=C.fg; const lab=vis.find(p=>p[0]==='Claude Opus 4.5'); if(lab) c.fillText('Opus 4.5 · 320 min',X(lab[1])+8,Y(lab[2])+4); const g4=vis.find(p=>p[0]==='GPT-4 (Mar 2023)'); if(g4) c.fillText('GPT-4 · 3.5 min',X(g4[1])+8,Y(g4[2])-6);
+    const kp=[]; if(f){ const dd=365.25/f.b; kp.push(kpi('doubling time, this fit',Math.round(dd)+' days','hot')); kp.push(kpi('trend value, Nov 2025',fmtM(Math.pow(2,f.a+f.b*2025.9)))); kp.push(kpi('extrapolated, +'+ma+' mo · no interval',fmtM(Math.pow(2,f.a+f.b*tEnd)),'badk')); } else kp.push(kpi('fit','need 2+ points'));
+    kp.push(kpi("METR's fit since 2023",'131 days','good')); kp.push(kpi('points in fit',String(sel.length)));
+    $('#t9-kp').innerHTML=kp.join('');
+    if(hov){ c.fillStyle=C.fg; c.font='12px '+css('--font-display'); const t=`${hov.p[0]}: ${hov.p[2]} min${hov.p[3]?` (95% CI ${hov.p[3]}–${hov.p[4]})`:''} · TH${hov.p[5]}`; const tw=c.measureText(t).width; const tx=clamp(hov.x-tw/2,L,R-tw); c.fillStyle=C.bg; c.fillRect(tx-4,T,tw+8,18); c.fillStyle=C.fg; c.fillText(t,tx,T+13); }
+  }
+  cv.addEventListener('mousemove',e=>{ const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top; let best=null,bd=18; pts.forEach(q=>{ const d=Math.hypot(q.x-mx,q.y-my); if(d<bd){ bd=d; best=q; } }); const nh=best?best:null; if((nh&&nh.p)!==(hov&&hov.p)){ hov=nh; draw(); } });
+  cv.addEventListener('mouseleave',()=>{ if(hov){ hov=null; draw(); } });
+  ['#t9-a','#t9-b','#t9-f'].forEach(s=>$(s).addEventListener('change',draw)); $('#t9-m').addEventListener('input',draw); reg(draw);
+})();
+
+/* ---------- 10 safety: elicitation and sandbagging ---------- */
+(function(){
+  const cv=$('#t10-cv'); const r=rng(10); const B=[]; for(let i=0;i<30;i++) B.push(-4+3.5*gauss(r)); const THR=0.50;
+  const solved=(s,k,aware,sb)=>B.reduce((acc,b)=>{ const p=sig(b+s), q=sig(b+s-4); const pk=1-Math.pow(1-p,k), qk=1-Math.pow(1-q,k); return acc+(sb?(1-aware)*pk+aware*qk:pk); },0)/B.length;
+  function draw(){ const k=+$('#t10-k').value, s=+$('#t10-s').value, a=+$('#t10-a').value/100, sb=$('#t10-sb').checked; $('#t10-a-v').textContent=Math.round(100*a)+'%';
+    const meas=solved(s,k,a,sb), real=solved(1.4,100,0,false); const C=col(), {c,w,h}=canvas(cv); const L=150,R=w-50, X=v=>L+v*(R-L);
+    c.font='12px '+css('--font-display'); c.textAlign='right'; c.fillStyle=C.fg;
+    c.fillText('your eval measured',L-10,42); c.fillText('determined user',L-10,92);
+    c.fillStyle=C.line; c.fillRect(L,28,R-L,22); c.fillRect(L,78,R-L,22); c.fillStyle=C.s1; c.fillRect(L,28,X(meas)-L,22); c.fillStyle=C.s2; c.fillRect(L,78,X(real)-L,22);
+    c.textAlign='left'; c.font='12px '+css('--font-mono'); c.fillStyle=C.fg; c.fillText(pct(meas,0),Math.min(X(meas)+6,R+4),43); c.fillText(pct(real,0),Math.min(X(real)+6,R+4),93);
+    c.strokeStyle=C.bad; c.lineWidth=2; c.setLineDash([5,3]); c.beginPath(); c.moveTo(X(THR),16); c.lineTo(X(THR),112); c.stroke(); c.setLineDash([]); c.fillStyle=C.bad; c.textAlign='center'; c.font='11px '+css('--font-display'); c.fillText('threshold 50%',X(THR),12);
+    c.fillStyle=C.muted; c.font='11px '+css('--font-mono'); [0,0.25,0.5,0.75,1].forEach(t=>{ c.fillText(Math.round(100*t)+'%',X(t),h-8); });
+    const v=$('#t10-v');
+    if(meas>=THR){ v.className='verdict ok'; v.textContent=`Threshold crossed in your eval (${pct(meas,0)}). Safeguards trigger. This is the outcome the policy is designed to produce when the capability is there.`; }
+    else if(real>=THR){ v.className='verdict bad'; v.textContent=`Your eval says ${pct(meas,0)}, below the line. A determined user would get ${pct(real,0)}. ${sb&&a>0?'Part of the gap is the model holding back when it recognises the test. ':''}This is the failure safety evals exist to prevent: under-elicitation reads as safety.`; }
+    else { v.className='verdict ok'; v.textContent='Both below the threshold.'; }
+  }
+  ['#t10-k','#t10-s','#t10-sb'].forEach(s=>$(s).addEventListener('change',draw)); $('#t10-a').addEventListener('input',draw); reg(draw);
+})();
+
+/* ---------- 11 timeline + cards ---------- */
+(function(){
+  const ev=[['1950','The imitation game','Turing proposes judging a machine by whether a person can tell it from a human in conversation.'],['2018–19','GLUE, SuperGLUE','Language-understanding suites; GLUE was beaten within about a year, SuperGLUE soon after.'],['2020','MMLU','57 subjects of exam questions; the knowledge yardstick of the GPT-3 to GPT-4 era.'],['2021','HumanEval, GSM8K, MATH','Code graded by unit tests (and pass@k); grade-school and competition maths graded by final answer.'],['2022','BIG-bench, HELM','Hundreds of crowd-sourced tasks with canary strings; Stanford\'s holistic multi-metric reports.'],['2023','Arena, judges, GPQA, SWE-bench','Pairwise human votes at scale; GPT-4 as a judge; Google-proof science; real GitHub issues.'],['2024','Verified, Inspect, error bars','SWE-bench Verified; UK AISI\'s open eval framework; Miller\'s statistics for evals; FrontierMath; o3 on ARC-AGI-1.'],['2025','HLE, time horizons, Illusion','Humanity\'s Last Exam; METR\'s doubling horizons; ARC-AGI-2; the Leaderboard Illusion; GDPval.'],['2026','Retirements','METR TH1.1 re-measures horizons; OpenAI stops reporting SWE-bench Verified and points to Pro.']];
+  $('#tl').innerHTML=ev.map(([y,t,d])=>`<div class="ev"><div class="y">${y}</div><div class="t">${t}</div><div class="d">${d}</div></div>`).join('');
+  const cards=[
+    ['Fresh and private test sets','LiveBench, LiveCodeBench 2024 · SWE-bench Pro 2025','Date-stamp every question and only score models on questions written after their training cutoff, or keep a split that is never published.','The only real defence against contamination; makes a score mean "solved it" again.','Someone must keep writing new items; small fresh sets mean wide error bars (chapter 02).'],
+    ['Real work, expert-graded','GDPval, OpenAI 2025','Tasks drawn from the actual work products of 44 occupations, graded blind by people from those occupations against human-made deliverables.','Closer to the question buyers ask: would this replace an hour of a professional\'s work?','Slow and expensive to grade; experts disagree; few tasks per occupation.'],
+    ['Rubrics at scale','HealthBench, OpenAI 2025','5,000 health conversations, each with criteria written by physicians (262 of them), scored by a model judge that was itself checked against physicians.','Makes open-ended quality auditable item by item, not one opaque judge score.','Rubric quality and judge calibration become the eval; both drift as models change.'],
+    ['Statistics as standard practice','Miller 2024 · spreading through lab reports','Standard errors, paired differences, clustered errors and power analysis, reported with every score.','Turns "1 point better" into a claim you can check.','Costs nothing but discipline. Most leaderboards still show bare numbers.'],
+    ['Reliability, not just capability','τ-bench pass^k · 80% time horizons','Report how often an agent succeeds every time, and at what task length it is reliable, not only when it can.','Matches how agents are deployed: thousands of unattended runs.','k times the compute per task; makes headline numbers smaller and less exciting.'],
+    ['Evals that see inside','system cards 2025–26 · interpretability teams','Probe and steer the model\'s internal "I am being tested" representation; build test environments that look like deployment.','Eval awareness is rising; behaviour under test may not be behaviour in use.','Research-grade; works on open or own weights only; no agreed method yet.']
+  ];
+  $('#cards').innerHTML=cards.map(([t,y,w,why,cost])=>`<div class="card"><h3>${t} <span class="yr">${y}</span></h3><p>${w}</p><div class="kv"><span>why</span><span>${why}</span><span>cost</span><span>${cost}</span></div></div>`).join('');
+})();
+
+/* ---------- 12 scenarios ---------- */
+(function(){
+  const S=[
+    ['A vendor\'s model tops a leaderboard','Ask four questions: how many items, what interval, which harness, and was it style-controlled (chapter 07) or picked from private variants.','Then run both candidate models on your own golden cases, paired, with a grader you have checked. A few hundred cases catch gaps of five points or more; a 2-point gap takes thousands (chapter 02). A 2-point public lead is often inside the noise and says nothing about your domain.'],
+    ['A prompt change moved our eval from 81% to 84%','On 300 cases, one score has a 95% interval of about ±4.5 points; the paired gap is much tighter, but check it.','Rerun both prompts on the same cases with 3–5 samples each, compute the per-case differences and their standard error. If the judge also changed, recalibrate it first (chapter 04). Ship only if the paired interval excludes zero.'],
+    ['Our PR-review judge labels nit / medium / blocking','That is a three-class classifier. Measure it like one, per class.','Hand-label 200 real review comments, then report precision and recall per class and κ overall. For "blocking", recall matters most: a missed blocker is the costly error. Re-measure whenever the judge model, prompt or rubric changes, and keep the labelled set out of prompt tuning.'],
+    ['The agent passes in testing and fails in production','Testing measured pass@1 once. Production runs it a thousand times.','Run each task 5–10 times and report pass^k (chapter 05). Feed every production failure back into the golden set as a new case. Long tasks fail more: track success against task length, not one average.'],
+    ['Which model should we standardise on?','Do not standardise on a leaderboard. Standardise on an eval suite.','Keep the suite model-agnostic (same cases, same graders, same harness) so a new model is a rerun, not a project. Compare on quality, pass^k, latency and cost together; the cheapest model that clears your bar wins.'],
+    ['A new model claims a record on SWE-bench Verified','OpenAI stopped reporting that benchmark in February 2026: flawed tests and contamination.','Ask for SWE-bench Pro or a held-out set, and run it on ten real tickets from your own repositories, where no model has seen the fix.']
+  ];
+  $('#t12-btns').innerHTML=S.map((s,i)=>`<button type="button" class="btn" data-i="${i}">${s[0]}</button>`).join('');
+  const show=i=>{ $$('#t12-btns .btn').forEach((b,k)=>b.classList.toggle('on',k===i)); $('#t12-out').innerHTML=`<b style="font-family:var(--font-display)">${S[i][1]}</b> ${S[i][2]}`; };
+  $('#t12-btns').addEventListener('click',e=>{ const b=e.target.closest('.btn'); if(b) show(+b.dataset.i); }); show(0);
+})();
+
+/* ---------- 13 quiz ---------- */
+(function(){
+  const qs=[
+    ['Model A scores 71.2% and model B 70.4% on the same 500 questions. What can you conclude?',['A is better','B is better','Nothing yet: one score\'s 95% interval is about ±4 points, so you need a paired test on the per-question differences','They are identical'],2,'At 500 items the interval on one score is about ±4 points. Only a paired analysis of the same questions has a chance of separating a gap this small.'],
+    ['Why is a paired comparison more precise than comparing two scores?',['It uses more questions','Both models face the same questions, so shared difficulty cancels in the per-question differences','It ignores wrong answers','It uses a better grader'],1,'Easy questions are easy for both models and hard ones hard for both. The difference removes that shared variation.'],
+    ['A "last number" grader fails the correct answer "7/12". Why?',['It cannot read fractions: it takes 12 as the answer','It requires a decimal point','The answer is wrong','It only reads the first line'],0,'The regex takes the last number in the text, decimals included. In "7/12" that is the denominator, 12.'],
+    ['A judge model reports an 85% pass rate. What should you do before believing it?',['Nothing; strong judges are accurate','Measure its sensitivity and specificity on a hand-labelled sample of this model\'s outputs, then correct the rate','Average it with 50%','Use a longer rubric'],1,'A judge is an instrument with known error rates. They bias the headline rate, and they change when the outputs change (the verbose model).'],
+    ['An agent will run a task unattended thousands of times. Which number matters most?',['pass@k','pass^k','MMLU','Arena Elo'],1,'pass^k is the chance every one of k runs succeeds. pass@k rewards a model that is right sometimes.'],
+    ['What is the fingerprint of contamination in chapter 06\'s model?',['High bits per character on everything','The original test questions are much less surprising than paraphrases with the same answers, and it completes the answer from the question','It refuses to answer','It answers in a different language'],1,'Memorised text is predictable character by character. A paraphrase of the same facts is not, unless the model actually knows them.'],
+    ['A lab tests 27 private variants on an arena and publishes the best. What happens to its rating on fresh votes?',['It stays the same','It tends to fall: the best of many noisy ratings is biased upward','It rises','It becomes exact'],1,'The winner\'s curse. Selecting on a noisy score selects for luck; fresh measurement regresses toward the truth.'],
+    ['What is METR\'s 50% time horizon?',['The time a model takes to answer','The length of task, in skilled-human time, that the model completes half the time','How long a model can run before crashing','Half the context window'],1,'Fit success against task length for each model; the horizon is where the fitted curve crosses 50%. The 80% horizon is much shorter.']
+  ];
+  let answered=0,right=0; const host=$('#quiz');
+  host.innerHTML=qs.map((q,i)=>`<div class="qq" data-i="${i}"><p class="qt">${i+1}. ${q[0]}</p><div class="opts">${q[1].map((o,k)=>`<button type="button" class="opt" data-k="${k}">${o}</button>`).join('')}</div><p class="why" hidden>${q[3]}</p></div>`).join('');
+  host.addEventListener('click',e=>{ const b=e.target.closest('.opt'); if(!b) return; const box=b.closest('.qq'); if(box.dataset.done) return; box.dataset.done=1; const i=+box.dataset.i, k=+b.dataset.k, ok=k===qs[i][2]; answered++; if(ok) right++;
+    box.querySelectorAll('.opt').forEach(o=>{ if(+o.dataset.k===qs[i][2]) o.classList.add('right'); else if(o===b) o.classList.add('wrong'); o.disabled=true; }); box.querySelector('.why').hidden=false;
+    $('#q-score').textContent=`${right} correct of ${answered} answered · ${qs.length} total`+(answered===qs.length?(right===qs.length?' · clean sweep':' · re-read the chapters you missed'):''); });
+})();
+
+/* ---------- nav + progress ---------- */
+(function(){
+  const links=$$('nav.rail a'), secs=links.map(a=>$(a.getAttribute('href'))).filter(Boolean);
+  const io=new IntersectionObserver(es=>{ es.forEach(en=>{ if(en.isIntersecting) links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+en.target.id)); }); },{rootMargin:'-30% 0px -60% 0px'});
+  secs.forEach(s=>io.observe(s));
+  const bar=$('#progress'), onS=()=>{ const d=document.documentElement, p=d.scrollTop/Math.max(1,d.scrollHeight-d.clientHeight); bar.style.width=(p*100).toFixed(1)+'%'; }; addEventListener('scroll',onS,{passive:true}); onS();
+})();
+})();
+</script>
+
+</body></html>

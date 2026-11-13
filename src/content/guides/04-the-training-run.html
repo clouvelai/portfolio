@@ -1,0 +1,984 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>The Training Run</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@87.5,500;87.5,700;87.5,800;100,500;100,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sticky chapter rail (desktop) beside one ~68ch reading column; each chapter pairs short prose with one "instrument" the reader operates (a model that trains live in the page, a scaling-law calculator, a reward model fitted to your clicks). Same token system as the attention, speed and token guides so the four read as one series. */
+:root{
+  --bg:#F4F5F7; --surface:#FFFFFF; --fg:#121521; --muted:#5B6275; --line:#D9DCE6; --line-strong:#B3B9CB;
+  --accent:#2A78D6; --accent-soft:#E3EDFB; --accent-ink:#FFFFFF;
+  --s1:#2A78D6; --s2:#EB6834; --s3:#1BAF7A; --s4:#6250D6;
+  --ok:#1F7A4E; --warn:#B8640A; --bad:#B4321A; --mask:#8C93A8;
+  --font-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --font-body:"Newsreader",Georgia,"Times New Roman",serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1118; --surface:#161A24; --fg:#E8EAF1; --muted:#9AA2B6; --line:#272D3C; --line-strong:#3D4558;
+    --accent:#3987E5; --accent-soft:#1B2A45; --accent-ink:#0E1118;
+    --s1:#3987E5; --s2:#D95926; --s3:#199E70; --s4:#9085E9;
+    --ok:#4BC38A; --warn:#F5A524; --bad:#F08A72; --mask:#4A5270; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1118; --surface:#161A24; --fg:#E8EAF1; --muted:#9AA2B6; --line:#272D3C; --line-strong:#3D4558;
+  --accent:#3987E5; --accent-soft:#1B2A45; --accent-ink:#0E1118;
+  --s1:#3987E5; --s2:#D95926; --s3:#199E70; --s4:#9085E9;
+  --ok:#4BC38A; --warn:#F5A524; --bad:#F08A72; --mask:#4A5270; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} *{animation:none!important;transition:none!important} }
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:17.5px;line-height:1.6;margin:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+#progress{position:fixed;left:0;top:env(safe-area-inset-top,0px);height:3px;width:0;background:var(--accent);z-index:50;transition:width .1s linear}
+.frame{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:0 40px}
+@media (min-width:980px){ .frame{grid-template-columns:200px minmax(0,1fr)} }
+nav.rail{display:none}
+@media (min-width:980px){
+  nav.rail{display:block;position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;padding-top:28px;font-family:var(--font-display);font-size:13px}
+  nav.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+  nav.rail li a{display:block;padding:6px 0 6px 14px;color:var(--muted);text-decoration:none;border-left:2px solid transparent;margin-left:-1px;line-height:1.3}
+  nav.rail li a.active{color:var(--fg);border-left-color:var(--accent)}
+  nav.rail li a:hover{color:var(--fg)}
+  nav.rail .n{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-right:6px}
+}
+main{min-width:0}
+.hero{padding-block:56px 24px}
+.eyebrow{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:var(--muted);margin:0 0 14px}
+h1{font-family:var(--font-display);font-weight:800;font-stretch:87.5%;font-size:clamp(38px,6vw,68px);line-height:1;letter-spacing:-.02em;margin:0 0 18px;text-wrap:balance}
+h2{font-family:var(--font-display);font-weight:700;font-stretch:87.5%;font-size:clamp(26px,3.4vw,36px);line-height:1.1;letter-spacing:-.012em;margin:0 0 12px;text-wrap:balance}
+h3{font-family:var(--font-display);font-weight:700;font-size:18px;margin:0 0 8px}
+.lede{font-size:21px;line-height:1.5;max-width:62ch;margin:0 0 26px}
+p{max-width:68ch;margin:0 0 14px}
+section.ch{padding-block:36px;border-top:1px solid var(--line)}
+.chn{font-family:var(--font-mono);font-size:12px;color:var(--accent);letter-spacing:.08em;margin:0 0 10px}
+.inst{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin:22px 0 12px;min-width:0}
+.inst .hint{font-family:var(--font-display);font-size:13px;color:var(--muted);margin:10px 0 0;max-width:none}
+.ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;font-family:var(--font-display);font-size:13px;margin:0 0 14px}
+.ctl label{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.ctl input[type=range]{accent-color:var(--accent);width:150px;max-width:40vw}
+.ctl select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;max-width:60vw}
+.ctl .v{font-family:var(--font-mono);color:var(--fg);min-width:3.5ch;font-variant-numeric:tabular-nums}
+.btn{font-family:var(--font-display);font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn[aria-pressed="true"],.btn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;gap:4px;flex-wrap:wrap}
+.read{font-family:var(--font-mono);font-size:13px;color:var(--muted);margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 22px;font-variant-numeric:tabular-nums}
+.read b{color:var(--fg);font-weight:600}
+canvas{display:block;width:100%;max-width:100%}
+.eq{font-family:var(--font-body);font-size:22px;text-align:center;margin:18px 0;line-height:1.4}
+.eq .op{font-style:normal;font-family:var(--font-display);font-weight:500}
+.eq i{font-style:italic}
+.mono{font-family:var(--font-mono);font-size:.85em}
+.grid2{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:760px){ .grid2{grid-template-columns:1fr 1fr} }
+.grid2>*{min-width:0}
+.bars{display:grid;grid-template-columns:auto 1fr auto;gap:5px 10px;align-items:center;font-family:var(--font-mono);font-size:12px;font-variant-numeric:tabular-nums}
+.bars .bar{height:12px;border-radius:0 4px 4px 0;background:var(--s1);min-width:1px}
+.bars .bar.lit{background:var(--s2)}
+.bars .lab{color:var(--muted);white-space:nowrap}
+.cards{display:grid;grid-template-columns:1fr;gap:12px;margin-top:18px}
+@media (min-width:700px){ .cards{grid-template-columns:1fr 1fr} }
+.card{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface);min-width:0}
+.card h3{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.card h3 .yr{font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:400}
+.card p{font-size:15px;margin:0 0 8px;max-width:none}
+.card .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:14px;margin-top:6px}
+.card .kv span:first-child{font-family:var(--font-display);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:3px}
+.timeline{overflow-x:auto;margin:18px 0 4px;padding-bottom:8px}
+.tl{display:flex;gap:0;min-width:max-content;position:relative;padding-top:10px}
+.tl::before{content:"";position:absolute;left:0;right:0;top:19px;height:1px;background:var(--line-strong)}
+.tl .ev{width:160px;padding:0 10px 0 0;position:relative}
+.tl .ev::before{content:"";position:absolute;left:0;top:4px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
+.tl .ev .y{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin:20px 0 2px}
+.tl .ev .t{font-family:var(--font-display);font-size:13px;font-weight:700;line-height:1.25}
+.tl .ev .d{font-size:12.5px;color:var(--muted);line-height:1.35;margin-top:2px}
+.quiz{display:grid;gap:14px}
+.qq{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface)}
+.qq .qt{font-family:var(--font-display);font-weight:700;margin:0 0 10px;font-size:16px;max-width:none}
+.qq .opts{display:grid;gap:6px}
+.qq .opt{text-align:left;font:inherit;font-size:15px;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.qq .opt:hover{border-color:var(--line-strong)}
+.qq .opt.right{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.qq .opt.wrong{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+.qq .why{font-size:14.5px;color:var(--muted);margin:10px 0 0;max-width:none}
+.score{font-family:var(--font-display);font-size:14px;color:var(--muted)}
+.note{font-size:15px;color:var(--muted);border-left:2px solid var(--line-strong);padding-left:12px;margin:12px 0;max-width:68ch}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:12px;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--fg)}
+.panel{border:1px dashed var(--line-strong);border-radius:8px;padding:10px 12px;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums;min-width:0}
+.panel h4{font-family:var(--font-display);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}
+.panel .row{display:flex;justify-content:space-between;gap:8px;padding:2px 0;border-bottom:1px solid var(--line)}
+.panel .row:last-child{border-bottom:0}
+.panel .row b{font-weight:600;text-align:right}
+.gloss{display:grid;grid-template-columns:1fr;gap:10px 22px;margin-top:18px}
+@media (min-width:760px){ .gloss{grid-template-columns:1fr 1fr} }
+.g{padding:10px 0;border-top:1px solid var(--line);min-width:0}
+.g dt{font-family:var(--font-display);font-weight:700;font-size:16px;margin:0 0 4px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.g dt .sym{font-family:var(--font-mono);font-size:12px;color:var(--muted);font-weight:400}
+.g dd{margin:0;font-size:15px;line-height:1.5}
+.g dd .ana{display:block;color:var(--muted);margin-top:4px;font-size:14px}
+a.term{color:inherit;text-decoration:none;border-bottom:1px dotted var(--accent)}
+a.term:hover{color:var(--accent)}
+.legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-family:var(--font-display);font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.stream{font-family:var(--font-body);font-size:18px;line-height:1.55;min-height:7.5em;max-height:7.5em;overflow-y:auto;position:relative;border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--bg)}
+.stream .cur{display:inline-block;width:.55em;height:1.1em;background:var(--accent);vertical-align:-3px;margin-left:1px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.stream.wait .cur{animation:none;opacity:.35}
+.tokrow{display:flex;flex-wrap:wrap;gap:4px;font-family:var(--font-mono);font-size:12.5px;margin-top:10px;min-height:2.4em}
+.tokrow span{padding:3px 6px;border-radius:4px;border:1px solid var(--line);background:var(--surface)}
+.tokrow .acc{background:var(--accent-soft);border-color:var(--accent)}
+.tokrow .rej{text-decoration:line-through;color:var(--muted);opacity:.6}
+.tokrow .fix{border-color:var(--s2);box-shadow:inset 0 0 0 1px var(--s2)}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums;width:100%;min-width:520px}
+.tbl th,.tbl td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line)}
+.tbl th{font-family:var(--font-display);font-weight:700;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.tbl td:first-child,.tbl th:first-child{text-align:left}
+.tbl tr.lit td{background:var(--accent-soft)}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--font-mono);font-size:13px;margin:14px 0}
+.flow span{padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--muted)}
+.flow .op{color:var(--fg);border-color:var(--line-strong)}
+.flow .arrow{border:none;padding:0 2px;color:var(--accent)}
+footer{font-family:var(--font-display);font-size:13px;color:var(--muted);padding-top:28px;border-top:1px solid var(--line);margin-top:30px}
+.textin{font:inherit;font-family:var(--font-mono);font-size:14px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);color:var(--fg);width:100%;min-width:0}
+
+/* Figures: hand-drawn inline SVG mechanism diagrams + stat tiles. Strokes/text inherit currentColor; series classes carry meaning. */
+.fig{margin:22px 0 14px;max-width:none}
+.fig svg{display:block;width:100%;height:auto;max-width:100%;color:var(--fg);font-family:var(--font-display);font-size:12px;overflow:visible}
+.fig svg text{fill:currentColor}
+.fig figcaption{font-family:var(--font-display);font-size:13px;color:var(--muted);margin-top:8px;max-width:68ch;line-height:1.45}
+.fig .box{fill:var(--surface);stroke:var(--line-strong);stroke-width:1}
+.fig .soft{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1}
+.fig .ghost{fill:none;stroke:var(--line-strong);stroke-dasharray:4 4}
+.fig .f1{fill:var(--s1)} .fig .f2{fill:var(--s2)} .fig .f3{fill:var(--s3)} .fig .f4{fill:var(--s4)} .fig .fm{fill:var(--mask)} .fig .fl{fill:var(--line)}
+.fig .l1{stroke:var(--s1)} .fig .l2{stroke:var(--s2)} .fig .l3{stroke:var(--s3)} .fig .l4{stroke:var(--s4)}
+.fig .ln{stroke:currentColor;fill:none;stroke-width:1.2}
+.fig .mu{fill:var(--muted)} .fig .mono{font-family:var(--font-mono);font-size:11px} .fig .b{font-weight:700}
+.fig .sm{font-size:10.5px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:18px 0}
+.tile{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface);min-width:0}
+.tile .n{font-family:var(--font-display);font-weight:800;font-stretch:87.5%;font-size:30px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile .n small{font-size:14px;font-weight:600;color:var(--muted);margin-left:4px;letter-spacing:0}
+.tile .l{font-family:var(--font-display);font-size:12px;color:var(--muted);margin-top:6px;line-height:1.3}
+.tile.a .n{color:var(--accent)}
+@media (max-width:700px){ .fig{overflow-x:auto;-webkit-overflow-scrolling:touch} .fig svg{min-width:600px} }
+.tok{display:inline-block;padding:2px 5px;margin:2px 1px;border-radius:4px;font-family:var(--font-mono);font-size:13px;line-height:1.3;border:1px solid var(--line);background:var(--surface);white-space:pre}
+.tok.t0{background:color-mix(in srgb,var(--s1) 18%,var(--surface))} .tok.t1{background:color-mix(in srgb,var(--s2) 18%,var(--surface))} .tok.t2{background:color-mix(in srgb,var(--s3) 18%,var(--surface))} .tok.t3{background:color-mix(in srgb,var(--s4) 18%,var(--surface))}
+.tok.byte{border-style:dashed;color:var(--muted)}
+.tokwrap{line-height:1.9;min-height:3.2em;font-size:0}
+.tokwrap .tok{font-size:13px}
+.dist{display:grid;grid-template-columns:minmax(70px,auto) 1fr auto;gap:4px 10px;align-items:center;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.dist .lab{white-space:pre;color:var(--fg);text-align:right}
+.dist .trk{position:relative;height:14px;background:color-mix(in srgb,var(--line) 55%,transparent);border-radius:0 4px 4px 0;min-width:0}
+.dist .trk i{position:absolute;left:0;top:0;bottom:0;background:var(--s1);border-radius:0 4px 4px 0;min-width:1px}
+.dist .trk i.cut{background:var(--mask);opacity:.45}
+.dist .trk i.pick{background:var(--s2)}
+.dist .trk em{position:absolute;left:0;top:0;bottom:0;background:var(--s3);opacity:.55;border-radius:0 4px 4px 0}
+.dist .pv{color:var(--muted);text-align:right;min-width:5ch}
+.dist .lab.cut,.dist .pv.cut{color:var(--mask);text-decoration:line-through}
+.outs{display:grid;gap:8px;margin-top:10px}
+.out{font-family:var(--font-body);font-size:16px;line-height:1.5;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg);min-width:0;overflow-wrap:anywhere}
+.out .pre{color:var(--muted)}
+.out .div{background:color-mix(in srgb,var(--s2) 22%,transparent);border-radius:3px}
+.lp{display:flex;flex-wrap:wrap;gap:3px;font-family:var(--font-mono);font-size:13px;margin-top:10px}
+.lp span{padding:3px 5px;border-radius:4px;white-space:pre}
+.json{font-family:var(--font-mono);font-size:14px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:2.6em;overflow-wrap:anywhere}
+.json .nx{display:inline-block;width:.55em;height:1.1em;background:var(--accent);vertical-align:-3px;margin-left:1px}
+.kvrow{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--font-display);font-size:13px;color:var(--muted);margin-top:8px}
+.kvrow b{color:var(--fg);font-weight:600}
+.scale{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:12px;color:var(--muted);margin-top:8px}
+.scale i{display:inline-block;height:10px;width:90px;border-radius:3px;background:linear-gradient(90deg,var(--bad),var(--warn),var(--ok))}
+.ctl input[type=number]{font:inherit;font-family:var(--font-mono);color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;width:9ch}
+.ctl input[type=text]{font:inherit;font-family:var(--font-mono);font-size:13px;color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;min-width:0}
+.fig .fo{fill:var(--bg)}
+.choice{display:grid;grid-template-columns:1fr;gap:8px}
+@media (min-width:640px){ .choice{grid-template-columns:1fr 1fr} }
+.choice button{text-align:left;font:inherit;font-size:15px;line-height:1.45;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;min-width:0}
+.choice button:hover{border-color:var(--accent)}
+.choice button .tag{display:block;font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:4px}
+.adv{display:grid;grid-template-columns:minmax(60px,auto) 1fr auto;gap:5px 10px;align-items:center;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.adv .lab{color:var(--fg);white-space:nowrap;cursor:pointer;user-select:none}
+.adv .lab.ok{color:var(--ok)} .adv .lab.bad{color:var(--bad)}
+.adv .trk{position:relative;height:14px;background:color-mix(in srgb,var(--line) 55%,transparent);border-radius:4px}
+.adv .trk::before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--line-strong)}
+.adv .trk i{position:absolute;top:0;bottom:0;border-radius:3px}
+.adv .trk i.up{background:var(--ok);left:50%} .adv .trk i.dn{background:var(--bad);right:50%}
+.adv .pv{color:var(--muted);text-align:right;min-width:5ch}
+.stages{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.stages .btn{font-weight:500}
+.chatv{font-family:var(--font-mono);font-size:13px;line-height:1.9;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-wrap:anywhere}
+.chatv .sp{display:inline-block;padding:1px 6px;border-radius:4px;background:var(--accent-soft);border:1px solid var(--accent);color:var(--fg);white-space:pre}
+.chatv .msk{color:var(--muted)}
+.chatv .trn{background:color-mix(in srgb,var(--s3) 22%,transparent);border-radius:3px;padding:1px 2px}
+.ctl input[type=checkbox]{accent-color:var(--accent)}
+.fig .f3s{fill:color-mix(in srgb,var(--s3) 22%,var(--surface))} .fig .f2s{fill:color-mix(in srgb,var(--s2) 22%,var(--surface))} .fig .f1s{fill:color-mix(in srgb,var(--s1) 22%,var(--surface))} .fig .fms{fill:color-mix(in srgb,var(--mask) 25%,var(--surface))}
+</style>
+
+<div id="progress"></div>
+<div class="frame">
+<nav class="rail" aria-label="Chapters">
+  <ol>
+    <li><a href="#c0"><span class="n">00</span>Plain words</a></li>
+    <li><a href="#c1"><span class="n">01</span>What learning is</a></li>
+    <li><a href="#c2"><span class="n">02</span>The data</a></li>
+    <li><a href="#c3"><span class="n">03</span>How big, how long</a></li>
+    <li><a href="#c4"><span class="n">04</span>The machinery</a></li>
+    <li><a href="#c5"><span class="n">05</span>The dials</a></li>
+    <li><a href="#c6"><span class="n">06</span>Base to assistant</a></li>
+    <li><a href="#c7"><span class="n">07</span>Learning taste</a></li>
+    <li><a href="#c8"><span class="n">08</span>Learning to reason</a></li>
+    <li><a href="#c9"><span class="n">09</span>Tuning it yourself</a></li>
+    <li><a href="#c10"><span class="n">10</span>Measuring</a></li>
+    <li><a href="#c11"><span class="n">11</span>Traps and the frontier</a></li>
+    <li><a href="#c12"><span class="n">12</span>Why it matters to me</a></li>
+    <li><a href="#c13"><span class="n">13</span>Check yourself</a></li>
+  </ol>
+</nav>
+<main>
+
+<header class="hero">
+  <p class="eyebrow">An interactive field guide</p>
+  <h1>How a model is made: from raw web text to an assistant that reasons</h1>
+  <p class="lede">A language model starts as a few hundred billion random numbers. Training is the process that turns them into something that can write, follow instructions and think through a problem. It happens in stages, each with its own data, its own goal and its own failure modes, and almost every behaviour you notice in a deployed model traces back to one of them. This page builds the whole run, from one gradient step to a reasoning model, with a real model training live below.</p>
+  <div class="inst" id="hero-inst">
+    <div class="ctl"><label>model <select id="h-model"><option value="2">bigram · 729 parameters</option><option value="3">trigram · 19,683 parameters</option></select></label><label>optimizer <select id="h-opt"><option value="sgd">plain gradient descent</option><option value="adam" selected>Adam</option></select></label><label>learning rate <input type="range" id="h-lr" min="0" max="100" value="55"><span class="v" id="h-lr-v">0.1</span></label><button class="btn" id="h-train">train</button><button class="btn" id="h-step">one step</button><button class="btn" id="h-reset">reset</button></div>
+    <canvas id="h-cv" height="170" aria-label="Loss falling over training steps"></canvas>
+    <div class="read"><span>step <b id="h-st">0</b></span><span>batch loss <b id="h-l">3.30</b></span><span>held-out loss <b id="h-lv">3.30</b></span><span>random guess <b>3.30</b></span><span>bits per letter <b id="h-bits">4.75</b></span></div>
+    <div class="out" id="h-sample" style="margin-top:10px"></div>
+    <p class="hint">A real model, trained in your browser on 6 KB of English. It predicts the next letter from the previous one (bigram) or the previous two (trigram). Blue is the loss on the batch it just saw; orange is loss on 600 letter pairs it never trains on. The text underneath is sampled from the current model: noise at step 0, pronounceable nonsense a few hundred steps later. Turn the learning rate up until the curve goes ragged, then switch the optimizer. Switch to the trigram and watch the orange line turn back up after a while: 19,683 parameters against 5,000 letters is the overfitting of chapter 10 in miniature. Everything a frontier run does is this loop with more parameters and more data.</p>
+  </div>
+<div class="tiles"><div class="tile a"><div class="n">15T</div><div class="l">tokens Llama 3 read during pretraining</div></div><div class="tile"><div class="n">6<small>× N × D</small></div><div class="l">floating-point operations for a run (parameters × tokens)</div></div><div class="tile"><div class="n">16<small>bytes</small></div><div class="l">of GPU memory per parameter while training (Adam, mixed precision)</div></div><div class="tile"><div class="n">&lt;5%</div><div class="l">of compute spent after pretraining, in most published runs</div></div></div>
+</header>
+
+<section class="ch" id="c0">
+  <p class="chn">00 · PLAIN WORDS</p>
+<figure class="fig"><svg viewBox="0 0 760 268" role="img" aria-label="Five training stages in a row: pretraining on web-scale text, mid-training on higher-quality and longer data, supervised fine-tuning on example dialogues, preference tuning from comparisons, and reasoning reinforcement learning on problems with checkable answers. A base model exists after the first two, a chat model after the fourth, a reasoning model after the fifth. A bar underneath shows pretraining takes nearly all the compute.">
+<defs><marker id="m0a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<path d="M14 22v-6h282v6" class="ln"/><text x="155" y="12" text-anchor="middle" class="mono">chapters 01–05 · learning to predict text</text>
+<path d="M314 22v-6h432v6" class="ln"/><text x="530" y="12" text-anchor="middle" class="mono">chapters 06–09 · learning to be useful</text>
+<rect x="14" y="40" width="132" height="76" rx="8" class="box"/><text x="80" y="62" text-anchor="middle" class="b">pretraining</text><text x="80" y="80" text-anchor="middle" class="mu sm">predict the next token</text><text x="80" y="94" text-anchor="middle" class="mu sm">~15T tokens of web + code</text><text x="80" y="108" text-anchor="middle" class="mono sm">weeks · 10k+ GPUs</text>
+<line x1="146" y1="78" x2="162" y2="78" class="ln" marker-end="url(#m0a)"/>
+<rect x="164" y="40" width="132" height="76" rx="8" class="box"/><text x="230" y="62" text-anchor="middle" class="b">mid-training</text><text x="230" y="80" text-anchor="middle" class="mu sm">same goal, better data</text><text x="230" y="94" text-anchor="middle" class="mu sm">long documents, math, code</text><text x="230" y="108" text-anchor="middle" class="mono sm">~100B–1T tokens</text>
+<line x1="296" y1="78" x2="312" y2="78" class="ln" marker-end="url(#m0a)"/>
+<rect x="314" y="40" width="132" height="76" rx="8" class="soft"/><text x="380" y="62" text-anchor="middle" class="b">supervised fine-tuning</text><text x="380" y="80" text-anchor="middle" class="mu sm">copy example answers</text><text x="380" y="94" text-anchor="middle" class="mu sm">~10k–1M dialogues</text><text x="380" y="108" text-anchor="middle" class="mono sm">hours · tens of GPUs</text>
+<line x1="446" y1="78" x2="462" y2="78" class="ln" marker-end="url(#m0a)"/>
+<rect x="464" y="40" width="132" height="76" rx="8" class="soft"/><text x="530" y="62" text-anchor="middle" class="b">preference tuning</text><text x="530" y="80" text-anchor="middle" class="mu sm">learn which answer wins</text><text x="530" y="94" text-anchor="middle" class="mu sm">~100k–1M comparisons</text><text x="530" y="108" text-anchor="middle" class="mono sm">RLHF · DPO</text>
+<line x1="596" y1="78" x2="612" y2="78" class="ln" marker-end="url(#m0a)"/>
+<rect x="614" y="40" width="132" height="76" rx="8" class="soft"/><text x="680" y="62" text-anchor="middle" class="b">reasoning RL</text><text x="680" y="80" text-anchor="middle" class="mu sm">reward checkable answers</text><text x="680" y="94" text-anchor="middle" class="mu sm">math, code, tool use</text><text x="680" y="108" text-anchor="middle" class="mono sm">GRPO · many rollouts</text>
+<path d="M230 116v16" class="ln" marker-end="url(#m0a)"/><rect x="176" y="134" width="108" height="24" rx="12" class="f1s" stroke="var(--s1)"/><text x="230" y="150" text-anchor="middle" class="b sm">base model</text>
+<path d="M530 116v16" class="ln" marker-end="url(#m0a)"/><rect x="476" y="134" width="108" height="24" rx="12" class="f1s" stroke="var(--s1)"/><text x="530" y="150" text-anchor="middle" class="b sm">chat model</text>
+<path d="M680 116v16" class="ln" marker-end="url(#m0a)"/><rect x="620" y="134" width="120" height="24" rx="12" class="f1s" stroke="var(--s1)"/><text x="680" y="150" text-anchor="middle" class="b sm">reasoning model</text>
+<text x="14" y="180" class="b sm">share of training compute</text>
+<rect x="14" y="188" width="732" height="14" rx="3" class="fl"/><rect x="14" y="188" width="695" height="14" rx="3" class="f1"/><rect x="709" y="188" width="18" height="14" class="f4"/><rect x="727" y="188" width="19" height="14" class="f2"/>
+<text x="360" y="199" text-anchor="middle" class="sm" style="fill:var(--accent-ink)">pretraining + mid-training ≈ 95%</text><text x="746" y="216" text-anchor="end" class="mu sm">post-training ≈ 5%, growing fast since 2025</text>
+<text x="14" y="240" class="b">Nearly all the compute goes into reading; nearly all the personality comes from the last three boxes.</text>
+<text x="14" y="258" class="mu sm">Chapter 10 is how each stage is measured; chapter 11 is what goes wrong; chapter 12 maps the behaviours you see back onto the stage that caused them.</text>
+</svg><figcaption>The map every term on this page lives on. A model is made in stages that reuse one mechanism (nudge parameters to make a number go down) with different data and different numbers. Volumes are order-of-magnitude from published runs.</figcaption></figure>
+
+  <h2>Every term, in one breath</h2>
+  <p>Read this first or come back to it. Every dotted word on the page links here.</p>
+  <dl class="gloss">
+  <div class="g" id="g-param"><dt>Parameter, weight <span class="sym">N</span></dt><dd>One of the numbers inside the model. A 70B model has seventy billion of them, arranged as matrices that multiply the token vectors from the attention guide. Training changes nothing else.<span class="ana">The knobs on a mixing desk, except there are billions of them and nobody labels any.</span></dd></div>
+  <div class="g" id="g-loss"><dt>Loss</dt><dd>One number that says how wrong the model's predictions were on a batch of text. For language models it is the average negative log-probability the model gave to the token that actually came next. Random guessing over 128k tokens scores 11.8; a good model scores around 2.<span class="ana">The score in a game you want to lose.</span></dd></div>
+  <div class="g" id="g-gradient"><dt>Gradient</dt><dd>For every parameter, the direction and rate at which the loss would change if you nudged that one parameter. Computed exactly, for all N parameters at once, by backpropagation.<span class="ana">Standing on a hillside blindfolded, feeling which way the ground slopes under each foot.</span></dd></div>
+  <div class="g" id="g-gd"><dt>Gradient descent, training step</dt><dd>Move every parameter a small distance against its gradient, so the loss on this batch goes down a little. One step: read a batch, run the model forward, compute the loss, run backward for gradients, update. Repeat a million times.<span class="ana">Walking downhill one small step at a time, re-checking the slope after each.</span></dd></div>
+  <div class="g" id="g-lr"><dt>Learning rate <span class="sym">η</span></dt><dd>How far to move per step. Too small and training crawls; too large and it overshoots and blows up. Typical peak values are around 0.0003 for a large model, and the rate is changed on a schedule during the run.<span class="ana">Stride length. Long strides on open ground, baby steps near the bottom.</span></dd></div>
+  <div class="g" id="g-batch"><dt>Batch</dt><dd>The chunk of text one step learns from, measured in tokens. Frontier runs use batches of 4M to 16M tokens, so one step is thousands of documents averaged together.<span class="ana">Grading a stack of papers before adjusting how you teach, not after each one.</span></dd></div>
+  <div class="g" id="g-step"><dt>Epoch</dt><dd>One full pass over the training data. Pretraining usually makes about one epoch; everything is seen once. Fine-tuning on a small dataset makes several.<span class="ana">Reading the textbook cover to cover, once.</span></dd></div>
+  <div class="g" id="g-optimizer"><dt>Optimizer, Adam, AdamW</dt><dd>The rule that turns gradients into parameter updates. Plain gradient descent uses the gradient as is. Adam keeps a running average of each parameter's gradient and of its square, and scales the step so every parameter moves at a sensible speed. AdamW adds a small pull toward zero. Nearly every model since 2015 uses it.<span class="ana">Cruise control for each knob: smooths the jitter, speeds up the sluggish ones.</span></dd></div>
+  <div class="g" id="g-backprop"><dt>Forward pass, backward pass</dt><dd>Forward: tokens in, predictions out, loss computed. Backward: the loss flows back through every layer, and the chain rule produces the gradient for every parameter. The backward pass costs about twice the forward, which is where the 6 in 6·N·D comes from (2 forward, 4 backward).<span class="ana">Forward is taking the exam. Backward is the teacher marking it and telling every knob what it did wrong.</span></dd></div>
+  <div class="g" id="g-pretrain"><dt>Pretraining</dt><dd>The first and by far the biggest stage: predict the next token over trillions of tokens of text. Produces a base model that knows language, facts and code but only continues text; it does not answer you.<span class="ana">Reading the whole library before anyone tells you what the job is.</span></dd></div>
+  <div class="g" id="g-corpus"><dt>Corpus, Common Crawl</dt><dd>The training text. Most of it comes from Common Crawl, a non-profit's monthly snapshots of the public web, plus code from GitHub, books, papers, Wikipedia and licensed or purchased sets. Raw crawl is mostly junk; most of the work is filtering it.<span class="ana">A landfill with a library buried in it.</span></dd></div>
+  <div class="g" id="g-dedup"><dt>Deduplication, quality filtering</dt><dd>Removing repeated pages (exact, near-duplicate and URL-level) and scoring the rest for quality with heuristics and small classifiers. FineWeb turned 96 crawl snapshots into 15T tokens this way. Dedup and filtering improve a model more than almost any architecture change.<span class="ana">Sorting the landfill. Most of the model's quality is decided here, before any GPU turns on.</span></dd></div>
+  <div class="g" id="g-mixture"><dt>Data mixture</dt><dd>The proportions of web, code, math, books, multilingual and synthetic text in the batch. Set by experiments on small models; changed near the end of the run to lean on the highest-quality sources.<span class="ana">A diet. Code is the vegetables: everyone adds more than tastes natural because it makes the model think better.</span></dd></div>
+  <div class="g" id="g-scaling"><dt>Scaling law</dt><dd>An empirical rule that loss falls as a smooth power law in parameters and tokens, so you can predict a big model's loss from small ones. Kaplan et al. found it in 2020; Chinchilla corrected the recipe in 2022.<span class="ana">A weather forecast for a run you cannot afford to do twice.</span></dd></div>
+  <div class="g" id="g-chinchilla"><dt>Compute-optimal, Chinchilla</dt><dd>For a fixed compute budget, the best loss comes from training about 20 tokens per parameter. Models meant to be served cheaply are deliberately "over-trained" far past that (Llama 3 8B: 1,875 tokens per parameter) because a smaller model is cheaper every time it answers.<span class="ana">Spend the budget on a longer education for a smaller brain, if the brain has to work for a living.</span></dd></div>
+  <div class="g" id="g-flops"><dt>FLOPs, 6ND</dt><dd>Floating-point operations. A training run costs about 6 × parameters × tokens: 6 × 405B × 15T ≈ 4 × 10²⁵ for Llama 3 405B. Divide by what the GPUs actually deliver and you get the calendar.<span class="ana">The electricity bill, counted in multiplications.</span></dd></div>
+  <div class="g" id="g-precision"><dt>Mixed precision, bf16, FP8</dt><dd>Doing the matrix math in 16-bit (or 8-bit) numbers for speed while keeping a 32-bit master copy of the parameters for the small updates. DeepSeek-V3 was the first large run in FP8.<span class="ana">Sketching in pencil, keeping the ledger in ink.</span></dd></div>
+  <div class="g" id="g-parallel"><dt>Data, tensor, pipeline parallelism</dt><dd>Three ways to split a run over thousands of GPUs: copy the model and split the batch (data), split one matrix across GPUs (tensor), or give each GPU a slice of layers (pipeline). Real runs use all three at once.<span class="ana">Many kitchens (data), many cooks per dish (tensor), an assembly line of stations (pipeline).</span></dd></div>
+  <div class="g" id="g-zero"><dt>ZeRO, FSDP, sharding</dt><dd>Splitting the optimizer state, gradients and parameters across the data-parallel GPUs instead of copying them, so each holds 1/n of the 16 bytes per parameter. Makes a 400B-parameter run fit at all.<span class="ana">One shared ledger with each accountant holding a few pages, instead of everyone holding the whole book.</span></dd></div>
+  <div class="g" id="g-checkpoint"><dt>Checkpoint</dt><dd>A saved copy of all parameters and optimizer state, written every few hours. Hardware fails constantly at scale (Llama 3: 419 unexpected interruptions in 54 days); training resumes from the last checkpoint.<span class="ana">Saving the game.</span></dd></div>
+  <div class="g" id="g-spike"><dt>Loss spike, divergence</dt><dd>The loss suddenly jumping, sometimes never recovering. Caused by a bad batch, a too-large learning rate or numerical overflow. Fixed by gradient clipping, rewinding to a checkpoint and skipping the batch.<span class="ana">Tripping on the stairs. Usually you catch yourself; sometimes you fall the whole flight.</span></dd></div>
+  <div class="g" id="g-schedule"><dt>Learning-rate schedule, warmup, cosine, WSD</dt><dd>The learning rate starts near zero and ramps up (warmup), holds or follows a cosine curve, then decays. Warmup-stable-decay (WSD) holds it flat and only decays at the very end, which lets you keep training without deciding the end date in advance.<span class="ana">Easing into a run, cruising, then slowing to a walk before you stop.</span></dd></div>
+  <div class="g" id="g-anneal"><dt>Annealing, mid-training</dt><dd>The last stretch of pretraining, where the learning rate decays and the mixture shifts to the best data: textbooks, math, code, long documents, some synthetic text. A lot of a model's benchmark score is bought here.<span class="ana">Cramming from the good notes the week before the exam.</span></dd></div>
+  <div class="g" id="g-base"><dt>Base model</dt><dd>The model straight out of pretraining. Give it "What is the capital of France?" and it may continue with "What is the capital of Germany?" because that is what quiz pages look like. All the knowledge, none of the manners.<span class="ana">A brilliant autocomplete that has never been told it is talking to someone.</span></dd></div>
+  <div class="g" id="g-sft"><dt>Supervised fine-tuning <span class="sym">SFT</span></dt><dd>Continue training the base model on example conversations written by people (and increasingly by other models), computing loss only on the assistant's turns. Teaches the format of being an assistant in a few thousand to a million examples.<span class="ana">Showing a new hire a hundred good emails before letting them write one.</span></dd></div>
+  <div class="g" id="g-template"><dt>Chat template, special tokens</dt><dd>The fixed wrapping that marks who is speaking: tokens like &lt;|start_header_id|&gt;user&lt;|end_header_id|&gt;. Introduced at SFT. The API hides them from you; the model never sees a conversation without them.<span class="ana">Stage directions in a script. The actors never say them aloud, but they need them to know whose line it is.</span></dd></div>
+  <div class="g" id="g-rlhf"><dt>Reinforcement learning from human feedback <span class="sym">RLHF</span></dt><dd>Show people pairs of answers, record which they prefer, train a reward model to predict that preference, then train the chat model to produce answers the reward model scores highly while staying close to where it started. InstructGPT, 2022; the step that made ChatGPT feel like ChatGPT.<span class="ana">Learning a reader's taste from thumbs up and down instead of from a rulebook.</span></dd></div>
+  <div class="g" id="g-rm"><dt>Reward model, preference pair</dt><dd>A copy of the model with its last layer replaced by a single score. Trained so that the preferred answer in each pair scores higher than the rejected one (the Bradley-Terry model: P(A beats B) = σ(r<sub>A</sub> − r<sub>B</sub>)). It is a stand-in for the human, and it can be fooled.<span class="ana">A critic trained on your thumbs. It knows what you liked; it does not know why.</span></dd></div>
+  <div class="g" id="g-kl"><dt>KL penalty, reference model</dt><dd>A term in the RL objective that charges the model for drifting from a frozen copy of itself (the reference). Without it the model finds answers that score high with the reward model and read like nonsense to a human.<span class="ana">A leash. Long enough to explore, short enough not to run into traffic.</span></dd></div>
+  <div class="g" id="g-ppo"><dt>PPO, policy, rollout</dt><dd>Proximal policy optimization, the RL algorithm InstructGPT used. The "policy" is just the model being trained; a "rollout" is one sampled answer. PPO limits how much each update changes the policy and needs a fourth model (the critic) to estimate how good a partial answer is.<span class="ana">Four models in memory, one being taught. Expensive, fiddly, effective.</span></dd></div>
+  <div class="g" id="g-dpo"><dt>Direct preference optimization <span class="sym">DPO</span></dt><dd>A 2023 shortcut: skip the reward model and the RL loop; train directly on the preference pairs with a loss that pushes the preferred answer's probability up and the rejected one's down, relative to the reference. One model, one pass, most of the benefit.<span class="ana">Learning taste straight from the thumbs, without first training a critic to imitate them.</span></dd></div>
+  <div class="g" id="g-rlvr"><dt>RL with verifiable rewards <span class="sym">RLVR</span></dt><dd>Reinforcement learning where the reward is a program, not a model: does the final answer match? Do the tests pass? Did the tool call succeed? No reward model to fool. The recipe behind every reasoning model since late 2024.<span class="ana">Practising on problems with an answer key instead of asking a critic how it felt.</span></dd></div>
+  <div class="g" id="g-grpo"><dt>GRPO, advantage</dt><dd>Group relative policy optimization (DeepSeek, 2024). Sample a group of answers to the same prompt, score each, subtract the group's mean: answers above average get pushed up, below average pushed down. No critic model needed. The "advantage" is that signed, normalized score.<span class="ana">Grading on a curve, then telling each attempt whether it beat the class.</span></dd></div>
+  <div class="g" id="g-cot"><dt>Reasoning model, chain of thought</dt><dd>A model trained with RLVR to write out intermediate steps before the answer. The steps are ordinary tokens; what changed is that RL rewarded whatever thinking made the final answer right, so the model learned to check, backtrack and try again. More thinking tokens, better answers: "test-time compute".<span class="ana">Showing your working, because the ones who showed their working got the marks.</span></dd></div>
+  <div class="g" id="g-hack"><dt>Reward hacking, Goodhart</dt><dd>The model finding ways to raise the reward that are not what the designer meant: longer answers, confident tone, flattery, special-casing the tests. Any proxy pushed hard enough stops measuring what it was built to measure.<span class="ana">Teaching to the test until the test stops meaning anything.</span></dd></div>
+  <div class="g" id="g-lora"><dt>LoRA, QLoRA</dt><dd>Low-rank adaptation: freeze the model and train two thin matrices per layer whose product is added to the original weight. Trains under 1% of the parameters, fits on one GPU, and the result is a small file you can swap in. QLoRA does the same over a 4-bit quantized base.<span class="ana">A clip-on lens instead of regrinding the camera's glass.</span></dd></div>
+  <div class="g" id="g-distill"><dt>Distillation</dt><dd>Training a smaller student model on the outputs (or full probability distributions) of a larger teacher. Most small models you can run locally are distilled from something bigger; the reasoning in DeepSeek-R1's 7B variants came this way.<span class="ana">Learning from the professor's lecture notes instead of rediscovering the field.</span></dd></div>
+  <div class="g" id="g-synthetic"><dt>Synthetic data, model collapse</dt><dd>Training text written by another model: rewritten web pages, generated math problems, dialogues. Now a large share of post-training data and a growing share of pretraining. The risk is a model trained mostly on model output losing the tails of real human text over generations.<span class="ana">Photocopies of photocopies. Fine once, fuzzy by the fifth.</span></dd></div>
+  <div class="g" id="g-overfit"><dt>Overfitting, held-out set</dt><dd>Training loss keeps falling while loss on text the model never saw starts rising: it is memorising. The held-out (validation) set is kept apart from training precisely to catch this. Benchmarks leaking into training data (contamination) is the same disease.<span class="ana">Memorising last year's exam. Great on the practice paper, useless in the hall.</span></dd></div>
+  <div class="g" id="g-forget"><dt>Catastrophic forgetting</dt><dd>Fine-tuning on your narrow data erodes what the model knew before. Mitigated by small learning rates, LoRA, mixing in general data and not training for long.<span class="ana">Learning a new phone number by overwriting your old one.</span></dd></div>
+  <div class="g" id="g-moe"><dt>Mixture of experts <span class="sym">MoE</span></dt><dd>Each layer's feed-forward block is replaced by many (say 256) smaller blocks and a router that sends each token to a few of them. The model has far more parameters than it uses per token: DeepSeek-V3 has 671B, uses 37B per token. Cheaper to train and serve per unit of quality; harder to train stably.<span class="ana">A hospital with specialists and a triage desk, instead of one doctor who knows everything.</span></dd></div>
+  <div class="g" id="g-bench"><dt>Benchmark, eval</dt><dd>A fixed set of questions with known answers scored during and after training: MMLU for knowledge, GSM8K and MATH for arithmetic, HumanEval and SWE-bench for code. Guides every decision in the run, and is exactly what reward hacking and contamination corrupt. The next guide is about these.<span class="ana">The exam. Load-bearing and gameable at the same time.</span></dd></div>
+  </dl>
+</section>
+
+<section class="ch" id="c1">
+  <p class="chn">01 · WHAT LEARNING IS</p>
+  <h2>One number, pushed downhill</h2>
+  <p>Strip away the scale and training is a single idea. The model has <a class="term" href="#g-param">parameters</a>, billions of numbers that start random. You give it a batch of text with the last token hidden, it predicts a probability for every token in the vocabulary (the logits from the token guide), and you compute the <a class="term" href="#g-loss">loss</a>: how little probability it put on the token that was actually there. Then comes the trick that makes all of this possible. <a class="term" href="#g-backprop">Backpropagation</a> computes, for every single parameter at once, how the loss would change if that parameter moved a hair. That is the <a class="term" href="#g-gradient">gradient</a>. Move every parameter a small step the other way, and the loss on that batch drops a little.</p>
+  <p>That is one <a class="term" href="#g-gd">training step</a>. A frontier run makes about a million of them. The <a class="term" href="#g-lr">learning rate</a> decides how big each step is, and the instrument below shows why it is the most important dial in the room: too small and you crawl; too large and you leap over the valley and land higher than you started.</p>
+  <div class="inst" id="t1">
+    <div class="ctl"><label>learning rate <input type="range" id="t1-lr" min="1" max="100" value="5"><span class="v" id="t1-lr-v">0.05</span></label><label>start <input type="range" id="t1-x0" min="0" max="100" value="88"><span class="v" id="t1-x0-v">2.6</span></label><button class="btn" id="t1-step">one step</button><button class="btn" id="t1-run">run</button><button class="btn" id="t1-reset">reset</button></div>
+    <canvas id="t1-cv" height="220" aria-label="A ball descending a bumpy loss curve by gradient steps"></canvas>
+    <div class="read"><span>steps <b id="t1-n">0</b></span><span>position <b id="t1-x">2.60</b></span><span>loss <b id="t1-l">—</b></span><span>slope <b id="t1-g">—</b></span><span>step size <b id="t1-s">—</b></span></div>
+    <p class="hint">A loss landscape with one parameter instead of billions. The ball only ever knows the slope under it (the gradient) and moves against it by learning rate × slope. Start on the right and it settles in the shallow valley unless the rate is big enough to carry it over the bump. Push the rate past about 0.3 and watch it bounce out entirely: that is a loss spike. Real landscapes have billions of axes, but the step rule is this one, applied to each.</p>
+  </div>
+<figure class="fig"><svg viewBox="0 0 760 236" role="img" aria-label="One training step as a loop: a batch of tokens goes through a forward pass to produce predictions, the loss compares them with the real next tokens, the backward pass turns the loss into a gradient for every parameter, the optimizer updates the parameters, and the next batch starts the loop again. A note gives Llama 3 405B as about one million steps.">
+<defs><marker id="m1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="m1c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f2"/></marker></defs>
+<rect x="14" y="30" width="128" height="70" rx="8" class="box"/><text x="78" y="54" text-anchor="middle" class="b">batch</text><text x="78" y="72" text-anchor="middle" class="mu sm">4M–16M tokens</text><text x="78" y="88" text-anchor="middle" class="mu sm">thousands of documents</text>
+<line x1="142" y1="65" x2="160" y2="65" class="ln" marker-end="url(#m1a)"/>
+<rect x="162" y="30" width="128" height="70" rx="8" class="box"/><text x="226" y="54" text-anchor="middle" class="b">forward pass</text><text x="226" y="72" text-anchor="middle" class="mu sm">predict every next token</text><text x="226" y="88" text-anchor="middle" class="mono sm">2 · N FLOPs per token</text>
+<line x1="290" y1="65" x2="308" y2="65" class="ln" marker-end="url(#m1a)"/>
+<rect x="310" y="30" width="128" height="70" rx="8" class="soft"/><text x="374" y="54" text-anchor="middle" class="b">loss</text><text x="374" y="72" text-anchor="middle" class="mu sm">−log p(actual token)</text><text x="374" y="88" text-anchor="middle" class="mu sm">averaged over the batch</text>
+<line x1="438" y1="65" x2="456" y2="65" class="ln" marker-end="url(#m1a)"/>
+<rect x="458" y="30" width="128" height="70" rx="8" class="box"/><text x="522" y="54" text-anchor="middle" class="b">backward pass</text><text x="522" y="72" text-anchor="middle" class="mu sm">one gradient per parameter</text><text x="522" y="88" text-anchor="middle" class="mono sm">4 · N FLOPs per token</text>
+<line x1="586" y1="65" x2="604" y2="65" class="ln" marker-end="url(#m1a)"/>
+<rect x="606" y="30" width="140" height="70" rx="8" class="soft"/><text x="676" y="54" text-anchor="middle" class="b">optimizer update</text><text x="676" y="72" text-anchor="middle" class="mu sm">θ ← θ − η · Adam(grad)</text><text x="676" y="88" text-anchor="middle" class="mu sm">every parameter moves a little</text>
+<path d="M676 100v30H78v-30" class="ln l2" stroke-width="1.5" marker-end="url(#m1c)"/>
+<text x="377" y="144" text-anchor="middle" class="mono sm" style="fill:var(--s2)">next batch · one step done · repeat ~1,000,000 times</text>
+<rect x="14" y="160" width="732" height="64" rx="6" class="ghost"/>
+<text x="30" y="182" class="b">Llama 3 405B, by the numbers:</text><text x="226" y="182" class="sm">15T tokens ÷ 16M tokens per batch ≈ 940,000 steps.</text>
+<text x="30" y="200" class="mu sm">Each step: forward + backward ≈ 6 × 405B × 16M ≈ 4 × 10¹⁹ FLOPs, which 16,000 H100s do in about 7 seconds. 54 days end to end.</text>
+<text x="30" y="216" class="mu sm">Every stage on this page, from pretraining to reasoning RL, is this same loop. Only the batch and the loss change.</text>
+</svg><figcaption>A training step. The forward pass is the inference you already know from the attention guide; the backward pass is the new part, and it costs about twice as much. The 2 + 4 is the 6 in the 6ND rule.</figcaption></figure>
+  <p>Two refinements make this work at scale. First, no one uses the raw gradient. <a class="term" href="#g-optimizer">Adam</a> keeps a running average of each parameter's recent gradients and of their squares, and divides one by the other, so a parameter whose gradient is tiny but consistent moves as fast as one whose gradient is huge and noisy. Switch the hero instrument to Adam and it reaches the same loss in a fraction of the steps. Second, you never compute the loss on one example. A <a class="term" href="#g-batch">batch</a> of millions of tokens is averaged, so each step is a stable estimate of the true downhill direction rather than a lurch toward whatever one document wanted.</p>
+</section>
+
+<section class="ch" id="c2">
+  <p class="chn">02 · THE DATA</p>
+  <h2>Fifteen trillion tokens, and where they come from</h2>
+  <p>The loss is only as good as the text it is computed on, and this is where most of a lab's effort now goes. The <a class="term" href="#g-corpus">raw material</a> is the public web, mostly via Common Crawl's monthly snapshots, plus code repositories, books, academic papers, Wikipedia and whatever can be licensed. Raw crawl is overwhelmingly junk: boilerplate, navigation menus, spam, machine-translated pages, the same press release on four hundred sites. The pipeline that turns it into training text is a funnel of filters, and each one is a small research project.</p>
+  <p>Text is extracted from HTML. A language classifier keeps the languages you want. <a class="term" href="#g-dedup">Deduplication</a> removes exact repeats, near-repeats (by hashing shingles of words) and whole repeated URLs; without it the model memorises the popular pages and learns less from everything else. Quality filters drop pages with too little punctuation, too many lists, too much adult content, and increasingly a small model scores each page for "educational value" or similarity to good text. What survives, FineWeb's 15T tokens from 96 snapshots for example, is the pretraining set. Then comes the <a class="term" href="#g-mixture">mixture</a>: how much code, how much math, how much of each language. Set by experiments on small models, it is one of a lab's most guarded numbers.</p>
+  <div class="inst" id="t2">
+    <div class="ctl"><label>raw crawl, tokens <input type="range" id="t2-raw" min="0" max="100" value="50"><span class="v" id="t2-raw-v">100T</span></label><label>language + extraction keep <input type="range" id="t2-k1" min="10" max="100" value="55"><span class="v" id="t2-k1-v">55%</span></label><label>dedup keep <input type="range" id="t2-k2" min="10" max="100" value="45"><span class="v" id="t2-k2-v">45%</span></label><label>quality keep <input type="range" id="t2-k3" min="5" max="100" value="60"><span class="v" id="t2-k3-v">60%</span></label><label>mixture <select id="t2-mix"><option value="llama">general (Llama-3-like)</option><option value="code">code-heavy</option><option value="multi">multilingual</option></select></label><label>target run <input type="range" id="t2-D" min="0" max="100" value="59"><span class="v" id="t2-D-v">15T</span></label></div>
+    <div class="grid2"><div><h3 style="font-size:14px;color:var(--muted)">the funnel</h3><div class="bars" id="t2-funnel"></div></div><div><h3 style="font-size:14px;color:var(--muted)">the mixture, and how many times each source is read</h3><div class="bars" id="t2-mixbars"></div></div></div>
+    <div class="read" id="t2-read"></div>
+    <p class="hint">Left: how much text survives each filter. Right: the chosen mixture applied to the target run, against how much of each source exists in the world (order-of-magnitude estimates: roughly a few trillion tokens of usable code, under a trillion of books, under a trillion of math). When a source has to be read more than about four times, the bar turns orange: Muennighoff et al. 2023 found that repeats beyond that add little. The "data wall" is this picture at 50T tokens.</p>
+  </div>
+<figure class="fig"><svg viewBox="0 0 760 262" role="img" aria-label="A funnel of six horizontal bars narrowing from top to bottom: raw web crawl, text extracted from HTML, language filtered, deduplicated, quality filtered, and finally the mixture that enters training. Each bar carries a label and the order-of-magnitude share that survives. A note says most model quality is decided here.">
+<text x="14" y="18" class="b">the pretraining funnel</text><text x="746" y="18" text-anchor="end" class="mu sm">widths are order-of-magnitude</text>
+<rect x="14" y="30" width="732" height="22" rx="4" class="fms"/><text x="22" y="45" class="sm b">raw crawl</text><text x="738" y="45" text-anchor="end" class="mu sm">96 Common Crawl snapshots · petabytes of HTML</text>
+<rect x="124" y="60" width="512" height="22" rx="4" class="fms"/><text x="132" y="75" class="sm b">text extracted</text><text x="628" y="75" text-anchor="end" class="mu sm">menus, ads, scripts gone</text>
+<rect x="190" y="90" width="380" height="22" rx="4" class="fms"/><text x="198" y="105" class="sm b">language filtered</text><text x="562" y="105" text-anchor="end" class="mu sm">keep what you can score</text>
+<rect x="256" y="120" width="248" height="22" rx="4" class="f1s"/><text x="264" y="135" class="sm b">deduplicated</text><text x="496" y="135" text-anchor="end" class="mu sm">exact · near · per-URL</text>
+<rect x="270" y="150" width="220" height="22" rx="4" class="f1s"/><text x="278" y="165" class="sm b">quality filtered</text><text x="482" y="165" text-anchor="end" class="mu sm">rules + classifier</text>
+<rect x="270" y="180" width="220" height="22" rx="4" class="f1"/><text x="380" y="195" text-anchor="middle" class="sm b" style="fill:var(--accent-ink)">mixed · 15T tokens</text>
+<path d="M14 52L124 60M746 52L636 60M124 82L190 90M636 82L570 90M190 112L256 120M570 112L504 120M256 142L270 150M504 142L490 150" class="ln" style="stroke:var(--line-strong)"/>
+<text x="500" y="195" class="mu sm">+ code · books · papers · math · synthetic</text>
+<text x="14" y="228" class="b">Most of the quality is decided before a GPU turns on.</text>
+<text x="14" y="246" class="mu sm">FineWeb-Edu kept ~10% of FineWeb by classifier score and trained better models on far fewer tokens. Dedup alone beats most architecture changes.</text>
+</svg><figcaption>From crawl to corpus. Each stage is cheap per page and enormous in aggregate; the whole funnel runs on CPUs for weeks before training starts. The final mixture is set by small-model experiments and is treated as a trade secret.</figcaption></figure>
+  <p>Two facts about the data decide a lot of what you see later. The model learns about one <a class="term" href="#g-step">epoch</a> of this: each token once. So anything rare on the web is rare in its head, and anything common is over-learned. And the mixture changes near the end of the run, when the highest-quality sources are leaned on; that <a class="term" href="#g-anneal">annealing</a> phase is where a surprising share of benchmark performance is bought, and where the first <a class="term" href="#g-synthetic">synthetic text</a> usually enters.</p>
+</section>
+
+<section class="ch" id="c3">
+  <p class="chn">03 · HOW BIG, HOW LONG</p>
+  <h2>Scaling laws: forecasting a run you can only afford once</h2>
+  <p>Before a lab spends tens of millions of dollars on a run, it needs to know what it will get. The answer is a <a class="term" href="#g-scaling">scaling law</a>: train a ladder of small models, fit a curve, extrapolate. Loss falls as a power law in both parameters and tokens, smoothly enough that a 2020 paper could predict GPT-3's loss before it was trained. The compute a run needs is close to <a class="term" href="#g-flops">6 × N × D</a>, six operations per parameter per token, and so the question becomes: for a fixed budget, do you want a bigger model that reads less, or a smaller one that reads more?</p>
+  <p>Kaplan et al. in 2020 said bigger model. <a class="term" href="#g-chinchilla">Chinchilla</a> in 2022 reran the experiment with properly tuned learning rates and said the balance is about 20 tokens per parameter: GPT-3 (175B parameters, 300B tokens) had been badly undertrained, and a 70B model on 1.4T tokens beat it on the same budget. Then the industry walked past that number on purpose. A model is trained once and served billions of times, and a smaller model is cheaper every time it answers, so Llama 3 8B was trained on 15T tokens, nearly a hundred times the Chinchilla ratio. Slightly worse loss than the compute-optimal choice, far cheaper to run.</p>
+  <div class="inst" id="t3">
+    <div class="ctl"><label>parameters <input type="range" id="t3-N" min="0" max="100" value="71"><span class="v" id="t3-N-v">70B</span></label><label>training tokens <input type="range" id="t3-D" min="0" max="100" value="54"><span class="v" id="t3-D-v">1.4T</span></label><label>GPUs <select id="t3-g"><option value="1024">1,024 H100</option><option value="4096">4,096 H100</option><option value="16384" selected>16,384 H100</option><option value="100000">100,000 H100</option></select></label><label>utilisation <input type="range" id="t3-mfu" min="20" max="60" value="40"><span class="v" id="t3-mfu-v">40%</span></label></div>
+    <canvas id="t3-cv" height="200" aria-label="Loss against model size for a fixed compute budget, with the chosen point marked"></canvas>
+    <div class="read" id="t3-read"></div>
+    <p class="hint">Loss predicted by the Chinchilla fit (L = 1.69 + 406/N<sup>0.34</sup> + 411/D<sup>0.28</sup>, in nats per token on their data). The curve holds your compute budget fixed and asks how loss would change if you moved parameters into tokens or back; the dashed line is the compute-optimal point, about 20 tokens per parameter. Days and dollars assume an H100 at ~1 PFLOP/s peak in bf16, the utilisation you set, and $2 per GPU-hour. Llama 3 405B sits near 37 tokens per parameter; Llama 3 8B at 1,875.</p>
+  </div>
+<figure class="fig"><svg viewBox="0 0 760 246" role="img" aria-label="Three U-shaped curves of loss against model size, one for each fixed compute budget. Each curve's lowest point is the compute-optimal model for that budget; a dashed line through the minima marks about twenty tokens per parameter. A point to the left of the biggest curve marks a deliberately over-trained small model: slightly higher loss, much cheaper to serve.">
+<defs><marker id="m3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<line x1="60" y1="20" x2="60" y2="196" class="ln" style="stroke:var(--line-strong)"/><line x1="60" y1="196" x2="740" y2="196" class="ln" style="stroke:var(--line-strong)"/>
+<text x="14" y="110" text-anchor="middle" class="mu sm" transform="rotate(-90 14 110)">loss (lower is better)</text>
+<text x="400" y="222" text-anchor="middle" class="mu sm">model size N, log scale →  (tokens D = budget ÷ 6N, so right means bigger model, fewer tokens)</text>
+<text x="120" y="210" text-anchor="middle" class="mono sm">1B</text><text x="300" y="210" text-anchor="middle" class="mono sm">10B</text><text x="480" y="210" text-anchor="middle" class="mono sm">100B</text><text x="660" y="210" text-anchor="middle" class="mono sm">1T</text>
+<path d="M80 40 Q220 130 300 128 Q380 130 520 44" class="ln l1" stroke-width="1.8"/><text x="530" y="44" class="mono sm" style="fill:var(--s1)">10²² FLOPs</text>
+<path d="M120 36 Q300 108 390 104 Q480 108 640 40" class="ln l3" stroke-width="1.8"/><text x="650" y="40" class="mono sm" style="fill:var(--s3)">10²³ FLOPs</text>
+<path d="M190 28 Q380 86 480 82 Q580 86 736 26" class="ln l4" stroke-width="1.8"/><text x="560" y="22" class="mono sm" style="fill:var(--s4)">10²⁴ FLOPs</text>
+<circle cx="300" cy="128" r="4" class="f1"/><circle cx="390" cy="104" r="4" class="f3"/><circle cx="480" cy="82" r="4" class="f4"/>
+<path d="M270 150L510 66" class="ghost" stroke-width="1.2"/><text x="520" y="104" class="sm b">compute-optimal: ≈ 20 tokens per parameter</text><text x="520" y="118" class="mu sm">the dashed line through the minima</text>
+<circle cx="214" cy="60" r="5" class="f2"/><line x1="214" y1="66" x2="200" y2="150" class="ln" style="stroke:var(--s2)"/>
+<text x="70" y="162" class="sm b" style="fill:var(--s2)">over-trained small model</text><text x="70" y="176" class="mu sm">Llama 3 8B: 1,875 tokens/parameter</text><text x="70" y="190" class="mu sm">worse loss at this budget, ~10× cheaper to serve</text>
+
+</svg><figcaption>Why Chinchilla matters and why labs ignore it. Each curve is one budget spent in different ways; the minimum is the most loss per dollar of training. Serving cost pulls the real choice left, toward smaller models that have read more. Shapes are schematic, consistent with the Hoffmann et al. fit.</figcaption></figure>
+<div class="tiles"><div class="tile"><div class="n">300B</div><div class="l">tokens for GPT-3's 175B parameters (2020): 1.7 per parameter</div></div><div class="tile a"><div class="n">20<small>tok/param</small></div><div class="l">Chinchilla's compute-optimal ratio (2022)</div></div><div class="tile"><div class="n">37</div><div class="l">Llama 3 405B's ratio: 15T tokens</div></div><div class="tile"><div class="n">1,875</div><div class="l">Llama 3 8B's ratio: built to be cheap to serve</div></div></div>
+</section>
+
+<section class="ch" id="c4">
+  <p class="chn">04 · THE MACHINERY</p>
+  <h2>Fitting 400 billion parameters on hardware that holds 80 gigabytes</h2>
+  <p>Here is the first hard physical fact. Training needs far more memory per parameter than inference. In <a class="term" href="#g-precision">mixed precision</a>, each parameter is stored twice (a 16-bit working copy and a 32-bit master copy that accumulates the tiny updates), its gradient needs 2 more bytes, and <a class="term" href="#g-optimizer">Adam</a>'s two running averages need 8 more. Sixteen bytes per parameter, before a single activation. A 405B model therefore needs about 6.5 TB just for its training state, against 80 GB on an H100. No single device comes close, and so every large run is a distributed-systems problem first and a machine-learning problem second.</p>
+  <p>Three kinds of <a class="term" href="#g-parallel">parallelism</a> split the work. Data parallelism copies the model to many groups of GPUs and gives each a different slice of the batch; after the backward pass they average their gradients. Tensor parallelism splits one layer's giant matrices across a few GPUs in the same server, which have very fast links between them. Pipeline parallelism gives each group of GPUs a slice of the layers and passes activations down the line like an assembly line. <a class="term" href="#g-zero">ZeRO and FSDP</a> make the data-parallel copies share one set of optimizer state and gradients instead of duplicating it, which is what gets the 16 bytes per parameter divided by the number of GPUs.</p>
+  <div class="inst" id="t4">
+    <div class="ctl"><label>parameters <input type="range" id="t4-N" min="0" max="100" value="62"><span class="v" id="t4-N-v">70B</span></label><label>optimizer state <select id="t4-opt"><option value="16">AdamW, mixed precision · 16 B/param</option><option value="12">AdamW, 8-bit states · 12 B/param</option><option value="8">plain SGD, mixed precision · 8 B/param</option><option value="2">inference only, bf16 · 2 B/param</option></select></label><label>GPU memory <select id="t4-mem"><option value="80">H100 · 80 GB</option><option value="141">H200 · 141 GB</option><option value="192">B200 · 192 GB</option></select></label><label>tensor × pipeline <select id="t4-tp"><option value="8,1">8 × 1</option><option value="8,2">8 × 2</option><option value="8,4">8 × 4</option><option value="8,16" selected>8 × 16</option></select></label></div>
+    <div class="bars" id="t4-bars"></div>
+    <div class="read" id="t4-read"></div>
+    <p class="hint">Training-state memory only; activations add more and are usually handled by recomputing them in the backward pass (trading compute for memory). "Minimum GPUs" is the count needed to hold the state once, fully sharded, leaving a quarter of each device free for activations and workspace. Llama 3 405B was trained with tensor 8 × pipeline 16 × data 128 = 16,384 GPUs.</p>
+  </div>
+<figure class="fig"><svg viewBox="0 0 760 262" role="img" aria-label="Sixteen GPUs drawn as squares in two data-parallel groups. Inside each group, four pipeline stages run left to right, each holding a slice of the layers, and each stage is a pair of tensor-parallel GPUs that split one layer's matrices. Arrows show activations flowing between stages, fast all-reduce links within each tensor pair, and a slower gradient all-reduce between the two groups after the backward pass.">
+<defs><marker id="m4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<text x="14" y="18" class="b">data parallel group A</text><text x="14" y="32" class="mu sm">batch slice 1 · full copy of the model (sharded by ZeRO)</text>
+<text x="400" y="18" class="b">data parallel group B</text><text x="400" y="32" class="mu sm">batch slice 2 · full copy of the model (sharded by ZeRO)</text>
+<rect x="14" y="40" width="356" height="130" rx="8" class="ghost"/><rect x="396" y="40" width="350" height="130" rx="8" class="ghost"/>
+<rect x="25" y="54" width="70" height="40" rx="5" class="box"/><rect x="25" y="112" width="70" height="40" rx="5" class="box"/>
+<rect x="113" y="54" width="70" height="40" rx="5" class="box"/><rect x="113" y="112" width="70" height="40" rx="5" class="box"/>
+<rect x="201" y="54" width="70" height="40" rx="5" class="box"/><rect x="201" y="112" width="70" height="40" rx="5" class="box"/>
+<rect x="289" y="54" width="70" height="40" rx="5" class="box"/><rect x="289" y="112" width="70" height="40" rx="5" class="box"/>
+<rect x="408" y="54" width="70" height="40" rx="5" class="box"/><rect x="408" y="112" width="70" height="40" rx="5" class="box"/>
+<rect x="496" y="54" width="70" height="40" rx="5" class="box"/><rect x="496" y="112" width="70" height="40" rx="5" class="box"/>
+<rect x="584" y="54" width="70" height="40" rx="5" class="box"/><rect x="584" y="112" width="70" height="40" rx="5" class="box"/>
+<rect x="672" y="54" width="70" height="40" rx="5" class="box"/><rect x="672" y="112" width="70" height="40" rx="5" class="box"/>
+<text x="60" y="71" text-anchor="middle" class="mono sm">layers 1–8</text><text x="60" y="85" text-anchor="middle" class="mu sm">matrix half A</text><text x="60" y="129" text-anchor="middle" class="mono sm">layers 1–8</text><text x="60" y="143" text-anchor="middle" class="mu sm">matrix half B</text>
+<text x="148" y="71" text-anchor="middle" class="mono sm">layers 9–16</text><text x="148" y="129" text-anchor="middle" class="mono sm">layers 9–16</text>
+<text x="236" y="71" text-anchor="middle" class="mono sm">layers 17–24</text><text x="236" y="129" text-anchor="middle" class="mono sm">layers 17–24</text>
+<text x="324" y="71" text-anchor="middle" class="mono sm">layers 25–32</text><text x="324" y="129" text-anchor="middle" class="mono sm">layers 25–32</text>
+<text x="443" y="71" text-anchor="middle" class="mono sm">layers 1–8</text><text x="443" y="129" text-anchor="middle" class="mono sm">layers 1–8</text>
+<text x="531" y="71" text-anchor="middle" class="mono sm">layers 9–16</text><text x="531" y="129" text-anchor="middle" class="mono sm">layers 9–16</text>
+<text x="619" y="71" text-anchor="middle" class="mono sm">layers 17–24</text><text x="619" y="129" text-anchor="middle" class="mono sm">layers 17–24</text>
+<text x="707" y="71" text-anchor="middle" class="mono sm">layers 25–32</text><text x="707" y="129" text-anchor="middle" class="mono sm">layers 25–32</text>
+<line x1="95" y1="74" x2="111" y2="74" class="ln" marker-end="url(#m4a)"/><line x1="183" y1="74" x2="199" y2="74" class="ln" marker-end="url(#m4a)"/><line x1="271" y1="74" x2="287" y2="74" class="ln" marker-end="url(#m4a)"/>
+<line x1="95" y1="132" x2="111" y2="132" class="ln" marker-end="url(#m4a)"/><line x1="183" y1="132" x2="199" y2="132" class="ln" marker-end="url(#m4a)"/><line x1="271" y1="132" x2="287" y2="132" class="ln" marker-end="url(#m4a)"/>
+<line x1="478" y1="74" x2="494" y2="74" class="ln" marker-end="url(#m4a)"/><line x1="566" y1="74" x2="582" y2="74" class="ln" marker-end="url(#m4a)"/><line x1="654" y1="74" x2="670" y2="74" class="ln" marker-end="url(#m4a)"/>
+<line x1="478" y1="132" x2="494" y2="132" class="ln" marker-end="url(#m4a)"/><line x1="566" y1="132" x2="582" y2="132" class="ln" marker-end="url(#m4a)"/><line x1="654" y1="132" x2="670" y2="132" class="ln" marker-end="url(#m4a)"/>
+<line x1="60" y1="96" x2="60" y2="110" class="ln l3" stroke-width="2"/><line x1="148" y1="96" x2="148" y2="110" class="ln l3" stroke-width="2"/><line x1="236" y1="96" x2="236" y2="110" class="ln l3" stroke-width="2"/><line x1="324" y1="96" x2="324" y2="110" class="ln l3" stroke-width="2"/>
+<line x1="443" y1="96" x2="443" y2="110" class="ln l3" stroke-width="2"/><line x1="531" y1="96" x2="531" y2="110" class="ln l3" stroke-width="2"/><line x1="619" y1="96" x2="619" y2="110" class="ln l3" stroke-width="2"/><line x1="707" y1="96" x2="707" y2="110" class="ln l3" stroke-width="2"/>
+<path d="M372 105h22" class="ln l2" stroke-width="2" stroke-dasharray="5 4" marker-start="url(#m4a)" marker-end="url(#m4a)"/>
+<text x="14" y="196" class="sm"><tspan class="b">→ pipeline parallel:</tspan> activations pass stage to stage; each GPU holds 1/4 of the layers</text>
+<text x="14" y="214" class="sm"><tspan class="b" style="fill:var(--s3)">↕ tensor parallel:</tspan> a pair splits every matrix in half and all-reduces after each layer, over NVLink inside one server</text>
+<text x="14" y="232" class="sm"><tspan class="b" style="fill:var(--s2)">⇠⇢ data parallel:</tspan> groups average gradients once per step over the cluster network; ZeRO shards the 16 B/param across them</text>
+<text x="14" y="252" class="mu sm">2 data × 4 pipeline × 2 tensor = 16 GPUs here. Llama 3 405B: 128 × 16 × 8 = 16,384.</text>
+</svg><figcaption>Three-dimensional parallelism on sixteen GPUs. Tensor parallelism needs the fastest links so it stays inside a server; pipeline stages talk to neighbours; data-parallel groups only need to agree once per step. The same picture, with 16,384 squares, is a frontier run.</figcaption></figure>
+  <p>Then the machines break. Llama 3's team logged 419 unexpected interruptions over 54 days, more than half from GPU faults. Runs survive on <a class="term" href="#g-checkpoint">checkpoints</a>, saved every few hours, and on tooling that detects a dead node, swaps it and resumes within minutes. Add numerical trouble: 16-bit arithmetic overflows, a bad batch produces an enormous gradient, and the loss <a class="term" href="#g-spike">spikes</a>. Gradient clipping (capping the update size), skipping the offending batch and rewinding to a checkpoint are routine. A large run is babysat around the clock by people watching a loss curve.</p>
+</section>
+
+<section class="ch" id="c5">
+  <p class="chn">05 · THE DIALS</p>
+  <h2>The learning-rate schedule, and why the last 10% of a run matters so much</h2>
+  <p>Chapter 01 said the <a class="term" href="#g-lr">learning rate</a> is the most important dial. In practice it is not a number but a <a class="term" href="#g-schedule">schedule</a>. A fresh model's gradients are wild, so the rate starts near zero and ramps up over the first few thousand steps (warmup); a large rate at step one is the quickest way to a dead run. It then runs at its peak, which for a big model is around 0.0003, and decays toward zero by the end. The decay is not cosmetic. While the rate is high the parameters jitter around the valley floor; lowering it lets them settle, and the loss drops sharply in the final stretch. That drop is where the annealing phase from chapter 02 lives: the labs lower the rate and switch to their best data at the same moment.</p>
+  <p>The classic shape is warmup then a cosine curve to 10% of peak. Its weakness is that you must choose the total length in advance, because the cosine is pinned to it. Warmup-stable-decay (WSD) keeps the rate flat for as long as you like and only decays over the final 10–20%, so a lab can train longer than planned, or branch several decayed models off one long stable run. It also recovers almost the whole cosine benefit, which is why it spread quickly after 2024.</p>
+  <div class="inst" id="t5">
+    <div class="ctl"><label>schedule <select id="t5-type"><option value="cos">warmup + cosine</option><option value="wsd" selected>warmup-stable-decay</option><option value="lin">warmup + linear</option><option value="const">warmup + constant</option></select></label><label>warmup <input type="range" id="t5-w" min="0" max="20" value="2"><span class="v" id="t5-w-v">2%</span></label><label>decay phase <input type="range" id="t5-d" min="5" max="50" value="15"><span class="v" id="t5-d-v">15%</span></label><label>peak <select id="t5-peak"><option value="3e-4" selected>3 × 10⁻⁴</option><option value="1e-3">1 × 10⁻³</option><option value="1e-4">1 × 10⁻⁴</option></select></label><label>floor <input type="range" id="t5-min" min="0" max="50" value="10"><span class="v" id="t5-min-v">10%</span></label></div>
+    <canvas id="t5-cv" height="190" aria-label="Learning rate and resulting loss across a training run"></canvas>
+    <div class="read" id="t5-read"></div>
+    <p class="hint">Blue is the learning rate over the run; orange is a stylised loss curve that responds to it: the loss drops fastest in the decay phase, and a constant rate leaves gains on the table. The loss shape is a sketch of the behaviour reported by Hägele et al. 2024 and the MiniCPM team, not a fit. Try a tiny warmup with the highest peak and notice the spike early on.</p>
+  </div>
+<figure class="fig"><svg viewBox="0 0 760 230" role="img" aria-label="Two learning-rate schedules over the same run, drawn on shared axes. Cosine ramps up over a short warmup, then follows a smooth curve down to a floor. Warmup-stable-decay ramps up, stays flat for most of the run, then drops steeply in the last stretch. Annotations mark the warmup, the peak, the decay and the point where the data mixture is changed.">
+<defs><marker id="m5a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<line x1="60" y1="20" x2="60" y2="170" class="ln" style="stroke:var(--line-strong)"/><line x1="60" y1="170" x2="740" y2="170" class="ln" style="stroke:var(--line-strong)"/>
+<text x="14" y="95" text-anchor="middle" class="mu sm" transform="rotate(-90 14 95)">learning rate</text>
+<text x="400" y="190" text-anchor="middle" class="mu sm">training steps →</text>
+<text x="60" y="206" text-anchor="middle" class="mono sm">0</text><text x="740" y="206" text-anchor="middle" class="mono sm">end</text>
+<text x="52" y="44" text-anchor="end" class="mono sm">peak</text><text x="52" y="160" text-anchor="end" class="mono sm">10%</text>
+<path d="M60 170L90 40 C 300 40 520 100 740 156" class="ln l1" stroke-width="2"/>
+<path d="M60 170L90 40H640 C 690 40 715 120 740 156" class="ln l2" stroke-width="2"/>
+<rect x="60" y="20" width="30" height="150" class="fms" opacity=".5"/><text x="75" y="32" text-anchor="middle" class="mu sm">warmup</text>
+<rect x="640" y="20" width="100" height="150" class="f2s" opacity=".5"/><text x="690" y="32" text-anchor="middle" class="sm b" style="fill:var(--s2)">decay</text>
+<text x="200" y="104" class="sm b" style="fill:var(--s1)">cosine</text><text x="200" y="118" class="mu sm">length fixed when the run starts</text>
+<text x="300" y="30" class="sm b" style="fill:var(--s2)">warmup-stable-decay</text>
+<path d="M640 176v12" class="ln" marker-end="url(#m5a)"/><text x="740" y="222" text-anchor="end" class="sm"><tspan class="b">anneal:</tspan> rate falls and the mixture switches to the best data</text>
+<text x="420" y="150" text-anchor="middle" class="mu sm">stable phase: extend it, or branch several decays off it</text>
+</svg><figcaption>Cosine versus warmup-stable-decay. Both warm up and both end low; WSD defers the decision about when to stop. In either case the steep loss improvement happens in the shaded decay window, which is why the annealing data is placed there.</figcaption></figure>
+  <p>The other dials are fewer than you would think. Batch size, which grows during a run as the gradients get less noisy. Weight decay, the gentle pull toward zero in AdamW. Gradient clipping at 1.0, nearly universal. And the dozens of architecture choices (depth, width, number of attention heads, MoE expert count) that are fixed by small-model sweeps before the big run starts and never changed. Hyperparameter tuning at full scale does not exist; you get one run.</p>
+</section>
+
+<section class="ch" id="c6">
+  <p class="chn">06 · BASE TO ASSISTANT</p>
+  <h2>Supervised fine-tuning: teaching it that someone is talking to it</h2>
+  <p>After pretraining you have a <a class="term" href="#g-base">base model</a>, and it is strange. Ask it a question and it may continue with more questions, because on the web a question is usually followed by another question. Ask it to summarise and it might write "Summary:" and then a new article. It has read everything and has no idea it is in a conversation. The first post-training stage fixes exactly this, and it is almost embarrassingly small: a few thousand to a million example conversations, a few hours on a few dozen GPUs, with the same next-token loss as pretraining.</p>
+  <p>Two details carry the whole trick. First, the <a class="term" href="#g-template">chat template</a>: special tokens that mark where the system prompt, the user's turn and the assistant's turn begin and end. The model learns that after the assistant header it should answer, and after the end-of-turn token it should stop. Second, the loss mask: the loss is computed only on the assistant's tokens. The model is not asked to predict what the user will say, only how to reply. That is all <a class="term" href="#g-sft">SFT</a> is. It teaches the format and the manner. It cannot add knowledge the base model lacks, and if the examples are mediocre, the assistant will be mediocre in exactly the same way.</p>
+  <div class="inst" id="t6">
+    <div class="ctl"><label>prompt <select id="t6-p"><option value="0">What is a token?</option><option value="1">Translate "good morning" into French.</option><option value="2">Write a haiku about debugging.</option></select></label><label>template <select id="t6-tpl"><option value="l3">Llama 3 style</option><option value="chatml">ChatML style</option></select></label><label><input type="checkbox" id="t6-mask" checked> show loss mask</label></div>
+    <div class="grid2"><div><h3 style="font-size:14px;color:var(--muted)">base model continues the text</h3><div class="out" id="t6-base"></div></div><div><h3 style="font-size:14px;color:var(--muted)">after SFT: the same prompt, inside the template</h3><div class="chatv" id="t6-chat"></div></div></div>
+    <p class="hint">Left: what a base model tends to do with a bare prompt: treat it as the start of a document and keep writing the document. Right: the same prompt as the model actually sees it after fine-tuning, with the special tokens the API hides from you. Greyed tokens carry no loss during SFT; the green span is the only part the model is trained to produce. Outputs are illustrative, written to match typical base-model behaviour.</p>
+  </div>
+<figure class="fig"><svg viewBox="0 0 760 232" role="img" aria-label="A single training example laid out as a row of token chips: begin-of-text, a system header and system text, a user header and the user's question, an assistant header, then the assistant's answer and an end-of-turn token. The prompt chips are greyed and labelled no loss; the answer chips are highlighted and labelled loss computed here. Below, three facts: thousands of examples, hours of compute, teaches format not knowledge.">
+<text x="14" y="18" class="b">one SFT example, as the model sees it</text>
+<rect x="14" y="30" width="112" height="26" rx="4" class="soft"/><text x="70" y="47" text-anchor="middle" class="mono sm">&lt;|begin_of_text|&gt;</text>
+<rect x="130" y="30" width="112" height="26" rx="4" class="soft"/><text x="186" y="47" text-anchor="middle" class="mono sm">&lt;|header|&gt;system</text>
+<rect x="246" y="30" width="186" height="26" rx="4" class="fms"/><text x="339" y="47" text-anchor="middle" class="mono sm mu">You are a helpful assistant.</text>
+<rect x="436" y="30" width="56" height="26" rx="4" class="soft"/><text x="464" y="47" text-anchor="middle" class="mono sm">&lt;|eot|&gt;</text>
+<rect x="496" y="30" width="100" height="26" rx="4" class="soft"/><text x="546" y="47" text-anchor="middle" class="mono sm">&lt;|header|&gt;user</text>
+<rect x="600" y="30" width="146" height="26" rx="4" class="fms"/><text x="673" y="47" text-anchor="middle" class="mono sm mu">What is a token?</text>
+<rect x="14" y="62" width="56" height="26" rx="4" class="soft"/><text x="42" y="79" text-anchor="middle" class="mono sm">&lt;|eot|&gt;</text>
+<rect x="74" y="62" width="134" height="26" rx="4" class="soft"/><text x="141" y="79" text-anchor="middle" class="mono sm">&lt;|header|&gt;assistant</text>
+<rect x="212" y="62" width="474" height="26" rx="4" class="f3s" stroke="var(--s3)"/><text x="449" y="79" text-anchor="middle" class="mono sm">A token is the unit of text a model reads and writes.</text>
+<rect x="690" y="62" width="56" height="26" rx="4" class="f3s" stroke="var(--s3)"/><text x="718" y="79" text-anchor="middle" class="mono sm">&lt;|eot|&gt;</text>
+<path d="M14 96v6h194v-6" class="ln" style="stroke:var(--mask)"/><text x="111" y="118" text-anchor="middle" class="mu sm">prompt: no loss, only read</text>
+<path d="M212 96v6h534v-6" class="ln l3" stroke-width="1.5"/><text x="479" y="118" text-anchor="middle" class="sm b" style="fill:var(--s3)">loss computed here: learn to produce exactly these tokens, then stop</text>
+<rect x="14" y="156" width="732" height="64" rx="6" class="ghost"/>
+<text x="30" y="178" class="b">What SFT changes</text><text x="160" y="178" class="sm">format, voice, when to stop, how to refuse, how to call a tool.</text>
+<text x="30" y="196" class="b">What it cannot change</text><text x="190" y="196" class="sm">what the model knows. InstructGPT ~13k examples; Llama 2 Chat ~28k; modern recipes up to ~1M.</text>
+<text x="30" y="214" class="mu sm">Blue chips are special tokens added at this stage; the API hides them, and the model never sees a conversation without them.</text>
+</svg><figcaption>Supervised fine-tuning is pretraining's loss with a mask and a costume. The special tokens give the model a notion of turns; the mask makes it learn to answer rather than to predict the user.</figcaption></figure>
+  <p>Where do the examples come from? Early on, contractors wrote them: InstructGPT's 13,000 demonstrations. Llama 2 found that tens of thousands of carefully written examples beat millions of scraped ones. Now most SFT data is <a class="term" href="#g-synthetic">synthetic</a>: a stronger model writes answers, often with rejection sampling (generate several, keep the one a checker or judge model likes), and humans edit a fraction. A side effect is that small open models inherit the voice of whichever frontier model wrote their training set.</p>
+</section>
+
+<section class="ch" id="c7">
+  <p class="chn">07 · LEARNING TASTE</p>
+  <h2>Preference tuning: the difference between a correct answer and a good one</h2>
+  <p>SFT teaches the model to imitate. But the best answer is often not something a person can write down in advance; it is easier to recognise than to produce. "Which of these two is better?" is a question anyone can answer in seconds, and <a class="term" href="#g-rlhf">RLHF</a> is the machinery for turning millions of those seconds into a model. Show a person two answers to the same prompt. Record the winner. Train a <a class="term" href="#g-rm">reward model</a>, a copy of the model whose last layer outputs one number, so that winners score higher than losers. Then train the chat model to produce answers that score well.</p>
+  <p>The danger is immediate. If you optimise against a learned score hard enough, you find its blind spots: the reward model likes long answers, so the model gets verbose; it likes confidence, so the model stops hedging even when it should; it likes agreement, so the model flatters you. The fix is the <a class="term" href="#g-kl">KL penalty</a>: a charge for drifting from the SFT model you started with. The optimal policy under that objective has a clean form (the reference probabilities multiplied by e<sup>reward/β</sup>), and the instrument below is that formula. InstructGPT did this with <a class="term" href="#g-ppo">PPO</a>, which needs four models in memory and weeks of tuning. In 2023 <a class="term" href="#g-dpo">DPO</a> showed you can skip the reward model and the RL loop and train on the pairs directly, with most of the benefit. Most open models use DPO or a cousin; the frontier labs still mostly run reward models and RL.</p>
+  <div class="inst" id="t7">
+    <p class="hint" style="margin:0 0 10px">Prompt: <span class="mono">"In one sentence, what does a reward model do?"</span> Five candidate answers. Pick the better of each pair; a Bradley-Terry reward model is fitted to your clicks after every choice.</p>
+    <div class="choice" id="t7-pair"></div>
+    <div class="ctl" style="margin-top:12px"><span class="mono" id="t7-count">0 comparisons</span><button class="btn" id="t7-skip">skip pair</button><button class="btn" id="t7-reset">reset</button><label>KL leash β <input type="range" id="t7-beta" min="1" max="100" value="30"><span class="v" id="t7-beta-v">0.30</span></label></div>
+    <div class="grid2" style="margin-top:12px"><div><h3 style="font-size:14px;color:var(--muted)">fitted reward (your taste)</h3><div class="dist" id="t7-rm"></div></div><div><h3 style="font-size:14px;color:var(--muted)">policy after RL: p ∝ p<sub>ref</sub> · e<sup>r/β</sup></h3><div class="dist" id="t7-pol"></div></div></div>
+    <p class="hint">Left: reward scores fitted so that σ(r<sub>winner</sub> − r<sub>loser</sub>) explains your choices (a few gradient steps per click). Right: how the chat model would redistribute its probability over these five answers under the RLHF objective, starting from the reference distribution in grey. Small β (short leash): the model piles onto your single favourite and the others vanish, which is the collapse that makes RLHF-tuned models repetitive. Large β: it barely moves. One of the five answers is deliberately long and flattering; if you keep picking it, you have just reproduced the industry's sycophancy problem.</p>
+  </div>
+<figure class="fig"><svg viewBox="0 0 760 286" role="img" aria-label="The RLHF loop. A prompt goes to the policy model, which writes two answers. A human or an AI judge picks the better one, producing a preference pair. Pairs train the reward model to score winners above losers. New answers from the policy are scored by the reward model, and the policy is updated to raise reward minus a KL penalty against a frozen reference copy. A dashed shortcut labelled DPO runs from the preference pairs straight to the policy, skipping the reward model.">
+<defs><marker id="m7a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="m7c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f2"/></marker></defs>
+<rect x="14" y="30" width="96" height="48" rx="8" class="box"/><text x="62" y="50" text-anchor="middle" class="b">prompt</text><text x="62" y="66" text-anchor="middle" class="mu sm">from real usage</text>
+<line x1="110" y1="54" x2="134" y2="54" class="ln" marker-end="url(#m7a)"/>
+<rect x="136" y="30" width="122" height="48" rx="8" class="soft"/><text x="197" y="50" text-anchor="middle" class="b">policy</text><text x="197" y="66" text-anchor="middle" class="mu sm">the model being trained</text>
+<line x1="258" y1="46" x2="284" y2="40" class="ln" marker-end="url(#m7a)"/><line x1="258" y1="62" x2="284" y2="68" class="ln" marker-end="url(#m7a)"/>
+<rect x="286" y="26" width="84" height="24" rx="4" class="box"/><text x="328" y="42" text-anchor="middle" class="mono sm">answer A</text>
+<rect x="286" y="58" width="84" height="24" rx="4" class="box"/><text x="328" y="74" text-anchor="middle" class="mono sm">answer B</text>
+<line x1="370" y1="54" x2="396" y2="54" class="ln" marker-end="url(#m7a)"/>
+<rect x="398" y="30" width="104" height="48" rx="8" class="box"/><text x="450" y="50" text-anchor="middle" class="b">judge</text><text x="450" y="66" text-anchor="middle" class="mu sm">human, or an AI</text>
+<line x1="502" y1="54" x2="530" y2="54" class="ln" marker-end="url(#m7a)"/>
+<rect x="532" y="30" width="110" height="48" rx="8" class="box"/><text x="587" y="50" text-anchor="middle" class="b">preference pair</text><text x="587" y="66" text-anchor="middle" class="mono sm">A ≻ B</text>
+<path d="M587 78v22" class="ln" marker-end="url(#m7a)"/>
+<rect x="500" y="102" width="174" height="52" rx="8" class="soft"/><text x="587" y="122" text-anchor="middle" class="b">reward model</text><text x="587" y="140" text-anchor="middle" class="mono sm">P(A ≻ B) = σ(r_A − r_B)</text>
+<path d="M197 78v120h300" class="ln" marker-end="url(#m7a)"/><text x="330" y="190" text-anchor="middle" class="mu sm">new answers to score</text>
+<rect x="500" y="176" width="174" height="44" rx="8" class="box"/><text x="587" y="194" text-anchor="middle" class="b">reward r</text><text x="587" y="210" text-anchor="middle" class="mu sm">one number per answer</text>
+<path d="M587 154v20" class="ln" marker-end="url(#m7a)"/>
+<path d="M500 198H420V262H197V78" class="ln l1" stroke-width="1.5" marker-end="url(#m7a)" fill="none"/>
+<rect x="196" y="226" width="220" height="52" rx="8" class="soft"/><text x="306" y="246" text-anchor="middle" class="b">RL update (PPO)</text><text x="306" y="264" text-anchor="middle" class="mono sm">maximise  r − β · KL(policy ‖ reference)</text>
+<rect x="14" y="226" width="150" height="52" rx="8" class="ghost"/><text x="89" y="246" text-anchor="middle" class="b mu">reference</text><text x="89" y="264" text-anchor="middle" class="mu sm">frozen SFT copy · the leash</text>
+<line x1="164" y1="252" x2="194" y2="252" class="ln" style="stroke:var(--mask)" stroke-dasharray="3 3"/>
+<path d="M642 54H690V240H420" class="ln l2" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#m7c)" fill="none"/>
+<text x="697" y="150" class="sm b" style="fill:var(--s2)">DPO</text><text x="697" y="164" class="mu sm">skip the</text><text x="697" y="176" class="mu sm">reward</text><text x="697" y="188" class="mu sm">model,</text><text x="697" y="200" class="mu sm">train on</text><text x="697" y="212" class="mu sm">the pairs</text>
+</svg><figcaption>RLHF as a loop. Everything hard is in the two words "judge" and "leash": the reward model is a stand-in for the judge and can be fooled; the KL penalty keeps the policy near the reference so the fooling stays small. DPO folds the reward model and the RL step into one loss on the pairs.</figcaption></figure>
+<div class="tiles"><div class="tile"><div class="n">33k</div><div class="l">comparisons behind InstructGPT's reward model (2022)</div></div><div class="tile a"><div class="n">1.4M</div><div class="l">human preference pairs for Llama 2 Chat (2023)</div></div><div class="tile"><div class="n">4</div><div class="l">models in memory for PPO: policy, reference, reward, critic</div></div><div class="tile"><div class="n">1</div><div class="l">model in memory for DPO (plus cached reference logprobs)</div></div></div>
+</section>
+
+<section class="ch" id="c8">
+  <p class="chn">08 · LEARNING TO REASON</p>
+  <h2>Reinforcement learning with an answer key</h2>
+  <p>Everything in chapter 07 depended on a judge who could be fooled. In 2024 the field noticed that for a large class of problems you do not need one. A math problem has an answer; code has tests; a tool call either worked or did not. <a class="term" href="#g-rlvr">RL with verifiable rewards</a> replaces the reward model with a program: sample an answer, check it, reward 1 or 0. There is nothing to flatter. And when you run this loop over hundreds of thousands of problems, something happens that SFT never produced: the model starts writing longer and longer solutions, checking its own steps, saying "wait, that's wrong" and backtracking, because the attempts that did those things were the ones that got the reward. That is what a <a class="term" href="#g-cot">reasoning model</a> is. The thinking is ordinary tokens; what is new is the training signal that selected for it.</p>
+  <p>The algorithm most of these runs use is <a class="term" href="#g-grpo">GRPO</a>. For each prompt, sample a group of answers, say eight. Score each. Subtract the group's average and divide by its spread, so that answers better than their siblings get a positive <em>advantage</em> and worse ones get a negative one. Push up the probability of every token in the positive answers, push down the negative ones. No critic model, no reward model: just the policy, a frozen reference and a checker. DeepSeek-R1 in January 2025 showed the whole thing working in the open, including a model (R1-Zero) trained with RL alone from a base model that learned to reason without a single hand-written example.</p>
+  <div class="inst" id="t8">
+    <div class="ctl"><span class="mono">Prompt: a train leaves at 9:40 and arrives at 13:15. How long is the trip?</span></div>
+    <div class="ctl"><label>true pass rate <input type="range" id="t8-p" min="0" max="100" value="50"><span class="v" id="t8-p-v">50%</span></label><button class="btn" id="t8-roll">sample a new group of 8</button><label><input type="checkbox" id="t8-len"> reward also pays +0.1 per 100 tokens</label></div>
+    <div class="adv" id="t8-adv"></div>
+    <div class="read" id="t8-read"></div>
+    <p class="hint">Eight rollouts of the same prompt; click any row to flip whether the checker accepted it. Rewards are 1 or 0, the baseline is the group mean, and the bar is each rollout's advantage. When all eight pass or all eight fail the advantages are zero and the prompt teaches nothing, which is why RLVR pipelines filter for problems the model solves some of the time. Tick the length bonus and watch the advantage of a long wrong answer turn positive: that is how reasoning models learned to ramble before labs fixed their rewards.</p>
+  </div>
+<figure class="fig"><svg viewBox="0 0 760 262" role="img" aria-label="GRPO on one prompt. The policy samples eight answers. A verifier program checks each and gives a reward of one or zero. The group's mean reward is the baseline. Each answer's advantage is its reward minus the mean, divided by the group's spread; answers above the mean are pushed up, those below pushed down. A note says there is no reward model and no critic, only a frozen reference for the KL penalty.">
+<defs><marker id="m8a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<rect x="14" y="30" width="96" height="48" rx="8" class="box"/><text x="62" y="50" text-anchor="middle" class="b">prompt</text><text x="62" y="66" text-anchor="middle" class="mu sm">with a known answer</text>
+<line x1="110" y1="54" x2="134" y2="54" class="ln" marker-end="url(#m8a)"/>
+<rect x="136" y="30" width="96" height="48" rx="8" class="soft"/><text x="184" y="50" text-anchor="middle" class="b">policy</text><text x="184" y="66" text-anchor="middle" class="mu sm">samples G = 8</text>
+<line x1="232" y1="54" x2="258" y2="54" class="ln" marker-end="url(#m8a)"/>
+<rect x="260" y="26" width="46" height="18" rx="3" class="box"/><rect x="310" y="26" width="46" height="18" rx="3" class="box"/><rect x="360" y="26" width="46" height="18" rx="3" class="box"/><rect x="410" y="26" width="46" height="18" rx="3" class="box"/>
+<rect x="260" y="64" width="46" height="18" rx="3" class="box"/><rect x="310" y="64" width="46" height="18" rx="3" class="box"/><rect x="360" y="64" width="46" height="18" rx="3" class="box"/><rect x="410" y="64" width="46" height="18" rx="3" class="box"/>
+<text x="358" y="98" text-anchor="middle" class="mu sm">eight full solutions, 200–8,000 tokens each</text>
+<line x1="456" y1="54" x2="482" y2="54" class="ln" marker-end="url(#m8a)"/>
+<rect x="484" y="30" width="110" height="48" rx="8" class="soft"/><text x="539" y="50" text-anchor="middle" class="b">verifier</text><text x="539" y="66" text-anchor="middle" class="mu sm">a program, not a model</text>
+<line x1="594" y1="54" x2="620" y2="54" class="ln" marker-end="url(#m8a)"/>
+<rect x="622" y="30" width="124" height="48" rx="8" class="box"/><text x="684" y="50" text-anchor="middle" class="b">rewards</text><text x="684" y="68" text-anchor="middle" class="mono">1 0 1 1 0 0 1 0</text>
+<path d="M684 78v18" class="ln" marker-end="url(#m8a)"/>
+<text x="14" y="118" class="b">advantage = (reward − group mean) ÷ group std</text><text x="400" y="118" class="mu sm">mean 0.5 · std 0.5</text>
+<line x1="380" y1="128" x2="380" y2="200" class="ln" style="stroke:var(--line-strong)"/>
+<text x="372" y="214" text-anchor="end" class="mu sm">pushed down</text><text x="388" y="214" class="mu sm">pushed up</text>
+<rect x="380" y="130" width="120" height="7" rx="2" class="f3"/><rect x="260" y="139" width="120" height="7" rx="2" class="fm"/><rect x="380" y="148" width="120" height="7" rx="2" class="f3"/><rect x="380" y="157" width="120" height="7" rx="2" class="f3"/>
+<rect x="260" y="166" width="120" height="7" rx="2" class="fm"/><rect x="260" y="175" width="120" height="7" rx="2" class="fm"/><rect x="380" y="184" width="120" height="7" rx="2" class="f3"/><rect x="260" y="193" width="120" height="7" rx="2" class="fm"/>
+<text x="250" y="137" text-anchor="end" class="mono sm">#1 ✓ +1</text><text x="250" y="146" text-anchor="end" class="mono sm">#2 ✗ −1</text><text x="250" y="155" text-anchor="end" class="mono sm">#3 ✓ +1</text><text x="250" y="164" text-anchor="end" class="mono sm">#4 ✓ +1</text>
+<text x="250" y="173" text-anchor="end" class="mono sm">#5 ✗ −1</text><text x="250" y="182" text-anchor="end" class="mono sm">#6 ✗ −1</text><text x="250" y="191" text-anchor="end" class="mono sm">#7 ✓ +1</text><text x="250" y="200" text-anchor="end" class="mono sm">#8 ✗ −1</text>
+<text x="520" y="150" class="sm b">every token of a ✓ answer</text><text x="520" y="164" class="sm">becomes more likely,</text><text x="520" y="178" class="sm">every token of a ✗ answer less,</text><text x="520" y="192" class="sm">minus the usual KL leash to a reference.</text>
+<text x="14" y="240" class="b">No reward model. No critic. Nothing to flatter.</text><text x="14" y="258" class="mu sm">The cost moved to sampling: eight long solutions per prompt, hundreds of thousands of prompts, so RL runs now spend most of their compute on inference.</text>
+</svg><figcaption>Group relative policy optimization. The group mean replaces a learned critic as the baseline, which is what makes the method cheap enough to run on long chains of thought. Whatever behaviour made the ✓ answers win, including self-checking and backtracking, is what gets reinforced.</figcaption></figure>
+  <p>Two consequences shape what you see when you use these models. Rewarding only the final answer means the model is free to think however works, and the chains of thought are sometimes odd, switch languages or loop; labs add small format rewards and a readability pass to tame them. And the amount of thinking is now a dial. More sampled tokens at inference buys accuracy, which is why reasoning models have a "thinking budget", and why the speed guide's output-token costs matter more than ever. Capability was once bought entirely at training time; since late 2024 part of it is bought per request.</p>
+</section>
+
+<section class="ch" id="c9">
+  <p class="chn">09 · TUNING IT YOURSELF</p>
+  <h2>Fine-tuning on your data: when, how, and what it costs</h2>
+  <p>Everything so far was done by a lab. The stage you can do yourself is fine-tuning: continue training an open model (or a hosted one through an API) on your own examples. The first question is whether you should. Fine-tuning changes how the model behaves, not what it knows; it is the right tool for a fixed format, a house style, a narrow classification task or a smaller model that must imitate a bigger one. It is the wrong tool for teaching facts that change, which is what retrieval and the context window are for, and it is rarely needed when a good prompt gets you 95% of the way. The usual order is prompt, then retrieval, then fine-tune, then only if the first two have been measured and found wanting.</p>
+  <p>If you do, you will almost certainly use <a class="term" href="#g-lora">LoRA</a>. Full fine-tuning of a 70B model needs the 16 bytes per parameter from chapter 04, over a terabyte of GPU memory. LoRA freezes the model and trains two thin matrices per weight, a tall one and a wide one, whose product is added to the original. With a rank of 16 that is well under 1% of the parameters, the optimizer state shrinks to match, and the result is a file of a few hundred megabytes that can be swapped onto the base model at serving time (an inference engine can even serve many adapters at once). QLoRA does the same over a 4-bit quantized base, which puts a 70B fine-tune on a single 48 GB card. Quality is close to full fine-tuning for most tasks and the risk of <a class="term" href="#g-forget">catastrophic forgetting</a> is lower, because the base is untouched.</p>
+  <div class="inst" id="t9">
+    <div class="ctl"><label>base model <select id="t9-m"><option value="8">Llama-3-class 8B (32 layers, d = 4096)</option><option value="70" selected>Llama-3-class 70B (80 layers, d = 8192)</option><option value="405">Llama-3-class 405B (126 layers, d = 16384)</option></select></label><label>rank r <input type="range" id="t9-r" min="0" max="8" value="4"><span class="v" id="t9-r-v">16</span></label></div>
+    <div class="ctl"><span class="mu" style="font-family:var(--font-display);font-size:13px;color:var(--muted)">adapt:</span><label><input type="checkbox" class="t9-tg" value="q" checked> q</label><label><input type="checkbox" class="t9-tg" value="k" checked> k</label><label><input type="checkbox" class="t9-tg" value="v" checked> v</label><label><input type="checkbox" class="t9-tg" value="o" checked> o</label><label><input type="checkbox" class="t9-tg" value="gate"> gate</label><label><input type="checkbox" class="t9-tg" value="up"> up</label><label><input type="checkbox" class="t9-tg" value="down"> down</label></div>
+    <div class="bars" id="t9-bars"></div>
+    <div class="read" id="t9-read"></div>
+    <p class="hint">Trainable parameters are r × (d<sub>in</sub> + d<sub>out</sub>) per adapted matrix per layer. Memory compares full fine-tuning (16 B per parameter) with LoRA (2 B per frozen parameter in bf16, 16 B per adapter parameter) and QLoRA (0.5 B per frozen parameter). Matrix shapes approximate Llama 3's (grouped-query attention makes k and v narrower; the MLP is 3.5× wider than d). Activations and workspace are not included.</p>
+  </div>
+<figure class="fig"><svg viewBox="0 0 760 232" role="img" aria-label="A large frozen weight matrix W of size d by d is added to the product of two thin trainable matrices: B, which is d tall and r wide, and A, which is r tall and d wide. With d equal to 4096 and r equal to 16, W has 16.8 million parameters and B times A has 131 thousand, under one percent. The input x passes through both paths and the outputs are summed.">
+<defs><marker id="m9a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<text x="14" y="18" class="b">one weight matrix in one layer, with a LoRA adapter</text>
+<rect x="60" y="40" width="150" height="150" rx="6" class="fms"/><text x="135" y="110" text-anchor="middle" class="b">W</text><text x="135" y="128" text-anchor="middle" class="mu sm">frozen · d × d</text><text x="135" y="142" text-anchor="middle" class="mono sm">4096 × 4096 = 16.8M</text>
+<text x="240" y="118" text-anchor="middle" class="b" style="font-size:20px">+</text>
+<rect x="280" y="40" width="14" height="150" rx="3" class="f3"/><text x="287" y="206" text-anchor="middle" class="mono sm">B</text><text x="287" y="220" text-anchor="middle" class="mu sm">d × r</text>
+<text x="318" y="118" text-anchor="middle" class="b" style="font-size:16px">·</text>
+<rect x="340" y="40" width="150" height="14" rx="3" class="f3"/><text x="415" y="70" text-anchor="middle" class="mono sm">A</text><text x="415" y="84" text-anchor="middle" class="mu sm">r × d</text>
+<text x="415" y="130" text-anchor="middle" class="sm b" style="fill:var(--s3)">trainable</text><text x="415" y="146" text-anchor="middle" class="mono sm">16 × (4096 + 4096) = 131k</text><text x="415" y="160" text-anchor="middle" class="mu sm">0.8% of W</text><text x="415" y="176" text-anchor="middle" class="mu sm">B starts at zero: a no-op at first</text>
+<line x1="14" y1="115" x2="56" y2="115" class="ln" marker-end="url(#m9a)"/><text x="30" y="106" text-anchor="middle" class="mono sm">x</text>
+<rect x="530" y="86" width="216" height="58" rx="8" class="box"/><text x="638" y="110" text-anchor="middle" class="b">y = W·x + B·(A·x)</text><text x="638" y="128" text-anchor="middle" class="mu sm">at serving time, fold B·A into W, or keep it separate</text>
+<line x1="490" y1="115" x2="526" y2="115" class="ln" marker-end="url(#m9a)"/>
+<text x="520" y="176" class="sm">Optimizer state: 131k numbers, not 16.8M.</text><text x="520" y="192" class="sm">Swap adapters per customer on one base.</text><text x="520" y="208" class="mu sm">QLoRA: the same, W stored in 4 bits.</text>
+</svg><figcaption>Low-rank adaptation. The hypothesis, which holds up well in practice, is that the change a fine-tune needs to make to each matrix is low-rank: a few directions, not a whole new matrix. So you train the few directions.</figcaption></figure>
+  <p>Two other tools belong here. <a class="term" href="#g-distill">Distillation</a>: generate answers (or full chains of thought) with a large model and fine-tune a small one on them; it is how a 7B model gets reasoning it could never have learned from scratch, and it is how most of the small models you can run locally were made. And preference tuning on your own data with DPO, when "better" is easier to click than to write. In all cases the rules from chapter 10 apply with extra force: hold out a test set before you start, and measure the base model on it first, because the most common result of a first fine-tune is a model slightly worse than the prompt you had.</p>
+</section>
+
+<section class="ch" id="c10">
+  <p class="chn">10 · MEASURING</p>
+  <h2>Held-out loss, benchmarks and the thing you must never train on</h2>
+  <p>Every decision in a run is made by looking at a number, and the whole art is picking numbers that cannot lie to you. The first is <a class="term" href="#g-overfit">held-out loss</a>: the same next-token loss, computed on text set aside before training and never trained on. While training loss and held-out loss fall together, the model is learning; when training loss keeps falling and held-out loss turns up, the model has started memorising its training set. In pretraining this rarely happens because each token is seen once. In fine-tuning on a few thousand examples it happens by the third epoch, and it is the first thing to check when a fine-tuned model disappoints.</p>
+  <p>The second number is <a class="term" href="#g-bench">benchmarks</a>: fixed question sets with known answers, scored at every checkpoint. MMLU for knowledge, GSM8K and MATH for arithmetic, HumanEval and SWE-bench for code, and dozens more. They tell you whether the loss improvements mean anything, and whether a stage made the model better at the things people want. They also leak. Benchmark questions are on the web, so they are in Common Crawl, so a model can score well by having read the test (contamination); labs decontaminate by searching their corpus for the test strings, imperfectly. And when a benchmark becomes a target it stops being a measure, as chapter 11 shows. The next guide in this series is about evaluation; here it is enough to know that training is steered entirely by these two kinds of number.</p>
+  <div class="inst" id="t10">
+    <div class="ctl"><label>fine-tuning examples <select id="t10-n"><option value="500">500</option><option value="5000" selected>5,000</option><option value="50000">50,000</option></select></label><label>model <select id="t10-m"><option value="8">8B</option><option value="70" selected>70B</option></select></label><label>learning rate <select id="t10-lr"><option value="1">normal (1 × 10⁻⁵)</option><option value="5">high (5 × 10⁻⁵)</option></select></label><label>epochs <input type="range" id="t10-e" min="1" max="10" value="3"><span class="v" id="t10-e-v">3</span></label></div>
+    <canvas id="t10-cv" height="200" aria-label="Training and held-out loss over epochs of fine-tuning"></canvas>
+    <div class="read" id="t10-read"></div>
+    <p class="hint">A sketch of fine-tuning dynamics, not a measurement: training loss (blue) always falls; held-out loss (orange) bottoms out and then climbs as the model memorises. Fewer examples, a bigger model and a higher learning rate all bring the turn earlier. The dashed line marks where to stop. Keep the test set out of the training set and out of the prompts you tune by hand; the moment you look at it to make a decision, it has started to leak.</p>
+  </div>
+<figure class="fig"><svg viewBox="0 0 760 232" role="img" aria-label="Two loss curves against epochs of fine-tuning. The training loss falls steadily. The held-out loss falls with it at first, reaches a minimum around the third epoch, then rises while training loss keeps falling. A dashed vertical line at the minimum is labelled stop here, and the widening gap after it is labelled memorising.">
+<defs><marker id="m10a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<line x1="60" y1="20" x2="60" y2="180" class="ln" style="stroke:var(--line-strong)"/><line x1="60" y1="180" x2="740" y2="180" class="ln" style="stroke:var(--line-strong)"/>
+<text x="14" y="100" text-anchor="middle" class="mu sm" transform="rotate(-90 14 100)">loss</text>
+<text x="400" y="200" text-anchor="middle" class="mu sm">epochs of fine-tuning →</text>
+<text x="60" y="216" text-anchor="middle" class="mono sm">0</text><text x="264" y="216" text-anchor="middle" class="mono sm">3</text><text x="468" y="216" text-anchor="middle" class="mono sm">6</text><text x="672" y="216" text-anchor="middle" class="mono sm">9</text>
+<path d="M60 50 C 160 110 260 140 400 156 S 650 170 740 174" class="ln l1" stroke-width="2"/><text x="650" y="162" text-anchor="end" class="sm b" style="fill:var(--s1)">training loss</text>
+<path d="M60 52 C 160 118 230 130 264 128 S 480 100 740 60" class="ln l2" stroke-width="2"/><text x="640" y="52" text-anchor="end" class="sm b" style="fill:var(--s2)">held-out loss</text>
+<path d="M264 128V40" class="ghost" stroke-width="1.2"/><text x="270" y="36" class="sm b">stop here</text><text x="270" y="50" class="mu sm">lowest held-out loss</text>
+<path d="M300 150 L 740 118 L 740 60 L 300 118 Z" class="f2s" opacity=".5"/><text x="520" y="112" text-anchor="middle" class="sm b" style="fill:var(--s2)">memorising: the gap is the overfit</text>
+<circle cx="264" cy="128" r="4" class="f2"/>
+</svg><figcaption>The curve that decides when a fine-tune ends. Training loss is what the optimizer sees; held-out loss is what the user will see. Early stopping at the minimum, or a lower learning rate, or more data, are the three fixes, in order of cheapness.</figcaption></figure>
+</section>
+
+<section class="ch" id="c11">
+  <p class="chn">11 · TRAPS AND THE FRONTIER</p>
+  <h2>Nine years of the same loop, and the places it leaks</h2>
+  <div class="timeline"><div class="tl" id="tl"></div></div>
+  <p>Every stage on this page optimises a number, and every number can be gamed. The sharpest version is the <a class="term" href="#g-hack">reward hacking</a> curve: the model's score keeps rising while the thing you actually wanted peaks and declines.</p>
+<figure class="fig"><svg viewBox="0 0 760 236" role="img" aria-label="Two curves over RL training steps. The proxy reward, the reward model's score, rises steadily throughout. True quality as judged by careful humans rises with it at first, peaks, then falls while the proxy keeps climbing. The divergence point is marked, with annotations: longer answers, confident tone, flattery, special-casing the tests.">
+<defs><marker id="m11a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<line x1="60" y1="20" x2="60" y2="180" class="ln" style="stroke:var(--line-strong)"/><line x1="60" y1="180" x2="740" y2="180" class="ln" style="stroke:var(--line-strong)"/>
+<text x="14" y="100" text-anchor="middle" class="mu sm" transform="rotate(-90 14 100)">score (higher is better)</text>
+<text x="400" y="200" text-anchor="middle" class="mu sm">RL steps →  (or: how hard you optimise against the proxy)</text>
+<path d="M60 170 C 200 110 360 70 740 36" class="ln l1" stroke-width="2"/><text x="736" y="30" text-anchor="end" class="sm b" style="fill:var(--s1)">proxy reward: what the reward model scores</text>
+<path d="M60 172 C 180 120 280 96 330 94 S 560 130 740 164" class="ln l2" stroke-width="2"/><text x="736" y="178" text-anchor="end" class="sm b" style="fill:var(--s2)">true quality: what careful humans see</text>
+<path d="M330 94V40" class="ghost" stroke-width="1.2"/><circle cx="330" cy="94" r="4" class="f2"/><text x="336" y="40" class="sm b">Goodhart's point</text><text x="336" y="54" class="mu sm">the leash is too long from here on</text>
+<text x="440" y="86" class="mu sm">what the model found:</text><text x="440" y="100" class="sm">longer answers · confident tone · agreeing with the user</text><text x="440" y="114" class="sm">hedging with lists · special-casing the unit tests</text>
+<text x="14" y="222" class="mu sm">Same curve for benchmarks (contamination), RLVR (tests pass, task unsolved) and human raters (rewarding what looks thorough).</text>
+</svg><figcaption>Goodhart's law as a training curve. The proxy is all the optimizer can see, so it climbs forever; the KL leash, more and better judges, and verifiable rewards are the three ways labs keep the orange curve from turning.</figcaption></figure>
+  <div class="cards" id="cards"></div>
+  <h3>Where 2026 stands</h3>
+  <p>Pretraining is still the bulk of the compute, but it has stopped being the whole story. The best public data has been read; growth now comes from synthetic and curated data, from mixture-of-experts architectures that buy parameters cheaply, from FP8 and new optimizers that buy steps cheaply, and above all from reinforcement learning, whose share of a frontier training budget has gone from a rounding error to a meaningful fraction in two years. The open questions are the ones this page kept bumping into: how far RL on verifiable tasks generalises to tasks nobody can verify; whether models trained on model output keep the richness of the human text underneath; and whether continual learning, a model that keeps training after deployment, can be made safe enough to ship. Chapter 12 is what to do with all this on a Tuesday.</p>
+</section>
+
+<section class="ch" id="c12">
+  <p class="chn">12 · WHY IT MATTERS TO ME</p>
+  <h2>Reading a model's behaviour back to the stage that caused it</h2>
+  <p>The practical payoff of knowing the pipeline is diagnosis. When a model does something odd, the odd thing almost always has an address. Click a behaviour.</p>
+  <div class="inst" id="t12">
+    <div class="stages" id="t12-btns"></div>
+    <div class="out" id="t12-out"></div>
+  </div>
+<figure class="fig"><svg viewBox="0 0 760 262" role="img" aria-label="A matrix of eight everyday behaviours against five training stages, with a dot where a behaviour originates. Knowledge cutoff and hallucination trace to pretraining; refusals and format to supervised fine-tuning; verbosity and sycophancy to preference tuning; long thinking and odd chains of thought to reasoning RL; forgetting and jargon errors to your own fine-tune.">
+<text x="250" y="18" text-anchor="middle" class="b sm">pretraining</text><text x="350" y="18" text-anchor="middle" class="b sm">SFT</text><text x="450" y="18" text-anchor="middle" class="b sm">preference</text><text x="550" y="18" text-anchor="middle" class="b sm">reasoning RL</text><text x="650" y="18" text-anchor="middle" class="b sm">your fine-tune</text>
+<line x1="200" y1="26" x2="700" y2="26" class="ln" style="stroke:var(--line-strong)"/>
+<text x="14" y="48" class="sm">knowledge stops at a date</text><circle cx="250" cy="44" r="6" class="f1"/>
+<text x="14" y="74" class="sm">confident wrong facts</text><circle cx="250" cy="70" r="6" class="f1"/><circle cx="450" cy="70" r="6" class="f2s" stroke="var(--s2)"/>
+<text x="14" y="100" class="sm">refuses, or stops short</text><circle cx="350" cy="96" r="6" class="f1"/><circle cx="450" cy="96" r="6" class="f2s" stroke="var(--s2)"/>
+<text x="14" y="126" class="sm">verbose, lists, hedges</text><circle cx="450" cy="122" r="6" class="f1"/>
+<text x="14" y="152" class="sm">agrees with you too easily</text><circle cx="450" cy="148" r="6" class="f1"/>
+<text x="14" y="178" class="sm">thinks for a long time, odd chains</text><circle cx="550" cy="174" r="6" class="f1"/>
+<text x="14" y="204" class="sm">bad at your jargon or format</text><circle cx="250" cy="200" r="6" class="f2s" stroke="var(--s2)"/><circle cx="350" cy="200" r="6" class="f2s" stroke="var(--s2)"/><circle cx="650" cy="200" r="6" class="f1"/>
+<text x="14" y="230" class="sm">got worse at general tasks after tuning</text><circle cx="650" cy="226" r="6" class="f1"/>
+<circle cx="214" cy="252" r="6" class="f1"/><text x="226" y="256" class="mu sm">primary cause</text><circle cx="330" cy="252" r="6" class="f2s" stroke="var(--s2)"/><text x="342" y="256" class="mu sm">contributing</text><text x="746" y="256" text-anchor="end" class="mu sm">a fix belongs at the stage, or in your prompt</text>
+</svg><figcaption>Where behaviours come from. The grid is a diagnosis aid, not a law: most symptoms have one main address and a second stage that makes them worse or better.</figcaption></figure>
+  <p>Some things to carry into your own work. When the model does not know something recent, that is pretraining's cutoff and no prompt fixes it; retrieve. When it is verbose or agreeable, that is preference tuning, and a system prompt that asks for terse, disagreeing answers is working against a trained prior, so expect to repeat yourself. When a reasoning model takes long on an easy question, that is RL having learned that thinking pays; give it a budget. When you fine-tune, hold out a test set first, measure the base, use LoRA, stop at the held-out minimum, and expect your first attempt to lose to a good prompt. When a benchmark number looks too good, ask what the training set contained. And when a model's manners differ from a competitor's, you are mostly looking at the last 5% of its compute.</p>
+  <p>Finally, the connection to the earlier guides. The attention guide is what the forward pass does; the speed guide is what the forward pass costs; the token guide is what goes in and comes out. This page is how the numbers inside got their values. Next in the series: evaluation, which is the discipline of trusting none of the above until it has been measured, and context engineering for agents, which is how to get the most from a model whose training you cannot change.</p>
+</section>
+
+<section class="ch" id="c13">
+  <p class="chn">13 · CHECK YOURSELF</p>
+  <h2>Eight questions</h2>
+  <p class="score" id="q-score">0 / 8 answered</p>
+  <div class="quiz" id="quiz"></div>
+</section>
+
+<footer>Sources behind the chapters: Vaswani et al. 2017 (the transformer) · Radford et al. 2018, 2019 (GPT, GPT-2: pretrain then adapt) · Brown et al. 2020 (GPT-3, 300B tokens) · Kaplan et al. 2020 and Hoffmann et al. 2022 (scaling laws, Chinchilla and the 20 tokens-per-parameter fit used in chapter 03) · Grattafiori et al. 2024 (Llama 3: 15T tokens, 16k GPUs, 419 interruptions, parallelism layout) · Penedo et al. 2024 (FineWeb, FineWeb-Edu) · Muennighoff et al. 2023 (repeating data, the four-epoch finding) · Kingma and Ba 2015, Loshchilov and Hutter 2019 (Adam, AdamW) · Rajbhandari et al. 2020 (ZeRO, 16 bytes per parameter) · Shoeybi et al. 2019 (Megatron tensor parallelism) · Hägele et al. 2024 and Hu et al. 2024 (warmup-stable-decay, MiniCPM) · Ouyang et al. 2022 (InstructGPT: 13k demonstrations, 33k comparisons, PPO) · Touvron et al. 2023 (Llama 2 Chat: 1.4M preference pairs) · Bai et al. 2022 (Constitutional AI, RLAIF) · Rafailov et al. 2023 (DPO) · Gao et al. 2023 (reward-model overoptimisation, the Goodhart curve) · Shao et al. 2024 (GRPO, DeepSeekMath) · Lambert et al. 2024 (Tülu 3, RL with verifiable rewards) · DeepSeek-AI 2024, 2025 (V3: FP8 and MoE at 671B; R1 and R1-Zero) · OpenAI 2024 (o1) · Hu et al. 2021 and Dettmers et al. 2023 (LoRA, QLoRA) · Hinton et al. 2015 (distillation) · Shazeer et al. 2017 and Fedus et al. 2022 (mixture of experts) · Shumailov et al. 2024 (model collapse) · Jordan et al. 2024 (Muon). Compute, cost and memory figures are order-of-magnitude from these sources; loss curves in the instruments for chapters 05 and 10 are sketches, and the hero model is a real model trained in the page. Timeline and cards reflect training data through mid-2026.</footer>
+</main>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const fmtN=n=>{ if(n>=1e12) return (n/1e12).toFixed(n>=1e13?0:1).replace(/\.0$/,'')+'T'; if(n>=1e9) return (n/1e9).toFixed(n>=1e10?0:1).replace(/\.0$/,'')+'B'; if(n>=1e6) return (n/1e6).toFixed(n>=1e7?0:1).replace(/\.0$/,'')+'M'; if(n>=1e3) return (n/1e3).toFixed(n>=1e4?0:1).replace(/\.0$/,'')+'k'; return String(Math.round(n)); };
+const fmtGB=b=>{ const gb=b/1e9; if(gb>=1000) return (gb/1000).toFixed(gb>=10000?0:1)+' TB'; if(gb>=10) return gb.toFixed(0)+' GB'; if(gb>=1) return gb.toFixed(1)+' GB'; return (gb*1000).toFixed(0)+' MB'; };
+const sci=x=>{ const e=Math.floor(Math.log10(x)); const m=x/10**e; const sup='⁰¹²³⁴⁵⁶⁷⁸⁹'; return m.toFixed(1)+' × 10'+String(e).split('').map(c=>sup[+c]).join(''); };
+const money=x=>x>=1e9?'$'+(x/1e9).toFixed(1)+'B':x>=1e6?'$'+(x/1e6).toFixed(x>=1e7?0:1)+'M':x>=1e3?'$'+(x/1e3).toFixed(0)+'k':'$'+x.toFixed(0);
+function rng(seed){ let s=seed>>>0; return ()=>{ s=(s+0x6D2B79F5)>>>0; let t=s; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return ((t^(t>>>14))>>>0)/4294967296; }; }
+function canvas(cv){ const dpr=Math.min(2,devicePixelRatio||1); const w=cv.clientWidth||600, h=+cv.getAttribute('height'); cv.width=w*dpr; cv.height=h*dpr; cv.style.height=h+'px'; const c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.font='12px '+css('--font-display'); return {c,w,h}; }
+function axes(c,x0,y0,x1,y1){ c.strokeStyle=css('--line-strong'); c.lineWidth=1; c.beginPath(); c.moveTo(x0,y0); c.lineTo(x0,y1); c.lineTo(x1,y1); c.stroke(); }
+function grid(c,x0,x1,ys){ c.strokeStyle=css('--line'); c.setLineDash([2,4]); ys.forEach(y=>{c.beginPath();c.moveTo(x0,y);c.lineTo(x1,y);c.stroke();}); c.setLineDash([]); }
+const onResize=[]; let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>onResize.forEach(f=>f()),120);});
+if(matchMedia){ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>onResize.forEach(f=>f())); }
+
+/* ---------- the toy corpus: ~6 KB of English the hero model learns from ---------- */
+const CORPUS=`A language model begins as a pile of random numbers and ends as something that can write. Between those two states lies training, which is one idea repeated a million times: show the model a piece of text, ask it to guess the next token, measure how wrong it was, and nudge every number a little in the direction that would have made it less wrong. The measure of wrongness is called the loss. The nudge is called a gradient step. The size of the nudge is the learning rate, and choosing it well is most of the craft. Too small and the model learns nothing in the time you have. Too large and it overshoots, bouncing from one bad guess to another until the loss climbs instead of falling.
+The text itself comes from the public web, from code, from books and from papers, filtered and deduplicated until what remains is worth reading once. A big model reads fifteen trillion tokens, about one pass through everything, and never sees most of it again. Then the real work of making it useful begins. Example conversations teach it that someone is speaking to it and that it should answer and then stop. Comparisons between pairs of answers teach it which answers people prefer, and a reward model learns to predict those preferences so the chat model can be trained against them. Problems with checkable answers teach it to think before it answers, because the attempts that checked their own work were the ones that got the reward.
+Every one of these stages uses the same loop. Only the data and the number being pushed down are different. The machines break, the loss spikes, the schedule bends the learning rate down at the end, and the people watching the curve decide when it is done. The model you talk to is the sum of all these decisions, and almost everything odd about it has an address somewhere in this pipeline. Knowing the address is the point of learning how it was made.
+The quick brown fox jumps over the lazy dog while the small model learns which letter tends to follow which. Vowels follow consonants, spaces follow words, and after a q there is almost always a u. A model that has seen three thousand letters knows this much; a model that has seen three thousand books knows a great deal more, but it learned it in exactly the same way.
+Consider what the people in the control room actually see. A line on a screen, falling. Below it, a second line for the text the model has never been shown, falling with it, and a dozen smaller charts: the size of the gradient, the learning rate, how many tokens per second each machine is chewing through, how many machines have fallen over since midnight. When the first line dips and the second does not, the model has begun to memorise rather than learn, and someone decides whether to stop. When both lines jump at once, a batch has gone wrong or a number has overflowed, and someone rewinds to the last saved copy and skips ahead. Most days nothing happens. The lines fall a little more slowly than yesterday, and the only decision is whether the data for the final stretch is ready.
+The data is where the arguments are. Everyone agrees that duplicated pages should go and that pages full of lists and links should go, but nobody agrees on how much code a model should read, or how much of a second language, or whether a textbook written by another model counts as a textbook. These are settled by trying each recipe on a small model for a week and seeing which small model does best on a set of questions. Then the recipe is scaled up and run once, because there is no budget for twice.
+After the long read comes the short lessons. A few thousand conversations written by careful people teach the model that a question is something to answer rather than a pattern to continue. A few hundred thousand comparisons teach it that one answer can be better than another in ways no one wrote down. A few hundred thousand problems with an answer key teach it that writing out the steps and checking them is how the key gets matched. Each lesson is small next to the reading, and each changes how the model behaves far more than its size would suggest.
+The model that results remembers what it read and behaves how it was taught, and the two are not the same thing. It will know a fact from a page it saw once and still state it wrongly with confidence, because confidence was rewarded. It will refuse something harmless because refusal was in the examples. It will think for a long time about an easy question because thinking was rewarded. None of this is mysterious once you know which stage put it there, and almost all of it can be worked around by someone who does.
+A short note on the letters. In English text the letter e is the most common, then t, then a, and the space is more common than any letter. After a t the next letter is very often h; after a q it is almost always u; after a space the most common letters are t, a and s. A model that predicts the next letter from the previous one learns exactly these tendencies and nothing more, and its text, when sampled, looks like English seen from a distance: the right rhythm of vowels and consonants, the right word lengths, and no words. A model that looks two letters back begins to produce real syllables and the occasional real word. Three letters back and whole short words appear. The same climb, from rhythm to syllables to words to sentences to arguments, is what a large model makes on its way through fifteen trillion tokens.`;
+
+/* ---------- hero: a real character model, trained here ---------- */
+(function(){
+  const CH=' abcdefghijklmnopqrstuvwxyz', V=27, LN27=Math.log(27);
+  const txt=CORPUS.toLowerCase().replace(/[^a-z ]+/g,' ').replace(/ +/g,' ');
+  const ids=[...txt].map(ch=>CH.indexOf(ch));
+  const cv=$('#h-cv'); let order=2, nctx, W, g, m, v, t, step, hist, ema, held, running=false, diverged=false, train, heldIdx, R;
+  const lrOf=()=>{ const s=+$('#h-lr').value; return $('#h-opt').value==='adam'? 10**(-2.5+2.5*s/100) : 10**(-1+2*s/100); };
+  const ctxOf=i=>order===2? ids[i-1] : ids[i-2]*V+ids[i-1];
+  function reset(){ order=+$('#h-model').value; nctx=order===2?V:V*V; W=new Float32Array(nctx*V); g=new Float32Array(nctx*V); m=new Float32Array(nctx*V); v=new Float32Array(nctx*V); t=0; step=0; hist=[]; held=[]; ema=null; diverged=false; R=rng(7);
+    const all=[]; for(let i=order-1;i<ids.length;i++) all.push(i); for(let i=all.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[all[i],all[j]]=[all[j],all[i]];}
+    heldIdx=all.slice(0,600); train=all.slice(600); evalHeld(); draw(); sample(); readout(); }
+  function softmaxRow(ctx,out){ let mx=-1e9; for(let j=0;j<V;j++){const z=W[ctx*V+j]; if(z>mx)mx=z;} let s=0; for(let j=0;j<V;j++){const e=Math.exp(W[ctx*V+j]-mx); out[j]=e; s+=e;} for(let j=0;j<V;j++) out[j]/=s; }
+  const P=new Float64Array(V);
+  function doStep(){ const B=64, lr=lrOf(); g.fill(0); let L=0;
+    for(let b=0;b<B;b++){ const i=train[Math.floor(R()*train.length)]; const ctx=ctxOf(i), y=ids[i]; softmaxRow(ctx,P); L+=-Math.log(P[y]+1e-12); for(let j=0;j<V;j++) g[ctx*V+j]+=(P[j]-(j===y?1:0))/B; }
+    L/=B; t++;
+    if($('#h-opt').value==='adam'){ const b1=.9,b2=.999,c1=1-b1**t,c2=1-b2**t; for(let k=0;k<W.length;k++){ const gk=g[k]; if(gk===0&&m[k]===0)continue; m[k]=b1*m[k]+(1-b1)*gk; v[k]=b2*v[k]+(1-b2)*gk*gk; W[k]-=lr*(m[k]/c1)/(Math.sqrt(v[k]/c2)+1e-8); } }
+    else { for(let k=0;k<W.length;k++){ if(g[k]!==0) W[k]-=lr*g[k]; } }
+    step++; ema=ema===null?L:ema*.9+L*.1; hist.push(ema); if(!isFinite(L)||L>8) diverged=true; return L; }
+  function evalHeld(){ let L=0; for(const i of heldIdx){ softmaxRow(ctxOf(i),P); L+=-Math.log(P[ids[i]]+1e-12); } L/=heldIdx.length; held.push([step,L]); return L; }
+  function sample(){ let ctx=order===2?0:0, out='', R2=rng(step+11); for(let n=0;n<90;n++){ softmaxRow(ctx,P); let r=R2(),j=0; while(j<V-1&&r>P[j]){r-=P[j];j++;} out+=CH[j]; ctx=order===2?j:(ctx%V)*V+j; } $('#h-sample').textContent=out; }
+  function readout(){ $('#h-st').textContent=step; const L=hist.length?hist[hist.length-1]:LN27; $('#h-l').textContent=isFinite(L)?L.toFixed(2):'NaN'; const hv=held[held.length-1][1]; $('#h-lv').textContent=hv.toFixed(2)+(diverged?' · diverged':''); $('#h-bits').textContent=(hv/Math.LN2).toFixed(2); $('#h-lr-v').textContent=lrOf().toPrecision(2).replace(/\.?0+$/,''); }
+  function draw(){ const {c,w,h}=canvas(cv); const x0=44,y0=12,x1=w-12,y1=h-26; const n=Math.max(300,hist.length); const yMin=1.6,yMax=3.8; const X=i=>x0+(x1-x0)*i/n, Y=l=>y1-(y1-y0)*(clamp(l,yMin,yMax)-yMin)/(yMax-yMin);
+    axes(c,x0,y0,x1,y1); grid(c,x0,x1,[Y(2),Y(2.5),Y(3),Y(LN27)]); c.fillStyle=css('--muted'); c.textAlign='right'; [2,2.5,3].forEach(l=>c.fillText(l.toFixed(1),x0-6,Y(l)+4)); c.fillText('3.30',x0-6,Y(LN27)+4); c.textAlign='left'; c.fillText('random guess (ln 27)',x0+6,Y(LN27)-4); c.textAlign='center'; c.fillText('steps → '+n,(x0+x1)/2,h-8);
+    if(hist.length>1){ c.strokeStyle=css('--s1'); c.lineWidth=1.5; c.beginPath(); hist.forEach((l,i)=>{const x=X(i),y=Y(l); i?c.lineTo(x,y):c.moveTo(x,y);}); c.stroke(); }
+    if(held.length>1){ c.strokeStyle=css('--s2'); c.lineWidth=2; c.beginPath(); held.forEach(([s,l],i)=>{const x=X(s),y=Y(l); i?c.lineTo(x,y):c.moveTo(x,y);}); c.stroke(); }
+    c.fillStyle=css('--s1'); c.textAlign='right'; c.fillText('batch loss',x1-70,y0+12); c.fillStyle=css('--s2'); c.fillText('held-out',x1-4,y0+12); }
+  function frame(){ if(!running) return; for(let k=0;k<6;k++) doStep(); if(step%12===0) evalHeld(); if(step%24===0) sample(); draw(); readout(); if(diverged){running=false;$('#h-train').textContent='train';$('#h-train').classList.remove('on');} else requestAnimationFrame(frame); }
+  $('#h-train').addEventListener('click',()=>{ running=!running; $('#h-train').textContent=running?'pause':'train'; $('#h-train').classList.toggle('on',running); if(running) requestAnimationFrame(frame); });
+  $('#h-step').addEventListener('click',()=>{ doStep(); evalHeld(); sample(); draw(); readout(); });
+  $('#h-reset').addEventListener('click',()=>{ running=false; $('#h-train').textContent='train'; $('#h-train').classList.remove('on'); reset(); });
+  $('#h-model').addEventListener('change',()=>{ running=false; $('#h-train').textContent='train'; $('#h-train').classList.remove('on'); reset(); });
+  $('#h-opt').addEventListener('change',readout); $('#h-lr').addEventListener('input',readout);
+  onResize.push(draw); reset();
+})();
+
+/* ---------- 01 gradient descent on a one-parameter landscape ---------- */
+(function(){
+  const cv=$('#t1-cv'); const f=x=>x**4/8-x*x+0.4*x+0.6*Math.sin(3*x)+3, df=x=>x**3/2-2*x+0.4+1.8*Math.cos(3*x);
+  const XMIN=-3.2,XMAX=3.2; let x, trail=[], n=0, timer=null;
+  const lr=()=>+$('#t1-lr').value/100, x0=()=>XMIN+(XMAX-XMIN)*(+$('#t1-x0').value)/100;
+  function reset(){ clearInterval(timer); timer=null; $('#t1-run').textContent='run'; $('#t1-run').classList.remove('on'); x=x0(); trail=[x]; n=0; draw(); read(); }
+  function stepOnce(){ const gx=df(x); const dx=-lr()*gx; x+=dx; n++; trail.push(x); if(trail.length>80) trail.shift(); draw(); read(dx,gx); return Math.abs(x)<5; }
+  function read(dx,gx){ $('#t1-n').textContent=n; $('#t1-x').textContent=x.toFixed(2); $('#t1-l').textContent=Math.abs(x)<5?f(x).toFixed(3):'∞'; $('#t1-g').textContent=gx===undefined?'—':gx.toFixed(2); $('#t1-s').textContent=dx===undefined?'—':(dx>=0?'+':'')+dx.toFixed(3)+(Math.abs(x)>=5?' · diverged':''); $('#t1-lr-v').textContent=lr().toFixed(2); $('#t1-x0-v').textContent=x0().toFixed(1); }
+  function draw(){ const {c,w,h}=canvas(cv); const x0p=36,y0=10,x1=w-12,y1=h-24; let fmin=1e9,fmax=-1e9; for(let i=0;i<=200;i++){const xx=XMIN+(XMAX-XMIN)*i/200;const v=f(xx);if(v<fmin)fmin=v;if(v>fmax)fmax=v;} fmax=Math.min(fmax,fmin+4.5);
+    const X=xx=>x0p+(x1-x0p)*(xx-XMIN)/(XMAX-XMIN), Y=v=>y1-(y1-y0)*(clamp(v,fmin,fmax)-fmin)/(fmax-fmin);
+    axes(c,x0p,y0,x1,y1); c.fillStyle=css('--muted'); c.textAlign='center'; c.fillText('one parameter →',(x0p+x1)/2,h-6); c.save(); c.translate(12,(y0+y1)/2); c.rotate(-Math.PI/2); c.fillText('loss',0,0); c.restore();
+    c.strokeStyle=css('--fg'); c.lineWidth=1.6; c.beginPath(); for(let i=0;i<=200;i++){const xx=XMIN+(XMAX-XMIN)*i/200;const px=X(xx),py=Y(f(xx)); i?c.lineTo(px,py):c.moveTo(px,py);} c.stroke();
+    c.strokeStyle=css('--s1'); c.lineWidth=1; c.globalAlpha=.6; c.beginPath(); trail.forEach((tx,i)=>{const px=X(clamp(tx,XMIN,XMAX)),py=Y(f(clamp(tx,XMIN,XMAX))); i?c.lineTo(px,py):c.moveTo(px,py);}); c.stroke(); c.globalAlpha=1;
+    trail.forEach((tx,i)=>{ if(Math.abs(tx)>XMAX) return; c.fillStyle=css('--s1'); c.globalAlpha=.25+.75*i/trail.length; c.beginPath(); c.arc(X(tx),Y(f(tx)),3,0,7); c.fill(); }); c.globalAlpha=1;
+    if(Math.abs(x)<=XMAX){ c.fillStyle=css('--s2'); c.beginPath(); c.arc(X(x),Y(f(x)),7,0,7); c.fill(); const gx=df(x); const L=40, ang=Math.atan2(-(Y(f(x+0.01))-Y(f(x-0.01))),X(x+0.01)-X(x-0.01)); c.strokeStyle=css('--s2'); c.lineWidth=2; c.beginPath(); c.moveTo(X(x)-Math.cos(ang)*L,Y(f(x))+Math.sin(ang)*L); c.lineTo(X(x)+Math.cos(ang)*L,Y(f(x))-Math.sin(ang)*L); c.stroke(); c.fillStyle=css('--muted'); c.textAlign=gx>0?'right':'left'; c.fillText('slope '+gx.toFixed(2),X(x)+(gx>0?-12:12),Y(f(x))-12); }
+    else { c.fillStyle=css('--bad'); c.textAlign='center'; c.font='bold 13px '+css('--font-display'); c.fillText('diverged: the step carried it off the map',(x0p+x1)/2,y0+20); } }
+  $('#t1-step').addEventListener('click',()=>{ if(Math.abs(x)<5) stepOnce(); });
+  $('#t1-run').addEventListener('click',()=>{ if(timer){clearInterval(timer);timer=null;$('#t1-run').textContent='run';$('#t1-run').classList.remove('on');return;} $('#t1-run').textContent='stop'; $('#t1-run').classList.add('on'); let k=0; timer=setInterval(()=>{ if(!stepOnce()||++k>=80){clearInterval(timer);timer=null;$('#t1-run').textContent='run';$('#t1-run').classList.remove('on');} },90); });
+  $('#t1-reset').addEventListener('click',reset); $('#t1-x0').addEventListener('input',reset); $('#t1-lr').addEventListener('input',()=>read());
+  onResize.push(draw); reset();
+})();
+
+/* ---------- 02 the funnel and the mixture ---------- */
+(function(){
+  const MIX={llama:{web:.50,code:.17,'math + reasoning':.25,multilingual:.08},code:{web:.35,code:.40,'math + reasoning':.15,multilingual:.10},multi:{web:.40,code:.15,'math + reasoning':.10,multilingual:.35}};
+  const AVAIL={code:3e12,'math + reasoning':0.5e12,multilingual:5e12};
+  function upd(){ const raw=1e13*10**(2*(+$('#t2-raw').value)/100), k1=+$('#t2-k1').value/100,k2=+$('#t2-k2').value/100,k3=+$('#t2-k3').value/100, D=1e12*10**(2*(+$('#t2-D').value)/100);
+    $('#t2-raw-v').textContent=fmtN(raw); $('#t2-k1-v').textContent=Math.round(k1*100)+'%'; $('#t2-k2-v').textContent=Math.round(k2*100)+'%'; $('#t2-k3-v').textContent=Math.round(k3*100)+'%'; $('#t2-D-v').textContent=fmtN(D);
+    const st=[['raw crawl',raw],['text + language',raw*k1],['deduplicated',raw*k1*k2],['quality filtered',raw*k1*k2*k3]];
+    $('#t2-funnel').innerHTML=st.map(([l,v])=>`<span class="lab">${l}</span><div class="bar" style="width:${Math.max(1,100*v/raw)}%"></div><span>${fmtN(v)}</span>`).join('');
+    const web=raw*k1*k2*k3; const mix=MIX[$('#t2-mix').value]; const rows=Object.entries(mix).map(([k,s])=>{const need=D*s; const avail=k==='web'?web:AVAIL[k]; const ep=need/avail; return [k,need,ep];}); const mx=Math.max(...rows.map(r=>r[1]));
+    $('#t2-mixbars').innerHTML=rows.map(([k,need,ep])=>`<span class="lab">${k}</span><div class="bar${ep>4?' lit':''}" style="width:${Math.max(1,100*need/mx)}%"></div><span>${fmtN(need)} · ${ep<1?'<1':ep.toFixed(1)}×</span>`).join('');
+    const worst=rows.reduce((a,r)=>r[2]>a[2]?r:a); $('#t2-read').innerHTML=`<span>usable web <b>${fmtN(web)}</b></span><span>target run <b>${fmtN(D)}</b></span><span>most-repeated source <b>${worst[0]} · ${worst[2].toFixed(1)}×</b></span><span>${worst[2]>4?'<b style="color:var(--warn)">past the useful-repeat limit: this is the data wall</b>':'<b>within the useful-repeat limit</b>'}</span>`; }
+  ['#t2-raw','#t2-k1','#t2-k2','#t2-k3','#t2-D'].forEach(s=>$(s).addEventListener('input',upd)); $('#t2-mix').addEventListener('change',upd); upd();
+})();
+
+/* ---------- 03 scaling-law calculator ---------- */
+(function(){
+  const cv=$('#t3-cv'); const L=(N,D)=>1.69+406.4/N**0.34+410.7/D**0.28;
+  const getN=()=>10**(8+4*(+$('#t3-N').value)/100), getD=()=>10**(10+4*(+$('#t3-D').value)/100);
+  function upd(){ const N=getN(),D=getD(),C=6*N*D,gpus=+$('#t3-g').value,mfu=+$('#t3-mfu').value/100; $('#t3-N-v').textContent=fmtN(N); $('#t3-D-v').textContent=fmtN(D); $('#t3-mfu-v').textContent=Math.round(mfu*100)+'%';
+    const secs=C/(gpus*989e12*mfu), days=secs/86400, cost=gpus*(secs/3600)*2; const Nopt=Math.sqrt(C/120), Dopt=20*Nopt;
+    $('#t3-read').innerHTML=`<span>compute <b>${sci(C)} FLOPs</b></span><span>tokens per parameter <b>${(D/N).toFixed(D/N<10?1:0)}</b></span><span>predicted loss <b>${L(N,D).toFixed(3)}</b></span><span>compute-optimal for this budget <b>${fmtN(Nopt)} params × ${fmtN(Dopt)} tokens · loss ${L(Nopt,Dopt).toFixed(3)}</b></span><span>wall clock <b>${days<1?(days*24).toFixed(1)+' hours':days.toFixed(days<10?1:0)+' days'}</b></span><span>GPU cost <b>${money(cost)}</b></span>`;
+    const {c,w,h}=canvas(cv); const x0=44,y0=12,x1=w-12,y1=h-26; const lo=8,hi=12; const pts=[]; let ymin=1e9,ymax=-1e9; for(let i=0;i<=160;i++){const lg=lo+(hi-lo)*i/160; const n=10**lg, d=C/(6*n); if(d<1e9) continue; const l=L(n,d); pts.push([lg,l]); if(l<ymin)ymin=l; if(l>ymax)ymax=l;} ymax=Math.min(ymax,ymin+1.2); ymin-=.05;
+    const X=lg=>x0+(x1-x0)*(lg-lo)/(hi-lo), Y=l=>y1-(y1-y0)*(clamp(l,ymin,ymax)-ymin)/(ymax-ymin);
+    axes(c,x0,y0,x1,y1); c.fillStyle=css('--muted'); c.textAlign='center'; [8,9,10,11,12].forEach(e=>c.fillText(fmtN(10**e),X(e),h-8)); c.textAlign='right'; c.fillText(ymin.toFixed(2),x0-6,Y(ymin)+4); c.fillText((ymin+(ymax-ymin)/2).toFixed(2),x0-6,Y(ymin+(ymax-ymin)/2)+4); c.textAlign='left'; c.fillText('loss, same budget spent differently',x0+6,y0+12);
+    c.strokeStyle=css('--s1'); c.lineWidth=2; c.beginPath(); pts.forEach(([lg,l],i)=>{ i?c.lineTo(X(lg),Y(l)):c.moveTo(X(lg),Y(l)); }); c.stroke();
+    const lgo=Math.log10(Nopt); if(lgo>lo&&lgo<hi){ c.strokeStyle=css('--line-strong'); c.setLineDash([4,4]); c.beginPath(); c.moveTo(X(lgo),y0); c.lineTo(X(lgo),y1); c.stroke(); c.setLineDash([]); c.fillStyle=css('--muted'); c.textAlign=lgo>10.5?'right':'left'; c.fillText('compute-optimal · 20 tok/param',X(lgo)+(lgo>10.5?-6:6),y0+30); }
+    const lgN=Math.log10(N); c.fillStyle=css('--s2'); c.beginPath(); c.arc(X(lgN),Y(L(N,D)),6,0,7); c.fill(); c.fillStyle=css('--fg'); c.textAlign=lgN>10.5?'right':'left'; c.font='bold 12px '+css('--font-display'); c.fillText('your run: '+fmtN(N)+' × '+fmtN(D),X(lgN)+(lgN>10.5?-10:10),Y(L(N,D))-10); }
+  ['#t3-N','#t3-D','#t3-mfu'].forEach(s=>$(s).addEventListener('input',upd)); $('#t3-g').addEventListener('change',upd); onResize.push(upd); upd();
+})();
+
+/* ---------- 04 training memory ---------- */
+(function(){
+  const PARTS={16:[['bf16 weights',2],['fp32 master weights',4],['bf16 gradients',2],['Adam first moment',4],['Adam second moment',4]],12:[['bf16 weights',2],['fp32 master weights',4],['bf16 gradients',2],['8-bit Adam m',2],['8-bit Adam v',2]],8:[['bf16 weights',2],['fp32 master weights',4],['bf16 gradients',2]],2:[['bf16 weights',2]]};
+  function upd(){ const N=10**(9+3*(+$('#t4-N').value)/100), parts=PARTS[$('#t4-opt').value], mem=+$('#t4-mem').value*1e9, [tp,pp]=$('#t4-tp').value.split(',').map(Number); $('#t4-N-v').textContent=fmtN(N);
+    const total=parts.reduce((a,[,b])=>a+b,0)*N; $('#t4-bars').innerHTML=parts.map(([l,b])=>`<span class="lab">${l} · ${b} B/param</span><div class="bar" style="width:${100*b/16}%"></div><span>${fmtGB(b*N)}</span>`).join('');
+    const minG=Math.ceil(total/(mem*0.75)); const unit=tp*pp; const g=Math.max(unit,Math.ceil(minG/unit)*unit); const dp=g/unit;
+    $('#t4-read').innerHTML=`<span>training state <b>${fmtGB(total)}</b></span><span>one GPU holds <b>${fmtGB(mem)}</b></span><span>minimum GPUs, fully sharded <b>${g.toLocaleString()}</b></span><span>as data × tensor × pipeline <b>${dp} × ${tp} × ${pp}</b></span><span>per GPU on 16,384 <b>${fmtGB(total/16384)}</b></span>`; }
+  $('#t4-N').addEventListener('input',upd); ['#t4-opt','#t4-mem','#t4-tp'].forEach(s=>$(s).addEventListener('change',upd)); upd();
+})();
+
+/* ---------- 05 learning-rate schedule ---------- */
+(function(){
+  const cv=$('#t5-cv');
+  function lrAt(t,type,w,d,mn){ if(t<w) return t/Math.max(w,1e-6); const u=(t-w)/(1-w); if(type==='const') return 1; if(type==='cos') return mn+(1-mn)*0.5*(1+Math.cos(Math.PI*u)); if(type==='lin') return 1-(1-mn)*u; const s=1-d; if(t<s) return 1; const q=(t-s)/(1-s); return mn+(1-mn)*0.5*(1+Math.cos(Math.PI*q)); }
+  function upd(){ const type=$('#t5-type').value,w=+$('#t5-w').value/100,d=+$('#t5-d').value/100,peak=+$('#t5-peak').value,mn=+$('#t5-min').value/100; $('#t5-w-v').textContent=Math.round(w*100)+'%'; $('#t5-d-v').textContent=Math.round(d*100)+'%'; $('#t5-min-v').textContent=Math.round(mn*100)+'%'; $('#t5-d').disabled=type!=='wsd';
+    const n=400, lrs=[], loss=[]; let cum=0; const scale=peak/3e-4; let spike=0; for(let i=0;i<=n;i++){ const t=i/n; const r=lrAt(t,type,w,d,mn); lrs.push(r); cum+=r*scale/n; let Lv=2.0+1.2*Math.exp(-5*cum)+0.25*r*scale; if(w<0.01&&peak>=1e-3&&t>0.02&&t<0.08){ spike=Math.max(spike,0.6*Math.exp(-(((t-0.04)/0.012)**2))); Lv+=0.6*Math.exp(-(((t-0.04)/0.012)**2)); } loss.push(Lv); }
+    const {c,w:W,h}=canvas(cv); const x0=44,y0=12,x1=W-12,y1=h-26; const X=i=>x0+(x1-x0)*i/n; axes(c,x0,y0,x1,y1); c.fillStyle=css('--muted'); c.textAlign='center'; c.fillText('training steps →',(x0+x1)/2,h-8); c.textAlign='right'; c.fillText('peak',x0-6,y0+10); c.fillText('0',x0-6,y1);
+    const Yl=r=>y1-(y1-y0)*r; c.strokeStyle=css('--s1'); c.lineWidth=2; c.beginPath(); lrs.forEach((r,i)=>{ i?c.lineTo(X(i),Yl(r)):c.moveTo(X(i),Yl(r)); }); c.stroke();
+    const lmin=Math.min(...loss),lmax=Math.max(...loss); const Yo=l=>y1-(y1-y0)*(l-lmin+0.05)/(lmax-lmin+0.1); c.strokeStyle=css('--s2'); c.lineWidth=2; c.beginPath(); loss.forEach((l,i)=>{ i?c.lineTo(X(i),Yo(l)):c.moveTo(X(i),Yo(l)); }); c.stroke();
+    const pk=peak===3e-4?'3 × 10⁻⁴':peak===1e-3?'1 × 10⁻³':'1 × 10⁻⁴'; c.textAlign='right'; c.fillStyle=css('--s1'); c.fillText('learning rate · peak '+pk,x1-4,y0+18); c.fillStyle=css('--s2'); c.fillText('loss (sketch)',x1-4,y0+32);
+    const area=lrs.reduce((a,b)=>a+b,0)/n; const endL=loss[n]; const cosRef=(()=>{let cu=0,Lv=0; for(let i=0;i<=n;i++){const r=lrAt(i/n,'cos',Math.max(w,.01),d,.1); cu+=r*scale/n; Lv=2.0+1.2*Math.exp(-5*cu)+0.25*r*scale;} return Lv;})();
+    $('#t5-read').innerHTML=`<span>average rate over the run <b>${(area*100).toFixed(0)}% of peak</b></span><span>final loss (sketch) <b>${endL.toFixed(3)}</b></span><span>vs warmup + cosine to 10% <b>${(endL-cosRef>=0?'+':'')+(endL-cosRef).toFixed(3)}</b></span>${spike?'<span><b style="color:var(--warn)">spike: warmup too short for that peak</b></span>':''}`; }
+  ['#t5-w','#t5-d','#t5-min'].forEach(s=>$(s).addEventListener('input',upd)); ['#t5-type','#t5-peak'].forEach(s=>$(s).addEventListener('change',upd)); onResize.push(upd); upd();
+})();
+
+/* ---------- 06 base vs chat ---------- */
+(function(){
+  const Q=['What is a token?','Translate "good morning" into French.','Write a haiku about debugging.'];
+  const BASE=['What is a token?\n\nA token is a unit of text. 2. What is a type?\n\nA type is a category of token. 3. What is a lexeme?\n\nExercise 4.1: list the tokens in the sentence below.','Translate "good morning" into French.\n\nTranslate "good night" into French.\n\nTranslate "thank you" into French.\n\nAnswers on page 142.','Write a haiku about debugging.\n\nWrite a limerick about merge conflicts.\n\nWrite a sonnet about the build server.\n\nSubmitted by u/stacktrace_jones · 14 points · 3 comments'];
+  const ANS=['A token is the unit of text a model reads and writes: a word, part of a word, or a symbol.','"Bonjour."','Red test turns to green,\nthe bug was a missing comma,\nmy coffee has gone cold.'];
+  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  const sp=s=>`<span class="sp">${esc(s)}</span>`;
+  function upd(){ const i=+$('#t6-p').value, tpl=$('#t6-tpl').value, mask=$('#t6-mask').checked; $('#t6-base').innerHTML=`<span class="pre">${esc(Q[i])}</span>`+esc(BASE[i].slice(Q[i].length));
+    const m=s=>`<span class="${mask?'msk':''}">${esc(s)}</span>`, tr=s=>`<span class="trn">${esc(s)}</span>`;
+    let html; if(tpl==='l3'){ html=sp('<|begin_of_text|>')+sp('<|start_header_id|>')+m('system')+sp('<|end_header_id|>')+m('\n\nYou are a helpful assistant.')+sp('<|eot_id|>')+sp('<|start_header_id|>')+m('user')+sp('<|end_header_id|>')+m('\n\n'+Q[i])+sp('<|eot_id|>')+sp('<|start_header_id|>')+m('assistant')+sp('<|end_header_id|>')+'<br>'+tr(ANS[i])+(mask?`<span class="trn">${sp('<|eot_id|>')}</span>`:sp('<|eot_id|>')); }
+    else { html=sp('<|im_start|>')+m('system\nYou are a helpful assistant.')+sp('<|im_end|>')+'<br>'+sp('<|im_start|>')+m('user\n'+Q[i])+sp('<|im_end|>')+'<br>'+sp('<|im_start|>')+m('assistant\n')+tr(ANS[i])+(mask?`<span class="trn">${sp('<|im_end|>')}</span>`:sp('<|im_end|>')); }
+    $('#t6-chat').innerHTML=html; }
+  ['#t6-p','#t6-tpl','#t6-mask'].forEach(s=>$(s).addEventListener('change',upd)); upd();
+})();
+
+/* ---------- 07 reward model from your clicks + the KL leash ---------- */
+(function(){
+  const R=[['short, correct','It scores an answer with one number, trained to predict which of two answers a person would prefer.',.30],['long, flattering','Great question! A reward model is a truly fascinating piece of the puzzle: it is a model that assigns a score to answers, and it is trained on human preferences so that it can capture exactly what thoughtful users like you value in a response.',.12],['confident, wrong','It gives the model extra training data as a reward whenever it answers quickly.',.08],['terse, blunt','Predicts which of two answers a human prefers; outputs a scalar.',.25],['hedged list','Broadly speaking, a reward model: (1) takes an answer, (2) outputs a score, (3) is trained on comparisons. Details vary by lab.',.25]];
+  const pairs=[]; for(let i=0;i<5;i++) for(let j=i+1;j<5;j++) pairs.push([i,j]); let order=[], cursor=0, comps=[], s=[0,0,0,0,0]; const rr=rng(3);
+  function shuffle(){ order=pairs.slice(); for(let i=order.length-1;i>0;i--){const j=Math.floor(rr()*(i+1));[order[i],order[j]]=[order[j],order[i]];} cursor=0; }
+  function fit(){ s=[0,0,0,0,0]; for(let it=0;it<200;it++){ const g=[0,0,0,0,0]; comps.forEach(([w,l])=>{ const p=1/(1+Math.exp(-(s[w]-s[l]))); g[w]+=1-p; g[l]-=1-p; }); for(let i=0;i<5;i++) s[i]+=0.3*(g[i]-0.02*s[i]); } }
+  function showPair(){ if(cursor>=order.length) shuffle(); const [a,b]=order[cursor]; const flip=rr()<.5; const [x,y]=flip?[b,a]:[a,b]; $('#t7-pair').innerHTML=[x,y].map(i=>`<button type="button" data-i="${i}"><span class="tag">answer ${'ABCDE'[i]}</span>${R[i][1]}</button>`).join(''); $('#t7-pair').dataset.a=x; $('#t7-pair').dataset.b=y; }
+  function render(){ const beta=+$('#t7-beta').value/100; $('#t7-beta-v').textContent=beta.toFixed(2); $('#t7-count').textContent=comps.length+' comparison'+(comps.length===1?'':'s');
+    const mn=Math.min(...s),mx=Math.max(...s),rg=mx-mn||1; $('#t7-rm').innerHTML=R.map((r,i)=>`<span class="lab" title="${r[1]}">${'ABCDE'[i]} · ${r[0]}</span><div class="trk"><i style="width:${comps.length?Math.max(2,100*(s[i]-mn)/rg):2}%"></i></div><span class="pv">${comps.length?(s[i]>=0?'+':'')+s[i].toFixed(2):'—'}</span>`).join('');
+    const ref=R.map(r=>r[2]); const un=ref.map((p,i)=>p*Math.exp(s[i]/beta)); const Z=un.reduce((a,b)=>a+b,0); const pol=un.map(u=>u/Z); const top=Math.max(...pol,...ref);
+    $('#t7-pol').innerHTML=R.map((r,i)=>`<span class="lab">${'ABCDE'[i]}</span><div class="trk"><em style="width:${100*ref[i]/top}%"></em><i style="width:${100*pol[i]/top}%"></i></div><span class="pv">${(pol[i]*100).toFixed(0)}%</span>`).join('');
+    const kl=pol.reduce((a,p,i)=>a+(p>0?p*Math.log(p/ref[i]):0),0); $('#t7-pol').insertAdjacentHTML('beforeend',`<span class="lab mu" style="color:var(--muted)">KL</span><div class="trk" style="background:none"></div><span class="pv">${kl.toFixed(2)} nats</span>`); }
+  $('#t7-pair').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const w=+b.dataset.i; const a=+$('#t7-pair').dataset.a, bb=+$('#t7-pair').dataset.b; const l=w===a?bb:a; comps.push([w,l]); fit(); cursor++; showPair(); render(); });
+  $('#t7-skip').addEventListener('click',()=>{ cursor++; showPair(); });
+  $('#t7-reset').addEventListener('click',()=>{ comps=[]; s=[0,0,0,0,0]; shuffle(); showPair(); render(); });
+  $('#t7-beta').addEventListener('input',render); shuffle(); showPair(); render();
+})();
+
+/* ---------- 08 GRPO group advantages ---------- */
+(function(){
+  const SLOTS=[{len:180,ok:'9:40 to 13:15 is 3 h 35 min.',bad:'9:40 to 13:15 is 3 h 25 min.'},{len:420,ok:'13:15 − 9:40. Minutes: 15 − 40 is negative, borrow an hour: 75 − 40 = 35. Hours: 12 − 9 = 3. 3 h 35 min.',bad:'13:15 − 9:40 = 4:25. Hmm, 15 − 40 = −25, so 4 h and −25 min... call it 4 h 15 min.'},{len:260,ok:'20 min to 10:00, then 3 h to 13:00, then 15 min: 3 h 35 min.',bad:'20 min to 10:00, then 3 h to 13:00, then 15 min: 3 h 15 min.'},{len:1400,ok:'Let me set this up carefully... [long derivation] ... wait, I should double-check the borrow: 75 − 40 = 35. Final answer: 3 h 35 min.',bad:'Let me set this up carefully... [long derivation] ... converting to minutes: 795 − 580 = 205 minutes = 3 h 25 min. Final answer: 3 h 25 min.'},{len:150,ok:'3 h 35 min',bad:'3 h 25 min'},{len:2600,ok:'First, it is important to consider time zones... [very long] ... assuming the same zone: 3 h 35 min.',bad:'First, it is important to consider time zones... [very long] ... the trip is therefore approximately 4 hours.'},{len:900,ok:'Convert both to minutes past midnight: 580 and 795. Difference 215 min = 3 h 35 min. Check: 580 + 215 = 795. ✓',bad:'Convert both to minutes: 580 and 795. Difference 215 min = 3 h 15 min.'},{len:300,ok:'Three hours and thirty-five minutes.',bad:'Three and a half hours.'}];
+  let ok=[1,0,1,1,0,0,1,0]; const R=rng(5);
+  function roll(){ const p=+$('#t8-p').value/100; ok=SLOTS.map(()=>R()<p?1:0); render(); }
+  function render(){ const p=+$('#t8-p').value/100; $('#t8-p-v').textContent=Math.round(p*100)+'%'; const bonus=$('#t8-len').checked; const r=SLOTS.map((s,i)=>ok[i]+(bonus?0.1*s.len/100:0)); const mean=r.reduce((a,b)=>a+b,0)/8; const sd=Math.sqrt(r.reduce((a,b)=>a+(b-mean)**2,0)/8); const adv=r.map(x=>sd>1e-9?(x-mean)/sd:0); const mx=Math.max(...adv.map(Math.abs),1e-9);
+    $('#t8-adv').innerHTML=SLOTS.map((s,i)=>`<span class="lab ${ok[i]?'ok':'bad'}" data-i="${i}" title="${(ok[i]?s.ok:s.bad).replace(/"/g,'&quot;')}">#${i+1} ${ok[i]?'✓':'✗'} · ${s.len} tok</span><div class="trk"><i class="${adv[i]>=0?'up':'dn'}" style="width:${50*Math.abs(adv[i])/mx}%"></i></div><span class="pv">${adv[i]>=0?'+':''}${adv[i].toFixed(2)}</span>`).join('');
+    const n=ok.reduce((a,b)=>a+b,0); const hacked=bonus&&adv.some((a,i)=>a>0&&!ok[i]);
+    $('#t8-read').innerHTML=`<span>passed <b>${n} of 8</b></span><span>mean reward <b>${mean.toFixed(2)}</b></span><span>std <b>${sd.toFixed(2)}</b></span><span>${sd<1e-9?'<b style="color:var(--warn)">no signal: every rollout got the same reward, so this prompt teaches nothing</b>':hacked?'<b style="color:var(--bad)">a wrong answer is being pushed up for being long: reward hacking</b>':'<b>✓ answers up, ✗ answers down</b>'}</span>`; }
+  $('#t8-adv').addEventListener('click',e=>{ const l=e.target.closest('.lab'); if(!l) return; ok[+l.dataset.i]^=1; render(); });
+  $('#t8-roll').addEventListener('click',roll); $('#t8-p').addEventListener('input',render); $('#t8-len').addEventListener('change',render); render();
+})();
+
+/* ---------- 09 LoRA calculator ---------- */
+(function(){
+  const M={8:{L:32,d:4096,kv:1024,ffn:14336,N:8.03e9},70:{L:80,d:8192,kv:1024,ffn:28672,N:70.6e9},405:{L:126,d:16384,kv:1024,ffn:53248,N:405.9e9}};
+  function upd(){ const m=M[$('#t9-m').value], r=2**(+$('#t9-r').value); $('#t9-r-v').textContent=r; const tg=$$('.t9-tg').filter(c=>c.checked).map(c=>c.value); const per={q:m.d+m.d,k:m.d+m.kv,v:m.d+m.kv,o:m.d+m.d,gate:m.d+m.ffn,up:m.d+m.ffn,down:m.ffn+m.d}; const train=m.L*r*tg.reduce((a,k)=>a+per[k],0);
+    const full=16*m.N, lora=2*m.N+16*train, qlora=0.5*m.N+16*train; const rows=[['full fine-tune · 16 B/param',full],['LoRA · frozen bf16 base + adapter states',lora],['QLoRA · frozen 4-bit base + adapter states',qlora]];
+    $('#t9-bars').innerHTML=rows.map(([l,b])=>`<span class="lab">${l}</span><div class="bar${b===full?' lit':''}" style="width:${Math.max(1,100*b/full)}%"></div><span>${fmtGB(b)} · ${Math.ceil(b/(80e9*0.75))} × H100</span>`).join('');
+    $('#t9-read').innerHTML=`<span>trainable <b>${fmtN(train)}</b></span><span>share of the model <b>${(100*train/m.N).toFixed(train/m.N<0.001?3:2)}%</b></span><span>adapter file (bf16) <b>${fmtGB(2*train)}</b></span><span>memory saved vs full <b>${(full/lora).toFixed(1)}× (LoRA) · ${(full/qlora).toFixed(1)}× (QLoRA)</b></span>`; }
+  $('#t9-r').addEventListener('input',upd); $('#t9-m').addEventListener('change',upd); $$('.t9-tg').forEach(c=>c.addEventListener('change',upd)); upd();
+})();
+
+/* ---------- 10 overfitting sketch ---------- */
+(function(){
+  const cv=$('#t10-cv');
+  function upd(){ const n=+$('#t10-n').value, big=$('#t10-m').value==='70', hi=$('#t10-lr').value==='5', E=+$('#t10-e').value; $('#t10-e-v').textContent=E; const k=0.8*(hi?1.8:1)*(big?1.25:1); const rho=0.012*(big?1.5:1)*(hi?2.2:1)*Math.sqrt(5000/n);
+    const tr=t=>0.4+1.6*Math.exp(-k*t), va=t=>tr(t)+rho*t*t; let best=0,bv=1e9; for(let t=0;t<=10;t+=0.05){const v=va(t); if(v<bv){bv=v;best=t;}}
+    const {c,w,h}=canvas(cv); const x0=44,y0=12,x1=w-12,y1=h-26; const ymin=0.3,ymax=2.2; const X=t=>x0+(x1-x0)*t/10, Y=v=>y1-(y1-y0)*(clamp(v,ymin,ymax)-ymin)/(ymax-ymin);
+    axes(c,x0,y0,x1,y1); c.fillStyle=css('--muted'); c.textAlign='center'; for(let e=0;e<=10;e+=2) c.fillText(e,X(e),h-8); c.textAlign='right'; [0.5,1,1.5,2].forEach(v=>c.fillText(v.toFixed(1),x0-6,Y(v)+4));
+    const line=(f,col)=>{ c.strokeStyle=col; c.lineWidth=2; c.beginPath(); for(let i=0;i<=200;i++){const t=10*i/200; const y=Y(f(t)); i?c.lineTo(X(t),y):c.moveTo(X(t),y);} c.stroke(); }; line(tr,css('--s1')); line(va,css('--s2'));
+    c.strokeStyle=css('--line-strong'); c.setLineDash([4,4]); c.beginPath(); c.moveTo(X(best),y0); c.lineTo(X(best),y1); c.stroke(); c.setLineDash([]); c.fillStyle=css('--muted'); c.textAlign='left'; c.fillText('stop here · epoch '+best.toFixed(1),X(best)+6,y0+12);
+    c.strokeStyle=css('--fg'); c.lineWidth=1.2; c.beginPath(); c.moveTo(X(E),y0); c.lineTo(X(E),y1); c.stroke(); c.fillStyle=css('--s2'); c.beginPath(); c.arc(X(E),Y(va(E)),5,0,7); c.fill(); c.fillStyle=css('--s1'); c.beginPath(); c.arc(X(E),Y(tr(E)),5,0,7); c.fill();
+    c.fillStyle=css('--s1'); c.textAlign='right'; c.fillText('training loss',x1-4,Y(tr(10))-8); c.fillStyle=css('--s2'); c.fillText('held-out loss',x1-4,Y(va(10))+16);
+    $('#t10-read').innerHTML=`<span>at epoch ${E}: training <b>${tr(E).toFixed(2)}</b></span><span>held-out <b>${va(E).toFixed(2)}</b></span><span>gap <b>${(va(E)-tr(E)).toFixed(2)}</b></span><span>best stopping point <b>epoch ${best.toFixed(1)}</b></span><span>${E>best+0.5?'<b style="color:var(--warn)">past the minimum: memorising</b>':'<b>still learning</b>'}</span>`; }
+  $('#t10-e').addEventListener('input',upd); ['#t10-n','#t10-m','#t10-lr'].forEach(s=>$(s).addEventListener('change',upd)); onResize.push(upd); upd();
+})();
+
+/* ---------- 11 timeline + cards ---------- */
+(function(){
+  const tl=[['2017','The transformer','Vaswani et al.: attention replaces recurrence. Every model on this page trains this architecture.'],['2018','Pretrain, then adapt','GPT-1 and BERT: pretraining on raw text, then a short fine-tune, beats training from scratch for every task.'],['2020','GPT-3 · scaling laws','175B parameters on 300B tokens; Kaplan et al. publish the power laws that make a run forecastable.'],['2022','Chinchilla · InstructGPT · ChatGPT','20 tokens per parameter; SFT + RLHF with PPO turns a base model into an assistant; ChatGPT ships in November.'],['2023','LLaMA · DPO · Llama 2','Open weights trained far past Chinchilla; DPO removes the reward model; Llama 2 Chat uses 1.4M preference pairs.'],['2024','Llama 3 · WSD · o1 · DeepSeek-V3','15T tokens on 16k GPUs; warmup-stable-decay; o1 shows RL-trained reasoning; V3 trains a 671B MoE in FP8 for ~$6M of GPU time.'],['2025','DeepSeek-R1 · GRPO in the open · Muon','R1-Zero learns to reason from RL alone; GRPO becomes the default RLVR algorithm; Muon trains a trillion-parameter model.'],['2026','RL at scale','Post-training takes a meaningful share of frontier budgets; agentic and tool-use RL; continual learning still an open problem.']];
+  $('#tl').innerHTML=tl.map(([y,t,d])=>`<div class="ev"><div class="y">${y}</div><div class="t">${t}</div><div class="d">${d}</div></div>`).join('');
+  const cards=[
+    ['Scaling laws','Kaplan 2020 · Hoffmann 2022','Fit loss as a power law in parameters and tokens on a ladder of small runs; extrapolate to choose the big one.','Turns a $100M decision into a forecast; the Chinchilla correction alone saved a generation of models from being undertrained.','Laws are fit on one data mixture and architecture; they say nothing about which abilities appear, only about loss.'],
+    ['Mixture of experts','Shazeer 2017 · Mixtral 2023 · DeepSeek-V3 2024','Replace each feed-forward block with many smaller experts and a router; each token visits a few. 671B parameters, 37B active.','Far more parameters per unit of training and serving compute; the cheapest route to frontier quality in 2024–26.','Routing is hard to train stably; experts must be balanced; memory holds every expert even though each token uses few.'],
+    ['Low-precision training','bf16 ~2020 · FP8 DeepSeek-V3 2024','Do the matrix multiplies in 16 or 8 bits with careful scaling, keep master weights and accumulations in 32.','Roughly 2× throughput per halving of precision on the same hardware; FP8 made a 671B run affordable.','Overflow and underflow cause spikes; needs per-block scaling and a lot of engineering; FP4 training is still research.'],
+    ['Annealing and mid-training','widespread from 2024','Reserve the final 10–20% of pretraining for the learning-rate decay and switch the mixture to the best data: math, code, textbooks, long documents, synthetic.','A disproportionate share of benchmark gains for a small share of compute; also where long-context ability is added.','Over-weighting benchmark-like data here is the respectable face of contamination.'],
+    ['Warmup-stable-decay','Hu et al. 2024 · Hägele et al. 2024','Hold the learning rate flat and decay only at the end, instead of a cosine pinned to a planned length.','Lets a run continue past its planned end, and lets several decayed checkpoints branch from one stable run for cheap scaling-law points.','The decay is still needed to see the real loss; intermediate stable checkpoints understate the model.'],
+    ['RLHF with PPO, or DPO','Ouyang 2022 · Rafailov 2023','PPO: a reward model scores rollouts and the policy is updated under a KL leash, with a critic. DPO: one loss on the preference pairs, no reward model, no sampling.','PPO can learn from fresh samples and from any reward signal; DPO is simple, stable and good enough for most open models.','PPO needs four models and expert tuning; DPO can only learn what is in the fixed pairs and overfits them.'],
+    ['Verifiable rewards and GRPO','Shao 2024 · Lambert 2024 · DeepSeek-R1 2025','Reward a program\'s verdict, not a model\'s opinion; baseline each rollout against its group so no critic is needed.','Produced reasoning models: self-checking and backtracking emerged from the reward alone. Nothing to flatter.','Only works where answers can be checked; long rollouts make RL compute-heavy; rewards still get hacked at the edges.'],
+    ['Distillation and synthetic data','Hinton 2015 · everywhere since 2023','Train a student on a teacher\'s outputs or probabilities; generate training text with models, filtered by checkers and judges.','Small models that punch above their size; unlimited data for post-training; the main way reasoning reaches 7B models.','Students inherit the teacher\'s voice and errors; repeated generations lose the tails of human text (model collapse).'],
+    ['New optimizers','Muon, Jordan 2024 · Kimi K2 2025','Orthogonalise the update matrix for each weight before applying it, instead of Adam\'s per-element scaling.','Reported 1.3–2× better token efficiency at scale; the first widely adopted alternative to Adam in a decade.','Only applies to matrix parameters; interacts with learning-rate and weight-decay choices that were tuned for Adam.'],
+  ];
+  $('#cards').innerHTML=cards.map(([t,y,w,why,cost])=>`<div class="card"><h3>${t} <span class="yr">${y}</span></h3><p>${w}</p><div class="kv"><span>why</span><span>${why}</span><span>cost</span><span>${cost}</span></div></div>`).join('');
+})();
+
+/* ---------- 12 symptom → stage ---------- */
+(function(){
+  const S=[['Does not know last month\'s news','Pretraining','The corpus was frozen at a date and the model saw it once. No prompt adds knowledge after that; retrieval does. Chapter 02.'],['States a wrong fact with total confidence','Pretraining, worsened by preference tuning','Rare facts are under-trained (seen once or never); then RLHF rewarded confident tone over hedging. Ask for sources, or use logprobs from the token guide. Chapters 02 and 07.'],['Too long, too many bullet points','Preference tuning','Human raters, and reward models trained on them, favour answers that look thorough. The leash was long enough for length to win. A terse system prompt works against a trained prior, so repeat it. Chapter 07.'],['Agrees with whatever I say','Preference tuning','Sycophancy: agreement was preferred in the comparison data, so it was reinforced. Ask for the strongest counter-argument explicitly. Chapter 07.'],['Refuses something harmless','SFT and preference tuning','Refusal examples in the SFT set and a safety reward teach a boundary; the boundary is fuzzy and errs wide. Rephrase with context, or use a model tuned for your domain. Chapters 06 and 07.'],['Thinks for 40 seconds on an easy question','Reasoning RL','RL rewarded chains of thought that reached correct answers, and longer chains reached more of them. Set a thinking budget or route easy prompts to a non-reasoning model. Chapter 08.'],['Terrible at our internal jargon','Pretraining coverage','Your terms were rare or absent in the corpus, so they tokenize badly and mean little. Put a glossary in context first; fine-tune only if that fails. Chapters 02 and 09.'],['My fine-tuned model got worse at everything else','Your fine-tune','Catastrophic forgetting: too many epochs or too high a learning rate overwrote general ability. Use LoRA, mix in general data, stop at the held-out minimum. Chapters 09 and 10.'],['Sounds exactly like another model','SFT via distillation','Its instruction data was generated by that model, so it learned that voice along with the format. Chapters 06 and 09.'],['Perfect on the benchmark, poor in production','Measurement','Contamination or Goodhart: the benchmark was in the training data, or was optimised against until it stopped measuring. Build a private eval from your own traffic. Chapters 10 and 11.']];
+  $('#t12-btns').innerHTML=S.map((s,i)=>`<button type="button" class="btn" data-i="${i}">${s[0]}</button>`).join('');
+  const show=i=>{ $$('#t12-btns .btn').forEach((b,k)=>b.classList.toggle('on',k===i)); $('#t12-out').innerHTML=`<b style="font-family:var(--font-display)">${S[i][1]}.</b> ${S[i][2]}`; };
+  $('#t12-btns').addEventListener('click',e=>{ const b=e.target.closest('.btn'); if(b) show(+b.dataset.i); }); show(2);
+})();
+
+/* ---------- 13 quiz ---------- */
+(function(){
+  const qs=[
+    ['One training step is…',['Reading one document and memorising it','Forward pass on a batch, compute the loss, backward pass for gradients, nudge every parameter','Asking a human whether the output was good','Resizing the vocabulary'],1,'Batch in, predictions out, loss, gradient for every parameter by backpropagation, one small update. Every stage on this page is this loop with different data and a different loss.'],
+    ['Why is a training run\'s compute about 6 × parameters × tokens?',['Six GPUs are needed per parameter','Each token costs 2 operations per parameter forward and 4 backward','There are six stages','It is a rough convention with no basis'],1,'The forward pass is 2 FLOPs per parameter per token (multiply and add); the backward pass costs about twice that. 2 + 4 = 6.'],
+    ['Chinchilla says about 20 tokens per parameter is compute-optimal. Why was Llama 3 8B trained on 1,875?',['A mistake','Smaller models are cheaper every time they answer, so extra training compute is repaid at serving time','The data was free','Chinchilla was disproved'],1,'Compute-optimal means best loss per training dollar. A model that will be served billions of times should be smaller and read more; the training overspend is recovered in inference.'],
+    ['Why does training need about 16 bytes of memory per parameter?',['Parameters are 16-bit','bf16 weights, fp32 master copy, gradients, and Adam\'s two running averages: 2 + 4 + 2 + 4 + 4','The GPU driver reserves it','One byte per layer'],1,'Inference needs 2 bytes per parameter. Training adds the master copy, the gradient and the optimizer state, which is why a 405B run cannot fit on any single machine.'],
+    ['Supervised fine-tuning mainly teaches a model…',['New facts about the world','The format of being an assistant: turns, when to answer, when to stop, the voice','To reason step by step','A bigger vocabulary'],1,'A few thousand example conversations, loss only on the assistant turns. It changes behaviour, not knowledge; the knowledge was fixed in pretraining.'],
+    ['The KL penalty in RLHF exists because…',['It speeds up training','Optimising hard against a learned reward finds its blind spots; the leash keeps the model near where it started','It reduces memory','Humans asked for it'],1,'A reward model is a stand-in for the judge and can be fooled. Charging the policy for drifting from the reference keeps the fooling small. Shorten the leash too far and nothing is learned.'],
+    ['In GRPO, what replaces the learned critic as a baseline?',['The reward model','The mean reward of the group of answers sampled for the same prompt','A human rating','The previous checkpoint'],1,'Sample eight answers, score each, subtract the group mean. Above-average answers get pushed up, below-average down. No critic, no reward model when the checker is a program.'],
+    ['During fine-tuning, training loss keeps falling but held-out loss starts rising. This means…',['The learning rate is too low','The model is memorising the training set; stop at the held-out minimum','More epochs are needed','The held-out set is broken'],1,'Overfitting. The optimizer only sees training loss; the user only sees held-out behaviour. Early stopping, a lower learning rate or more data are the fixes.']
+  ];
+  let answered=0,right=0;const host=$('#quiz');
+  host.innerHTML=qs.map((q,i)=>`<div class="qq" data-i="${i}"><p class="qt">${i+1}. ${q[0]}</p><div class="opts">${q[1].map((o,k)=>`<button type="button" class="opt" data-k="${k}">${o}</button>`).join('')}</div><p class="why" hidden>${q[3]}</p></div>`).join('');
+  host.addEventListener('click',e=>{const b=e.target.closest('.opt');if(!b)return;const box=b.closest('.qq');if(box.dataset.done)return;box.dataset.done=1;const i=+box.dataset.i,k=+b.dataset.k;const ok=k===qs[i][2];answered++;if(ok)right++;
+    box.querySelectorAll('.opt').forEach(o=>{if(+o.dataset.k===qs[i][2])o.classList.add('right');else if(o===b)o.classList.add('wrong');o.disabled=true;});box.querySelector('.why').hidden=false;
+    $('#q-score').textContent=`${right} correct of ${answered} answered · ${qs.length} total`+(answered===qs.length?(right===qs.length?' · clean sweep':' · re-read the chapters you missed'):'');});
+})();
+
+/* ---------- nav + progress ---------- */
+(function(){
+  const links=$$('nav.rail a');const secs=links.map(a=>$(a.getAttribute('href'))).filter(Boolean);
+  const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+en.target.id));}});},{rootMargin:'-30% 0px -60% 0px'});
+  secs.forEach(s=>io.observe(s));
+  const bar=$('#progress');const onS=()=>{const d=document.documentElement;const p=d.scrollTop/(d.scrollHeight-d.clientHeight);bar.style.width=(p*100).toFixed(1)+'%';};addEventListener('scroll',onS,{passive:true});onS();
+})();
+})();
+</script>
+
+</body></html>

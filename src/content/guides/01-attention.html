@@ -1,0 +1,689 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Attention Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sticky chapter rail (desktop) beside one ~68ch reading column; every chapter pairs short prose with one full-width "instrument" panel the reader operates. */
+:root{
+  --bg:#F3F4F8; --surface:#FFFFFF; --fg:#131829; --muted:#5A6177; --line:#D7DAE5; --line-strong:#B5BACB;
+  --accent:#2443E8; --accent-soft:#E4E8FF; --accent-ink:#FFFFFF;
+  --heat-lo:#FFF3E2; --heat-hi:#E04A10; --ok:#1F7A4E; --bad:#B4321A; --mask:#8C93A8;
+  --font-display:"Bricolage Grotesque","Avenir Next","Helvetica Neue",Arial,sans-serif;
+  --font-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C0F1B; --surface:#141929; --fg:#E8EAF3; --muted:#98A0B8; --line:#262D45; --line-strong:#3C4463;
+    --accent:#8B9CFF; --accent-soft:#1D2550; --accent-ink:#0C0F1B;
+    --heat-lo:#231A15; --heat-hi:#FF7A3C; --ok:#4BC38A; --bad:#F08A72; --mask:#4A5270; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C0F1B; --surface:#141929; --fg:#E8EAF3; --muted:#98A0B8; --line:#262D45; --line-strong:#3C4463;
+  --accent:#8B9CFF; --accent-soft:#1D2550; --accent-ink:#0C0F1B;
+  --heat-lo:#231A15; --heat-hi:#FF7A3C; --ok:#4BC38A; --bad:#F08A72; --mask:#4A5270; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} *{animation:none!important;transition:none!important} }
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:17px;line-height:1.6;margin:0;padding-inline:16px;padding-block:0 64px;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+#progress{position:fixed;left:0;top:env(safe-area-inset-top,0px);height:3px;width:0;background:var(--accent);z-index:50;transition:width .1s linear}
+.frame{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:0 40px}
+@media (min-width:980px){ .frame{grid-template-columns:200px minmax(0,1fr)} }
+nav.rail{display:none}
+@media (min-width:980px){
+  nav.rail{display:block;position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;padding-top:28px;font-family:var(--font-display);font-size:13px}
+  nav.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+  nav.rail li a{display:block;padding:6px 0 6px 14px;color:var(--muted);text-decoration:none;border-left:2px solid transparent;margin-left:-1px;line-height:1.3}
+  nav.rail li a.active{color:var(--fg);border-left-color:var(--accent)}
+  nav.rail li a:hover{color:var(--fg)}
+  nav.rail .n{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-right:6px}
+}
+main{min-width:0}
+.hero{padding-block:56px 24px}
+.eyebrow{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:var(--muted);margin:0 0 14px}
+h1{font-family:var(--font-display);font-weight:800;font-size:clamp(36px,5.6vw,64px);line-height:1.02;letter-spacing:-.02em;margin:0 0 18px;text-wrap:balance;font-variation-settings:"opsz" 96}
+h2{font-family:var(--font-display);font-weight:700;font-size:clamp(26px,3.4vw,36px);line-height:1.1;letter-spacing:-.015em;margin:0 0 12px;text-wrap:balance}
+h3{font-family:var(--font-display);font-weight:700;font-size:18px;margin:0 0 8px}
+.lede{font-size:21px;line-height:1.5;max-width:62ch;margin:0 0 26px;color:var(--fg)}
+.lede em{font-style:italic}
+p{max-width:68ch;margin:0 0 14px}
+section.ch{padding-block:36px;border-top:1px solid var(--line)}
+.chn{font-family:var(--font-mono);font-size:12px;color:var(--accent);letter-spacing:.08em;margin:0 0 10px}
+.inst{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin:22px 0 12px;min-width:0}
+.inst .hint{font-family:var(--font-display);font-size:13px;color:var(--muted);margin:10px 0 0}
+.ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;font-family:var(--font-display);font-size:13px;margin:0 0 14px}
+.ctl label{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.ctl input[type=range]{accent-color:var(--accent);width:150px;max-width:40vw}
+.ctl select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px}
+.ctl .v{font-family:var(--font-mono);color:var(--fg);min-width:3.5ch;font-variant-numeric:tabular-nums}
+.btn{font-family:var(--font-display);font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn[aria-pressed="true"],.btn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:focus-visible,.tok:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;gap:4px;flex-wrap:wrap}
+.arcwrap{overflow-x:auto;padding-bottom:4px}
+.arcinner{min-width:max-content;position:relative}
+.arcinner svg{display:block;width:100%;height:120px}
+.toks{display:flex;gap:6px;flex-wrap:nowrap}
+.tok{font-family:var(--font-mono);font-size:14px;padding:6px 9px;border-radius:5px;border:1px solid var(--line);background:var(--surface);cursor:pointer;user-select:none;white-space:nowrap;transition:background .12s}
+.tok.q{outline:2px solid var(--accent);outline-offset:1px}
+.tok.ghost{opacity:.45}
+.read{font-family:var(--font-mono);font-size:13px;color:var(--muted);margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 22px;font-variant-numeric:tabular-nums}
+.read b{color:var(--fg);font-weight:600}
+canvas{display:block;width:100%;max-width:100%}
+.math{font-family:var(--font-body);font-style:italic;font-size:1.05em}
+.eq{font-family:var(--font-body);font-size:22px;text-align:center;margin:18px 0;line-height:1.4}
+.eq .op{font-style:normal;font-family:var(--font-display);font-weight:500}
+.eq i{font-style:italic}
+.eq sup,.eq sub{font-size:.6em}
+.mono{font-family:var(--font-mono);font-size:.85em}
+.grid2{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:760px){ .grid2{grid-template-columns:1fr 1fr} }
+.mats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;overflow-x:auto}
+.mat{min-width:0}
+.mat h4{font-family:var(--font-display);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;display:flex;justify-content:space-between;align-items:baseline}
+.mat h4 .k{font-family:var(--font-mono);font-size:11px;background:var(--accent-soft);color:var(--fg);padding:1px 6px;border-radius:4px}
+.mat table{border-collapse:collapse;font-family:var(--font-mono);font-size:12px;font-variant-numeric:tabular-nums;width:100%}
+.mat td,.mat th{padding:5px 6px;text-align:right;border:1px solid var(--line)}
+.mat th{font-weight:400;color:var(--muted);text-align:left}
+.mat.dim{opacity:.4}
+.mat.lit{box-shadow:0 0 0 2px var(--accent);border-radius:6px}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.bars{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;font-family:var(--font-mono);font-size:12px;font-variant-numeric:tabular-nums}
+.bars .bar{height:12px;border-radius:3px;background:var(--heat-hi);min-width:1px}
+.bars .lab{color:var(--muted)}
+.cards{display:grid;grid-template-columns:1fr;gap:12px;margin-top:18px}
+@media (min-width:700px){ .cards{grid-template-columns:1fr 1fr} }
+.card{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface);min-width:0}
+.card h3{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.card h3 .yr{font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:400}
+.card p{font-size:15px;margin:0 0 8px;max-width:none}
+.card .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:14px;margin-top:6px}
+.card .kv span:first-child{font-family:var(--font-display);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:3px}
+.timeline{overflow-x:auto;margin:18px 0 4px;padding-bottom:8px}
+.tl{display:flex;gap:0;min-width:max-content;position:relative;padding-top:10px}
+.tl::before{content:"";position:absolute;left:0;right:0;top:19px;height:1px;background:var(--line-strong)}
+.tl .ev{width:150px;padding:0 10px 0 0;position:relative}
+.tl .ev::before{content:"";position:absolute;left:0;top:4px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
+.tl .ev .y{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin:20px 0 2px}
+.tl .ev .t{font-family:var(--font-display);font-size:13px;font-weight:700;line-height:1.25}
+.tl .ev .d{font-size:12.5px;color:var(--muted);line-height:1.35;margin-top:2px}
+.quiz{display:grid;gap:14px}
+.qq{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface)}
+.qq .qt{font-family:var(--font-display);font-weight:700;margin:0 0 10px;font-size:16px}
+.qq .opts{display:grid;gap:6px}
+.qq .opt{text-align:left;font:inherit;font-size:15px;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.qq .opt:hover{border-color:var(--line-strong)}
+.qq .opt.right{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.qq .opt.wrong{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+.qq .why{font-size:14.5px;color:var(--muted);margin:10px 0 0;max-width:none}
+.score{font-family:var(--font-display);font-size:14px;color:var(--muted)}
+.note{font-size:15px;color:var(--muted);border-left:2px solid var(--line-strong);padding-left:12px;margin:12px 0}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:12px;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--fg)}
+.sram{display:grid;grid-template-columns:1fr;gap:12px}
+@media (min-width:760px){ .sram{grid-template-columns:3fr 2fr} }
+.panel{border:1px dashed var(--line-strong);border-radius:8px;padding:10px 12px;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums;min-width:0}
+.panel h4{font-family:var(--font-display);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}
+.panel .row{display:flex;justify-content:space-between;gap:8px;padding:2px 0;border-bottom:1px solid var(--line)}
+.panel .row:last-child{border-bottom:0}
+.textin{font:inherit;font-family:var(--font-mono);font-size:14px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);color:var(--fg);width:100%;min-width:0}
+.pred{font-family:var(--font-display);font-size:15px;margin-top:10px}
+.pred .pill{font-size:14px;padding:3px 10px}
+.gloss{display:grid;grid-template-columns:1fr;gap:10px 22px;margin-top:18px}
+@media (min-width:760px){ .gloss{grid-template-columns:1fr 1fr} }
+.g{padding:10px 0;border-top:1px solid var(--line);min-width:0}
+.g dt{font-family:var(--font-display);font-weight:700;font-size:16px;margin:0 0 4px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.g dt .sym{font-family:var(--font-mono);font-size:12px;color:var(--muted);font-weight:400}
+.g dd{margin:0;font-size:15px;line-height:1.5}
+.g dd .ana{display:block;color:var(--muted);margin-top:4px;font-size:14px}
+a.term{color:inherit;text-decoration:none;border-bottom:1px dotted var(--accent)}
+a.term:hover{color:var(--accent)}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--font-mono);font-size:13px;margin:14px 0}
+.flow span{padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--muted)}
+.flow .op{color:var(--text);border-color:var(--line-strong)}
+.flow .plus{border:none;padding:0 2px;color:var(--accent)}
+footer{font-family:var(--font-display);font-size:13px;color:var(--muted);padding-top:28px;border-top:1px solid var(--line);margin-top:30px}
+.legend{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:12px;color:var(--muted)}
+.legend .sw{width:90px;height:10px;border-radius:3px;background:linear-gradient(90deg,var(--heat-lo),var(--heat-hi));border:1px solid var(--line)}
+</style>
+
+<div id="progress"></div>
+<div class="frame">
+<nav class="rail" aria-label="Chapters">
+  <ol>
+    <li><a href="#c0"><span class="n">00</span>Plain words</a></li>
+    <li><a href="#c1"><span class="n">01</span>The bottleneck</a></li>
+    <li><a href="#c2"><span class="n">02</span>Soft lookup</a></li>
+    <li><a href="#c3"><span class="n">03</span>Learned projections</a></li>
+    <li><a href="#c4"><span class="n">04</span>The equation</a></li>
+    <li><a href="#c5"><span class="n">05</span>Masks and heads</a></li>
+    <li><a href="#c6"><span class="n">06</span>Position (RoPE)</a></li>
+    <li><a href="#c7"><span class="n">07</span>Induction heads</a></li>
+    <li><a href="#c8"><span class="n">08</span>The n² bill</a></li>
+    <li><a href="#c9"><span class="n">09</span>FlashAttention</a></li>
+    <li><a href="#c10"><span class="n">10</span>The frontier</a></li>
+    <li><a href="#c11"><span class="n">11</span>Why it made me</a></li>
+    <li><a href="#c12"><span class="n">12</span>Check yourself</a></li>
+  </ol>
+</nav>
+<main>
+
+<header class="hero">
+  <p class="eyebrow">An interactive field guide</p>
+  <h1>Attention, from one dot product to the frontier</h1>
+  <p class="lede">Every token a language model produces is the result of a lookup: <em>given what I am looking at, which earlier tokens matter, and what do they tell me?</em> This page builds that lookup from scratch, then shows how it was bent, cached, tiled and compressed until it could run over a million tokens.</p>
+  <div class="inst" id="hero-inst">
+    <div class="arcwrap"><div class="arcinner" id="hero-inner"><svg id="hero-svg" aria-hidden="true"></svg><div class="toks" id="hero-toks"></div></div></div>
+    <div class="read" id="hero-read"></div>
+    <p class="hint">Hover or tap a word. Arcs show where that word looks when the model reads it. Try <span class="mono">it</span>.</p>
+  </div>
+</header>
+
+<section class="ch" id="c0">
+  <p class="chn">00 · PLAIN WORDS</p>
+  <h2>Every term, in one breath</h2>
+  <p>The chapters use these words freely. Each entry is a one-sentence definition and a picture to hold it by. Dotted-underlined terms in the chapters link back here.</p>
+  <dl class="gloss"><div class="g" id="g-token"><dt>Token</dt><dd>The unit the model reads and writes: a word, a piece of a word, a punctuation mark. "Attention" might be one token; "unbelievably" might be three.<span class="ana">A tile on the board. Everything below is about how tiles look at each other.</span></dd></div><div class="g" id="g-vector"><dt>Vector, dot product <span class="sym">x · y</span></dt><dd>A vector is a list of numbers that stands for a token. A dot product multiplies two lists element by element and adds the results; it is large when the two lists point the same way.<span class="ana">Dot product is a similarity score. High means "these agree," near zero means "unrelated," negative means "opposed."</span></dd></div><div class="g" id="g-embed"><dt>Embedding <span class="sym">x</span></dt><dd>The vector a token starts life as, looked up from a learned table. Similar tokens get similar vectors.<span class="ana">The tile's starting description, before any context has been read into it.</span></dd></div><div class="g" id="g-qkv"><dt>Query, key, value <span class="sym">q, k, v</span></dt><dd>Three vectors made from one token by three learned matrices. Query: what I am looking for. Key: what I advertise to others. Value: what I hand over if someone attends to me.<span class="ana">Searching a library: your request (query) is matched against the spines (keys); what you take home is the book's contents (value).</span></dd></div><div class="g" id="g-score"><dt>Score <span class="sym">q · k</span></dt><dd>The dot product of one query with one key: how well this token's request matches that token's advertisement. A full set of scores for one query is one row of the attention matrix.<span class="ana">Raw match strength, before anything has been normalised.</span></dd></div><div class="g" id="g-softmax"><dt>Softmax</dt><dd>Turns a list of scores into shares that are all positive and sum to 1. Raise e to each score, divide by the total. Bigger scores get disproportionately bigger shares; only differences between scores matter.<span class="ana">A dial between "pick the single best" and "average everyone," set by how spread out the scores are.</span></dd></div><div class="g" id="g-weight"><dt>Attention weight</dt><dd>One share from a softmax row: the fraction of this query's attention that goes to that key. The weights mix the values.<span class="ana">The heat in every heatmap on this page.</span></dd></div><div class="g" id="g-head"><dt>Head</dt><dd>One complete attention lookup with its own small W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub>, so it can learn one kind of question. A layer runs many heads in parallel on slices of the vector and concatenates their outputs through W<sub>O</sub>.<span class="ana">A newsroom: each reporter reads the same document for one thing (names, dates, who said what) and the editor merges the notes.</span></dd></div><div class="g" id="g-layer"><dt>Layer, residual stream</dt><dd>One layer = one attention block followed by one MLP, each adding its output back onto the token's vector. That running vector, carried through all the layers, is the residual stream. Modern models stack 30 to 120 layers.<span class="ana">A shared whiteboard per token. Every block reads it and writes a little more onto it; nothing is erased.</span></dd></div><div class="g" id="g-mlp"><dt>MLP</dt><dd>The other half of every layer: a small two-matrix network applied to each token on its own. It stores facts and transforms features; it cannot look at other positions. Attention moves information between tokens; the MLP thinks about what has arrived.<span class="ana">Attention is the postal service, the MLP is what each house does with the mail.</span></dd></div><div class="g" id="g-weights"><dt>Weights, parameters <span class="sym">W</span></dt><dd>The learned matrices (W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub>, W<sub>O</sub>, the MLP matrices, the embedding table). A "70B model" has seventy billion of these numbers. They are fixed after training; only the context changes at inference.<span class="ana">The model's long-term memory. Context is its short-term memory.</span></dd></div><div class="g" id="g-grad"><dt>Loss, gradient descent</dt><dd>Loss is a number saying how wrong the next-token prediction was. The gradient says which direction to nudge every weight to make it less wrong. Training repeats "predict, measure, nudge" trillions of times.<span class="ana">Walking downhill in fog: you cannot see the valley but you can feel the slope under your feet.</span></dd></div><div class="g" id="g-mask"><dt>Causal mask <span class="sym">−∞</span></dt><dd>Before softmax, set every score for a future token to −∞ so its weight becomes exactly 0. Position i can only read positions ≤ i. Required for next-token prediction and the reason keys and values can be cached.<span class="ana">Reading with a card covering the rest of the page.</span></dd></div><div class="g" id="g-pos"><dt>Positional encoding, RoPE <span class="sym">θ</span></dt><dd>Attention has no built-in sense of order, so position is injected. RoPE rotates each query and key by an angle proportional to its position, so the dot product depends only on how far apart two tokens are.<span class="ana">Clock hands: compare two times by the angle between the hands, not by where the clock is on the wall.</span></dd></div><div class="g" id="g-kv"><dt>KV cache</dt><dd>During generation, every layer's keys and values for all past tokens are stored so a new token only computes its own q, k, v and attends over the stored ones. Grows linearly with context; at long contexts it is what fills the GPU.<span class="ana">Notes kept from earlier pages so you never re-read the book to write the next sentence.</span></dd></div><div class="g" id="g-ctx"><dt>Context window <span class="sym">n</span></dt><dd>The number of tokens the model can attend over at once: your prompt, the files, the tool results, and everything it has generated so far in the reply. Scores are an n × n matrix per head per layer.<span class="ana">The size of the desk. The n² bill is the cost of having every paper able to see every other paper.</span></dd></div><div class="g" id="g-logit"><dt>Logits</dt><dd>The final scores over the vocabulary for the next token, one number per possible token, before a softmax turns them into probabilities. Sampling picks from that distribution.<span class="ana">Same softmax trick, used one last time to choose the next tile.</span></dd></div><div class="g" id="g-flop"><dt>FLOPs, HBM, SRAM</dt><dd>FLOPs: floating-point operations, the compute bill. HBM: the GPU's large, slow main memory (80 GB on an H100). SRAM: the tiny, fast memory beside each compute unit (about 228 KB). Modern attention is limited by moving bytes between them, not by arithmetic.<span class="ana">A chef with a huge pantry down the hall and a tiny counter. Speed is about how often you walk to the pantry.</span></dd></div><div class="g" id="g-decoder"><dt>Decoder-only Transformer</dt><dd>The architecture of GPT, Llama, Claude: a stack of causal-attention + MLP layers that predicts the next token, repeated one token at a time. "Decoder" is historical; there is no separate encoder.<span class="ana">One machine, one job: given everything so far, what comes next.</span></dd></div></dl>
+</section>
+
+<section class="ch" id="c1">
+  <p class="chn">01 · THE BOTTLENECK</p>
+  <h2>Before attention, distance was destiny</h2>
+  <p>Recurrent networks read a sentence one token at a time and squeeze everything seen so far into one fixed-size state. Each step is a hop. To use the word "company" when predicting "public", the signal has to survive every hop in between, and each hop blurs it a little.</p>
+  <p>Attention replaces the chain with a direct wire. Any position can read any earlier position in a single step, so the path length between two tokens is always one.</p>
+  <div class="inst">
+    <div class="ctl"><span class="seg" role="group" aria-label="Mode"><button class="btn" id="pl-rnn" aria-pressed="true">Recurrent chain</button><button class="btn" id="pl-att" aria-pressed="false">Attention</button></span><label>decay per hop <input type="range" id="pl-decay" min="0.6" max="0.98" step="0.01" value="0.85"><span class="v" id="pl-decay-v">0.85</span></label></div>
+    <div class="arcwrap"><div class="arcinner" id="pl-inner"><svg id="pl-svg" aria-hidden="true"></svg><div class="toks" id="pl-toks"></div></div></div>
+    <div class="read" id="pl-read"></div>
+    <p class="hint">Hover a word. The arcs trace the path back to the word it depends on; the readout shows how much signal survives.</p>
+  </div>
+</section>
+
+<section class="ch" id="c2">
+  <p class="chn">02 · SOFT LOOKUP</p>
+  <h2>A dictionary you can differentiate</h2>
+  <p>A hash map answers a query by finding the one key that matches exactly. Attention answers by <a class="term" href="#g-score">scoring</a> the query against <em>every</em> key, turning the scores into a probability distribution with <a class="term" href="#g-softmax">softmax</a>, and returning the weighted average of the values. Nothing is discontinuous, so gradients flow and the keys, queries and values can all be learned.</p>
+  <p>The three names are the whole idea (<a class="term" href="#g-qkv">glossary</a>). <b>Query</b>: what I am looking for. <b>Key</b>: what each entry advertises. <b>Value</b>: what each entry hands back if chosen.</p>
+  <div class="inst">
+    <div class="ctl"><label>sharpness β <input type="range" id="sl-beta" min="0.3" max="14" step="0.1" value="4"><span class="v" id="sl-beta-v">4.0</span></label><span class="legend">low β → averages everyone · high β → hard lookup</span></div>
+    <div class="grid2">
+      <canvas id="sl-cv" style="aspect-ratio:1/1;max-height:380px;touch-action:none;cursor:grab"></canvas>
+      <div>
+        <div class="bars" id="sl-bars"></div>
+        <div class="read" id="sl-read"></div>
+      </div>
+    </div>
+    <p class="hint">Drag the query (the ring). Score = β·(q·k); weights = softmax(scores); output = Σ weight × value. The big swatch is the blended output colour.</p>
+  </div>
+  <h3>Softmax, by hand</h3>
+  <p>Two operations. Exponentiate every score, then divide each by the sum. Exponentiation makes everything positive and turns score <em>differences</em> into weight <em>ratios</em>: a key scoring 1 higher gets e ≈ 2.7× the weight, wherever the absolute level sits. Dividing by the sum makes the row add to 1, so the output is a true average of the values. Subtracting the row maximum first changes nothing (it cancels in the division) and keeps exp from overflowing; a masked score of −∞ becomes exp(−∞) = 0 and drops out.</p>
+  <div class="inst">
+    <div class="ctl"><label>β <input type="range" id="sm-beta" min="0.2" max="5" step="0.1" value="1"><span class="v" id="sm-beta-v">1.0</span></label><button class="btn" id="sm-rand">new scores</button></div>
+    <div class="mat" style="overflow-x:auto"><table id="sm-table"></table></div>
+    <p class="hint">Read down a column to follow one key through the pipeline; read across the last row to see the distribution. Push β up and watch the row become one-hot.</p>
+  </div>
+</section>
+
+<section class="ch" id="c3">
+  <p class="chn">03 · WHERE Q, K, V COME FROM</p>
+  <h2>Nobody tells "sat" what to look for</h2>
+  <p>The query is not chosen, it is computed: <i>q</i> = <i>x</i>·<i>W<sub>Q</sub></i>, where <i>x</i> is the token's current vector (its <a class="term" href="#g-embed">embedding</a> plus whatever earlier layers wrote into that position) and <i>W<sub>Q</sub></i> is one learned matrix shared by every token. Keys and values are the same story with <i>W<sub>K</sub></i> and <i>W<sub>V</sub></i>. A head therefore learns a <em>kind</em> of question, and each token asks that question about itself.</p>
+  <p>The matrices start random. Attention starts uniform. Then <a class="term" href="#g-grad">gradient descent</a> on next-token prediction nudges <i>W<sub>Q</sub></i> and <i>W<sub>K</sub></i>, a little per example, in whatever direction made the prediction better. Across millions of sentences, verbs' queries drift toward nouns' keys because knowing the subject helps predict what comes after a verb. Neither matrix knows what a subject is. The score is really one bilinear form <i>x<sub>i</sub> W<sub>Q</sub> W<sub>K</sub><sup>T</sup> x<sub>j</sub><sup>T</sup></i>, factored in two so a key can be cached before its future query exists.</p>
+  <p>Watch it happen below. Four fixed token vectors, two random 4×2 projections, and a training signal that rewards "attend to the token that precedes you in meaning" (the stand-in for "whatever predicts the next token").</p>
+  <div class="inst">
+    <div class="ctl"><button class="btn" id="tr-play" aria-pressed="false">▶ train</button><button class="btn" id="tr-step">step ×10</button><button class="btn" id="tr-reset">re-roll weights</button><label>learning rate <input type="range" id="tr-lr" min="0.05" max="1" step="0.05" value="0.4"><span class="v" id="tr-lr-v">0.40</span></label></div>
+    <div class="grid2">
+      <canvas id="tr-cv" style="aspect-ratio:1/1;max-height:340px"></canvas>
+      <div style="min-width:0"><canvas id="tr-loss" style="aspect-ratio:2.2/1;max-height:160px"></canvas><div class="read" id="tr-read"></div><div class="mats" id="tr-w" style="margin-top:10px"></div></div>
+    </div>
+    <p class="hint">Left: softmax(QKᵀ/√d) as it trains; outlined cells are the targets. Right: loss per step and the two projection matrices being nudged. The gradient reaching <i>W<sub>Q</sub></i> is (weights − target) × K, pushed back through the token vectors: every wrong weight pulls the query toward the key it should have matched.</p>
+  </div>
+</section>
+
+<section class="ch" id="c4">
+  <p class="chn">04 · THE EQUATION</p>
+  <h2>Four tokens, four numbers each, every step visible</h2>
+  <div class="eq"><span class="op">Attention(</span><i>Q</i>, <i>K</i>, <i>V</i><span class="op">) = softmax</span>(<i>QK</i><sup>T</sup> / √<i>d<sub>k</sub></i>) <i>V</i></div>
+  <p>Each token's embedding is projected three ways by learned matrices to get its query, key and value. Then: multiply queries by keys to get scores, divide by the square root of the key width, softmax each row, and use each row as the mixing weights over values. Step through it.</p>
+  <div class="inst">
+    <div class="steps" id="eq-steps"><button class="btn on" data-s="0">1 · scores QKᵀ</button><button class="btn" data-s="1">2 · scale ÷√d</button><button class="btn" data-s="2">3 · softmax rows</button><button class="btn" data-s="3">4 · mix values</button></div>
+    <div class="mats" id="eq-mats"></div>
+    <p class="hint" id="eq-hint"></p>
+  </div>
+  <h3>Why the √d<sub>k</sub>?</h3>
+  <p>A dot product of two random vectors with unit-variance entries has variance equal to their width. At width 512 the raw scores wander ±22, softmax turns into a one-hot argmax, and the gradient through it goes to zero. Dividing by √d pins the variance to one regardless of width. Drag the width and watch the top weight.</p>
+  <div class="inst">
+    <div class="ctl"><label>key width d<sub>k</sub> <input type="range" id="sd-d" min="1" max="10" step="1" value="6"><span class="v" id="sd-d-v">64</span></label><span class="legend">8 keys, random Gaussian q and k, 400 trials</span></div>
+    <div class="grid2">
+      <div><h3 style="font-size:14px;color:var(--muted)">Unscaled</h3><div class="bars" id="sd-raw"></div><div class="read" id="sd-raw-r"></div></div>
+      <div><h3 style="font-size:14px;color:var(--muted)">Scaled by 1/√d</h3><div class="bars" id="sd-sc"></div><div class="read" id="sd-sc-r"></div></div>
+    </div>
+    <p class="hint">Bars are one sample softmax row over 8 keys. The readout averages the largest weight across trials: near 1.0 means the softmax has saturated and stopped learning.</p>
+  </div>
+</section>
+
+<section class="ch" id="c5">
+  <p class="chn">05 · MASKS AND HEADS</p>
+  <h2>One head is a pattern. A model is a chorus of them.</h2>
+  <p>A decoder predicts the next token, so position <i>i</i> must not see positions after it. The <a class="term" href="#g-mask">causal mask</a> sets those scores to −∞ before softmax, which makes the attention matrix lower-triangular. It is also what makes the KV cache possible later: a token's keys and values never change once computed.</p>
+  <p>One softmax can only express one weighting per query. <a class="term" href="#g-head">Multi-head</a> attention runs several smaller attentions in parallel on different projections and concatenates the results, so one head can track the previous token while another hunts for repeated names. The patterns below are idealised versions of heads found in real trained models.</p>
+  <div class="inst">
+    <div class="ctl"><label>head <select id="hd-pat"><option value="prev">previous token</option><option value="self">self (diagonal)</option><option value="bow">bag of words (uniform)</option><option value="sink">attention sink (first token)</option><option value="ind" selected>induction (copy what followed last time)</option></select></label><button class="btn" id="hd-mask" aria-pressed="true">causal mask</button><span class="legend"><span class="sw"></span>0 → 1</span></div>
+    <canvas id="hd-cv" style="aspect-ratio:1/1;max-height:520px"></canvas>
+    <div class="read" id="hd-read">hover a cell</div>
+    <p class="hint">Rows are queries, columns are keys. Hatched cells are masked out. Switch the mask off to see what a bidirectional encoder (BERT-style) would be allowed to look at.</p>
+  </div>
+</section>
+
+<section class="ch" id="c6">
+  <p class="chn">06 · POSITION</p>
+  <h2>Attention is a set operation. Position has to be injected.</h2>
+  <p>Nothing in <i>QK</i><sup>T</sup> knows where a token sits; shuffle the inputs and the outputs shuffle identically. The original Transformer added sinusoidal position vectors to the embeddings. Modern models use <a class="term" href="#g-pos"><b>rotary position embeddings</b></a> (RoPE): split each query and key into 2-D pairs and rotate pair <i>i</i> by angle <i>m</i>·θ<sub>i</sub>, where <i>m</i> is the position and θ<sub>i</sub> shrinks geometrically across pairs.</p>
+  <p>Rotation is the trick. The dot product of two rotated vectors depends only on the <em>difference</em> of their angles, so q·k depends on <i>m − n</i>, the relative offset, and shifting the whole sequence changes nothing. High-frequency pairs resolve neighbours; low-frequency pairs resolve paragraphs.</p>
+  <div class="inst">
+    <div class="ctl"><label>query position m <input type="range" id="rp-m" min="0" max="64" value="12"><span class="v" id="rp-m-v">12</span></label><label>key position n <input type="range" id="rp-n" min="0" max="64" value="8"><span class="v" id="rp-n-v">8</span></label><label>shift both by Δ <input type="range" id="rp-s" min="0" max="64" value="0"><span class="v" id="rp-s-v">0</span></label></div>
+    <canvas id="rp-cv" style="aspect-ratio:4/1.35;max-height:300px"></canvas>
+    <div class="read" id="rp-read"></div>
+    <p class="hint">Four frequency bands of a d=8 head, θ<sub>i</sub> = 10000<sup>−2i/d</sup>. The dot product never moves when you drag Δ, because only m − n matters.</p>
+  </div>
+</section>
+
+<section class="ch" id="c7">
+  <p class="chn">07 · INDUCTION HEADS</p>
+  <h2>The circuit that lets me learn from your examples</h2>
+  <p>Stack two layers and something new becomes possible. A <b>previous-token head</b> in layer one writes "the token before me was X" into each position. An <b>induction head</b> in layer two then asks: where earlier in the context did the current token appear, and what came right after it? It attends there and copies that successor forward.</p>
+  <p>That is a general-purpose pattern completer that was never trained on your specific pattern. It is the mechanism behind in-context learning: show me a format once and I continue it; paste a name and I spell it the same way on page forty. Induction heads appear abruptly during training and coincide with the model's sudden ability to use long context.</p>
+  <div class="inst">
+    <input class="textin" id="in-text" value="the cat sat on the mat . the cat" aria-label="token sequence" spellcheck="false">
+    <div class="arcwrap" style="margin-top:12px"><div class="arcinner" id="in-inner"><svg id="in-svg" aria-hidden="true"></svg><div class="toks" id="in-toks"></div></div></div>
+    <div class="pred" id="in-pred"></div>
+    <p class="hint">Edit the sequence. Thin arcs: the layer-1 previous-token head. Thick arc: the layer-2 induction head looking from the last token to the successor of its earlier copy. Try a pattern like <span class="mono">A 1 B 2 C 3 A</span>.</p>
+  </div>
+</section>
+
+<section class="ch" id="c8">
+  <p class="chn">08 · THE n² BILL</p>
+  <h2>Every token looks at every token. That is the cost and the point.</h2>
+  <p>Scores are an <i>n</i>×<i>n</i> matrix per head per layer, so compute and memory for the scores grow quadratically with context length. At generation time we avoid recomputing the past by caching every layer's keys and values, the <a class="term" href="#g-kv"><b>KV cache</b></a>. It grows linearly with context and, for long contexts, it is the thing that fills the GPU and the thing every decode step has to stream through.</p>
+  <p>That is why the frontier of attention research is mostly a frontier of KV-cache engineering: fewer key/value heads (MQA, GQA), compressed latents (MLA), windows and sparsity, and kernels that never write the big matrix at all.</p>
+  <div class="inst">
+    <div class="ctl"><label>model <select id="kc-preset"></select></label><label>context <input type="range" id="kc-n" min="0" max="1000" value="500"><span class="v" id="kc-n-v">32k</span></label><label>dtype <select id="kc-dtype"><option value="2">bf16</option><option value="1">fp8</option><option value="0.5">int4</option></select></label></div>
+    <canvas id="kc-cv" style="aspect-ratio:16/8;max-height:360px"></canvas>
+    <div class="read" id="kc-read"></div>
+    <p class="hint">Lines: KV cache for this model's depth and head size under four KV layouts. The vertical marker is your context. Attention-share estimates FLOPs of the two score matmuls against the linear layers, prefill, no MoE accounting.</p>
+  </div>
+  <h3>Prefill, decode, and where attention sits in a layer</h3>
+  <p>Two phases, same equation, opposite bottlenecks. <b>Prefill</b> reads your whole prompt at once: every query against every key, one big matmul, compute-bound, and this is where the n² score matrix and FlashAttention's tiling matter. <b>Decode</b> then produces one token at a time: a single new query against every cached key, so each step is tiny arithmetic but must stream the entire KV cache from memory. Decode is bandwidth-bound, which is why GQA, MLA, sparse selection and paging target the cache rather than the FLOPs.</p>
+  <div class="flow"><span>x</span><span class="op">norm</span><span class="op">attention</span><span class="plus">+ x</span><span class="op">norm</span><span class="op">MLP</span><span class="plus">+ x</span><span>x′</span></div>
+  <p>One layer, end to end: normalise the token's vector, run attention, add the result back onto the vector; normalise again, run the MLP, add that back. The vector carried through the additions is the residual stream. Attention is the only step that reads other positions. Every layer repeats this, and the final vector is projected to logits.</p>
+</section>
+
+<section class="ch" id="c9">
+  <p class="chn">09 · FLASHATTENTION</p>
+  <h2>The matrix that is never written down</h2>
+  <p>A GPU does matmuls far faster than it can move bytes between its big slow memory (<a class="term" href="#g-flop">HBM</a>) and the tiny fast memory next to each compute unit (SRAM). Naive attention computes the full score matrix, writes it to HBM, reads it back for softmax, writes probabilities, reads them again to multiply by <i>V</i>. For long contexts the matrix does not even fit.</p>
+  <p>FlashAttention is <b>IO-aware</b>: it loads one block of queries and streams blocks of keys and values through SRAM, keeping a running maximum and running sum so softmax can be computed incrementally (<b>online softmax</b>) without ever seeing a full row. The output is exact. Memory for scores drops from <i>n</i>² to the size of one tile, and wall-clock drops because HBM traffic drops. FlashAttention-2 reorganised the work across threads; FlashAttention-3 overlaps matmul with softmax on Hopper and runs in FP8.</p>
+  <div class="inst">
+    <div class="ctl"><button class="btn" id="fa-play" aria-pressed="false">▶ play</button><button class="btn" id="fa-step">step</button><button class="btn" id="fa-reset">reset</button><label>context n <input type="range" id="fa-n" min="10" max="20" value="16"><span class="v" id="fa-n-v">64k</span></label></div>
+    <div class="sram">
+      <canvas id="fa-cv" style="aspect-ratio:1/0.78;max-height:400px"></canvas>
+      <div style="display:grid;gap:10px">
+        <div class="panel"><h4>SRAM, current query block</h4><div id="fa-state"></div></div>
+        <div class="panel"><h4>Memory for scores at n</h4><div id="fa-mem"></div></div>
+      </div>
+    </div>
+    <p class="hint">Grid: the score matrix as blocks (rows = query blocks, columns = key blocks). Masked blocks above the diagonal are skipped. Watch m (running max) and ℓ (running denominator) update as each key block streams in.</p>
+  </div>
+</section>
+
+<section class="ch" id="c10">
+  <p class="chn">10 · THE FRONTIER</p>
+  <h2>Ten years of bending one equation</h2>
+  <div class="timeline"><div class="tl" id="tl"></div></div>
+  <p>Each advance below keeps softmax(<i>QK</i><sup>T</sup>)<i>V</i> as the primitive and attacks one term of the bill: the memory of the cache, the bandwidth to read it, the quadratic score matrix, or the kernel's traffic.</p>
+  <div class="cards" id="cards"></div>
+  <h3>Where 2026 stands</h3>
+  <p>No 2026 result has displaced MLA, FlashAttention or the sparse indexer. What changed is that the 2025 ideas reached flagship scale: DeepSeek-V3.2 shipped DSA in production, every major open hybrid (Qwen3-Next, Kimi Linear, Nemotron 3) settled near a 3:1 linear-to-full ratio, and kernels were rewritten for Blackwell. The live arguments are (1) whether linear hybrids survive agentic workloads where exact recall matters, with MiniMax's reversal to full attention as the counter-signal, (2) whether learned sparsity or sliding windows win at 1M+ tokens, and (3) how much of a model's work can be moved out of attention into cheaper lookups and rewired residuals. Not stalled; the frontier moved from the equation to its neighbours.</p>
+</section>
+
+<section class="ch" id="c11">
+  <p class="chn">11 · WHY IT MADE ME</p>
+  <h2>What this has to do with the thing you are talking to</h2>
+  <p>I am a <a class="term" href="#g-decoder">decoder-only Transformer</a>. Each token I produce is the output of a stack of layers, and in every layer the only operation that mixes information across positions is attention. The <a class="term" href="#g-mlp">MLPs</a> think about one position at a time; attention is how your instructions, the files you opened, the tool results and my own earlier words reach the position that is deciding the next token.</p>
+  <p>Three properties of this one operation account for most of what I can do:</p>
+  <p><b>Content-addressable memory.</b> I do not retrieve by position but by match. A query shaped like "the function I was asked to edit" lands on that function wherever it sits in a 200k-token session.</p>
+  <p><b>Learning without weight updates.</b> Induction-style circuits turn my context into a working memory I can pattern-match against. Few-shot prompting, following a style, or using a tool whose schema I saw once are all attention reading the examples back.</p>
+  <p><b>A cost that could be engineered down.</b> Without the causal KV cache, grouped heads, latent compression and IO-aware kernels, a long conversation would be unaffordable at every step. Everything in chapter ten is what makes a long session cheap enough to exist.</p>
+  <div class="note">The chapters above are deliberately simplified: real heads are noisy, superposed and shared across many jobs, and attention is interleaved with MLPs, normalisation and residual connections that carry the actual information between layers.</div>
+</section>
+
+<section class="ch" id="c12">
+  <p class="chn">12 · CHECK YOURSELF</p>
+  <h2>Seven questions</h2>
+  <p class="score" id="q-score">0 / 7 answered</p>
+  <div class="quiz" id="quiz"></div>
+</section>
+
+<footer>Sources behind the chapters: Bahdanau 2014 · Vaswani 2017 · Shazeer 2019 (MQA) · Su 2021 (RoPE) · Olsson 2022 (induction heads) · Dao 2022/2023/2024 (FlashAttention 1–3) · Ainslie 2023 (GQA) · Kwon 2023 (PagedAttention) · Xiao 2023 (attention sinks) · Liu 2023 (Ring Attention) · DeepSeek-V2 2024 (MLA) · DeepSeek NSA and V3.2 DSA 2025 · Qwen3-Next 2025. · Qiu 2025 (gated attention) · Dao 2025 (FlashAttention-4) · Moonshot 2025 (Kimi Linear) · MiniMax 2025 (M2) · DeepSeek 2026 (Engram, mHC) · Moonshot 2026 (Attention Residuals). Timeline and cards reflect training data through mid-2026.</footer>
+</main>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const root=document.documentElement;
+const css=n=>getComputedStyle(root).getPropertyValue(n).trim();
+const h2r=h=>{h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return [n>>16&255,n>>8&255,n&255];};
+const mix=(a,b,t)=>a.map((v,i)=>Math.round(v+(b[i]-v)*t));
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+let HEAT=null;
+function heat(t){if(!HEAT)HEAT=[h2r(css('--heat-lo')),h2r(css('--heat-hi'))];const c=mix(HEAT[0],HEAT[1],clamp(t,0,1));return `rgb(${c[0]},${c[1]},${c[2]})`;}
+function softmax(a){const m=Math.max(...a);const e=a.map(x=>Math.exp(x-m));const s=e.reduce((p,q)=>p+q,0);return e.map(x=>x/s);}
+function fit(cv){const dpr=window.devicePixelRatio||1;const w=cv.clientWidth,h=cv.clientHeight;if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);return {ctx,w,h};}
+function rng(seed){let a=seed>>>0;return ()=>{a+=0x6D2B79F5;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296;};}
+function gauss(r){let u=0,v=0;while(u===0)u=r();while(v===0)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const fmt=(x,d=2)=>(Math.round(x*10**d)/10**d).toFixed(d);
+const fmtB=b=>{const u=['B','KB','MB','GB','TB','PB'];let i=0;while(b>=1000&&i<u.length-1){b/=1000;i++;}return (b>=100?b.toFixed(0):b>=10?b.toFixed(1):b.toFixed(2))+' '+u[i];};
+const fmtN=n=>n>=1e6?(n/1e6).toFixed(n%1e6?1:0)+'M':n>=1e3?(n/1e3).toFixed(n%1e3?1:0)+'k':String(n);
+const redraws=[];
+function reg(f){redraws.push(f);f();}
+function redrawAll(){HEAT=null;redraws.forEach(f=>f());}
+new MutationObserver(redrawAll).observe(root,{attributes:true,attributeFilter:['data-theme']});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redrawAll);
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(redrawAll,80);});
+
+/* ---------- shared: token rows with arcs ---------- */
+function tokenRow(host,words,onHover){
+  host.innerHTML='';
+  return words.map((w,i)=>{const b=document.createElement('button');b.className='tok';b.textContent=w;b.dataset.i=i;b.type='button';b.addEventListener('mouseenter',()=>onHover(i));b.addEventListener('focus',()=>onHover(i));b.addEventListener('click',()=>onHover(i));host.appendChild(b);return b;});
+}
+function arcs(svg,els,inner,qi,w,color,opts={}){
+  const R=inner.getBoundingClientRect();const W=Math.max(inner.scrollWidth,R.width);const H=svg.clientHeight||120;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.style.width=W+'px';
+  const cx=i=>{const r=els[i].getBoundingClientRect();return r.left-R.left+r.width/2;};
+  const x0=cx(qi);let s='';
+  const entries=Object.entries(w).sort((a,b)=>a[1]-b[1]);
+  for(const [j,v] of entries){const jj=+j;if(v<0.015||jj===qi)continue;const x1=cx(jj);const d=Math.abs(x1-x0);const hh=Math.min(H-8,22+d*0.32);
+    s+=`<path d="M${x0} ${H} Q${(x0+x1)/2} ${H-hh} ${x1} ${H}" fill="none" stroke="${color}" stroke-width="${opts.thin?1.2:1+v*8}" stroke-opacity="${opts.thin?0.5:0.25+v*0.75}" stroke-linecap="round"/>`;}
+  svg.innerHTML=s;
+}
+
+/* ---------- hero ---------- */
+(function(){
+  const words="The trophy didn't fit in the suitcase because it was too big".split(' ');
+  const over={8:{1:.56,6:.17,8:.09,7:.07,0:.06,5:.05},11:{1:.34,8:.28,10:.14,11:.1,9:.08,6:.06},7:{3:.4,2:.18,1:.2,7:.12,0:.05,6:.05},6:{5:.44,6:.2,4:.2,1:.1,0:.06},3:{2:.33,1:.37,3:.2,0:.1},2:{1:.5,2:.3,0:.2}};
+  const W=i=>{if(over[i])return over[i];const w={};let s=0;for(let j=0;j<=i;j++){w[j]=Math.exp(-0.7*(i-j));s+=w[j];}for(const j in w)w[j]/=s;return w;};
+  const svg=$('#hero-svg'),inner=$('#hero-inner'),read=$('#hero-read');let cur=8;
+  const els=tokenRow($('#hero-toks'),words,i=>{cur=i;draw();});
+  function draw(){const w=W(cur);els.forEach((e,j)=>{e.classList.toggle('q',j===cur);const v=w[j]||0;e.style.background=j===cur?'':heat(v*1.15);e.classList.toggle('ghost',j>cur);});arcs(svg,els,inner,cur,w,css('--accent'));
+    const top=Object.entries(w).filter(([j])=>+j!==cur).sort((a,b)=>b[1]-a[1]).slice(0,3);read.innerHTML=`<span>query <b>${words[cur]}</b></span>`+top.map(([j,v])=>`<span>${words[j]} <b>${fmt(v)}</b></span>`).join('');}
+  reg(draw);
+})();
+
+/* ---------- 01 path length ---------- */
+(function(){
+  const words="In 1998 the company that Maria founded in Lisbon finally went public".split(' ');
+  const dep={11:3,10:3,9:3,8:7,7:6,6:5,5:3,4:3,3:2,2:0,1:0,0:0};
+  let mode='rnn',cur=11,decay=0.85;const svg=$('#pl-svg'),inner=$('#pl-inner'),read=$('#pl-read');
+  const els=tokenRow($('#pl-toks'),words,i=>{cur=i;draw();});
+  $('#pl-rnn').onclick=()=>{mode='rnn';draw();};$('#pl-att').onclick=()=>{mode='att';draw();};
+  $('#pl-decay').oninput=e=>{decay=+e.target.value;$('#pl-decay-v').textContent=fmt(decay);draw();};
+  function draw(){$('#pl-rnn').setAttribute('aria-pressed',mode==='rnn');$('#pl-att').setAttribute('aria-pressed',mode==='att');
+    const t=dep[cur];const hops=mode==='rnn'?Math.max(1,cur-t):1;const sig=cur===t?1:Math.pow(decay,hops);
+    const R=inner.getBoundingClientRect();const Wd=Math.max(inner.scrollWidth,R.width);const H=svg.clientHeight||120;svg.setAttribute('viewBox',`0 0 ${Wd} ${H}`);svg.style.width=Wd+'px';
+    const cx=i=>{const r=els[i].getBoundingClientRect();return r.left-R.left+r.width/2;};let s='';const col=css('--accent');
+    if(cur!==t){ if(mode==='rnn'){for(let j=cur;j>t;j--){const a=cx(j),b=cx(j-1);const k=cur-j;const op=Math.pow(decay,k);s+=`<path d="M${a} ${H} Q${(a+b)/2} ${H-34} ${b} ${H}" fill="none" stroke="${col}" stroke-width="${1+op*4}" stroke-opacity="${0.15+op*0.85}" stroke-linecap="round"/>`;}}
+      else{const a=cx(cur),b=cx(t);s+=`<path d="M${a} ${H} Q${(a+b)/2} ${H-Math.min(H-8,30+Math.abs(a-b)*0.3)} ${b} ${H}" fill="none" stroke="${col}" stroke-width="6" stroke-opacity=".95" stroke-linecap="round"/>`;}}
+    svg.innerHTML=s;els.forEach((e,j)=>{e.classList.toggle('q',j===cur);e.style.background=j===t&&t!==cur?heat(sig):'';e.classList.toggle('ghost',j>cur);});
+    read.innerHTML=`<span>"<b>${words[cur]}</b>" depends on "<b>${words[t]}</b>"</span><span>hops <b>${cur===t?0:hops}</b></span><span>signal retained <b>${Math.round(sig*100)}%</b></span>`;}
+  reg(draw);
+})();
+
+/* ---------- 02 soft lookup ---------- */
+(function(){
+  const cv=$('#sl-cv'),bars=$('#sl-bars'),read=$('#sl-read');let beta=4;
+  const keys=[{w:'cat',x:-.72,y:-.55,c:[224,74,16]},{w:'dog',x:-.5,y:-.82,c:[240,140,30]},{w:'car',x:.7,y:-.6,c:[36,67,232]},{w:'truck',x:.85,y:-.25,c:[90,40,200]},{w:'apple',x:-.15,y:.8,c:[40,150,70]},{w:'pear',x:.25,y:.7,c:[150,190,40]}];
+  let q={x:-.3,y:-.35},drag=false;
+  $('#sl-beta').oninput=e=>{beta=+e.target.value;$('#sl-beta-v').textContent=fmt(beta,1);draw();};
+  const pos=e=>{const r=cv.getBoundingClientRect();const p=e.touches?e.touches[0]:e;return {x:((p.clientX-r.left)/r.width)*2-1,y:((p.clientY-r.top)/r.height)*2-1};};
+  const down=e=>{drag=true;q=pos(e);q.x=clamp(q.x,-.95,.95);q.y=clamp(q.y,-.95,.95);draw();e.preventDefault();};
+  const move=e=>{if(!drag)return;q=pos(e);q.x=clamp(q.x,-.95,.95);q.y=clamp(q.y,-.95,.95);draw();e.preventDefault();};
+  cv.addEventListener('pointerdown',down);addEventListener('pointermove',move);addEventListener('pointerup',()=>drag=false);
+  function draw(){const {ctx,w,h}=fit(cv);const X=x=>(x+1)/2*w,Y=y=>(y+1)/2*h;
+    const scores=keys.map(k=>beta*(q.x*k.x+q.y*k.y));const ws=softmax(scores);
+    ctx.strokeStyle=css('--line');ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X(-1),Y(0));ctx.lineTo(X(1),Y(0));ctx.moveTo(X(0),Y(-1));ctx.lineTo(X(0),Y(1));ctx.stroke();
+    ctx.strokeStyle=css('--muted');ctx.setLineDash([3,4]);ctx.beginPath();ctx.arc(X(0),Y(0),Math.min(w,h)*0.42,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    keys.forEach((k,i)=>{const r=7+ws[i]*22;ctx.beginPath();ctx.arc(X(k.x),Y(k.y),r,0,Math.PI*2);ctx.fillStyle=`rgb(${k.c.join(',')})`;ctx.globalAlpha=0.35+ws[i]*0.65;ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=css('--accent');ctx.lineWidth=ws[i]*5;if(ws[i]>0.03){ctx.beginPath();ctx.moveTo(X(q.x),Y(q.y));ctx.lineTo(X(k.x),Y(k.y));ctx.globalAlpha=ws[i];ctx.stroke();ctx.globalAlpha=1;}
+      ctx.fillStyle=css('--fg');ctx.font='600 12px '+css('--font-mono');ctx.textAlign='center';ctx.fillText(k.w,X(k.x),Y(k.y)+r+14);});
+    ctx.beginPath();ctx.arc(X(q.x),Y(q.y),11,0,Math.PI*2);ctx.lineWidth=3;ctx.strokeStyle=css('--accent');ctx.stroke();ctx.fillStyle=css('--surface');ctx.fill();
+    ctx.fillStyle=css('--fg');ctx.font='700 12px '+css('--font-display');ctx.fillText('q',X(q.x),Y(q.y)-16);
+    const out=[0,1,2].map(c=>Math.round(keys.reduce((s,k,i)=>s+ws[i]*k.c[c],0)));
+    bars.innerHTML=keys.map((k,i)=>`<span class="lab">${k.w}</span><div class="bar" style="width:${Math.max(1,ws[i]*100)}%;background:rgb(${k.c.join(',')})"></div><span>${fmt(ws[i])}</span>`).join('')+`<span class="lab">output</span><div style="height:28px;border-radius:5px;background:rgb(${out.join(',')});border:1px solid var(--line)"></div><span>Σ w·v</span>`;
+    const top=ws.indexOf(Math.max(...ws));read.innerHTML=`<span>top key <b>${keys[top].w}</b> at <b>${fmt(ws[top])}</b></span><span>entropy <b>${fmt(-ws.reduce((s,p)=>s+(p>0?p*Math.log2(p):0),0))} bits</b></span>`;}
+  reg(draw);
+})();
+
+/* ---------- 02b softmax by hand ---------- */
+(function(){
+  let seed=3;const tbl=$('#sm-table');
+  function draw(){const beta=+$('#sm-beta').value;$('#sm-beta-v').textContent=fmt(beta,1);const r=rng(seed);const sc=Array.from({length:5},()=>gauss(r)*1.5);
+    const b=sc.map(x=>x*beta);const mx=Math.max(...b);const sh=b.map(x=>x-mx);const ex=sh.map(Math.exp);const Z=ex.reduce((a,c)=>a+c,0);const w=ex.map(e=>e/Z);
+    const row=(lab,arr,extra,heatIt)=>`<tr><th>${lab}</th>${arr.map(v=>`<td style="${heatIt?`background:${heat(v)}`:''}">${fmt(v)}</td>`).join('')}<td style="color:var(--muted)">${extra}</td></tr>`;
+    tbl.innerHTML=`<tr><th></th>${[1,2,3,4,5].map(i=>`<th style="text-align:right">k${i}</th>`).join('')}<th style="text-align:right">row</th></tr>`+row('score s',sc,'',false)+row('β·s',b,'',false)+row('− max',sh,'max = '+fmt(mx),false)+row('exp',ex,'Σ = '+fmt(Z),false)+row('÷ Σ → weight',w,'Σ = '+fmt(w.reduce((a,c)=>a+c,0)),true);}
+  $('#sm-beta').oninput=draw;$('#sm-rand').onclick=()=>{seed++;draw();};reg(draw);
+})();
+
+/* ---------- 03 learned projections ---------- */
+(function(){
+  const toks=['the','cat','sat','down'],tgt=[0,0,1,2];const rx=rng(9);const X=Array.from({length:4},()=>Array.from({length:4},()=>gauss(rx)));
+  const mm=(A,B)=>A.map(row=>B[0].map((_,j)=>row.reduce((s,v,k)=>s+v*B[k][j],0)));const T=A=>A[0].map((_,j)=>A.map(row=>row[j]));
+  let WQ,WK,seed=1,it=0,hist=[],playing=false,timer=null,P;
+  function init(){const r=rng(seed);WQ=Array.from({length:4},()=>[gauss(r)*.3,gauss(r)*.3]);WK=Array.from({length:4},()=>[gauss(r)*.3,gauss(r)*.3]);it=0;hist=[];fwd();}
+  function fwd(){const Q=mm(X,WQ),K=mm(X,WK);const S=mm(Q,T(K)).map(row=>row.map(v=>v/Math.SQRT2));P=S.map(softmax);return {Q,K};}
+  function step(){const lr=+$('#tr-lr').value;const {Q,K}=fwd();const loss=-P.reduce((s,row,i)=>s+Math.log(row[tgt[i]]),0)/4;hist.push(loss);
+    const dS=P.map((row,i)=>row.map((p,j)=>(p-(j===tgt[i]?1:0))/4/Math.SQRT2));const dQ=mm(dS,K),dK=mm(T(dS),Q);const dWQ=mm(T(X),dQ),dWK=mm(T(X),dK);
+    WQ=WQ.map((row,i)=>row.map((v,j)=>v-lr*dWQ[i][j]));WK=WK.map((row,i)=>row.map((v,j)=>v-lr*dWK[i][j]));it++;fwd();}
+  function draw(){$('#tr-lr-v').textContent=fmt(+$('#tr-lr').value);const {ctx,w,h}=fit($('#tr-cv'));const L=Math.min(w,h)*0.16;const size=Math.min(w,h)-L-6;const c=size/4;
+    ctx.font='12px '+css('--font-mono');ctx.fillStyle=css('--muted');for(let i=0;i<4;i++){ctx.textAlign='right';ctx.fillText(toks[i],L-8,L+i*c+c/2+4);ctx.textAlign='center';ctx.fillText(toks[i],L+i*c+c/2,L-8);}
+    for(let i=0;i<4;i++)for(let j=0;j<4;j++){const x=L+j*c,y=L+i*c;ctx.fillStyle=heat(P[i][j]);ctx.fillRect(x,y,c,c);ctx.strokeStyle=css('--line');ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,c-1,c-1);ctx.fillStyle=P[i][j]>0.55?'#fff':css('--fg');ctx.textAlign='center';ctx.font='13px '+css('--font-mono');ctx.fillText(fmt(P[i][j]),x+c/2,y+c/2+4);if(tgt[i]===j){ctx.strokeStyle=css('--accent');ctx.lineWidth=3;ctx.strokeRect(x+2,y+2,c-4,c-4);}}
+    ctx.fillStyle=css('--muted');ctx.font='11px '+css('--font-display');ctx.textAlign='left';ctx.fillText('rows ask · columns answer · outline = target',L,L+size+16);
+    const lc=fit($('#tr-loss'));const pad={l:34,r:8,t:8,b:18};lc.ctx.strokeStyle=css('--line');lc.ctx.lineWidth=1;[0,0.5,1,1.5].forEach(v=>{const y=pad.t+(1-v/1.6)*(lc.h-pad.t-pad.b);lc.ctx.beginPath();lc.ctx.moveTo(pad.l,y);lc.ctx.lineTo(lc.w-pad.r,y);lc.ctx.stroke();lc.ctx.fillStyle=css('--muted');lc.ctx.font='10px '+css('--font-mono');lc.ctx.textAlign='right';lc.ctx.fillText(v.toFixed(1),pad.l-4,y+3);});
+    lc.ctx.fillText('loss',lc.w-pad.r,lc.h-4);const N=Math.max(hist.length,300);lc.ctx.strokeStyle=css('--accent');lc.ctx.lineWidth=2;lc.ctx.beginPath();hist.forEach((v,k)=>{const x=pad.l+k/N*(lc.w-pad.l-pad.r),y=pad.t+(1-clamp(v,0,1.6)/1.6)*(lc.h-pad.t-pad.b);k?lc.ctx.lineTo(x,y):lc.ctx.moveTo(x,y);});lc.ctx.stroke();
+    const loss=-P.reduce((s,row,i)=>s+Math.log(row[tgt[i]]),0)/4;$('#tr-read').innerHTML=`<span>step <b>${it}</b></span><span>loss <b>${fmt(loss,3)}</b></span><span>sat → cat <b>${fmt(P[2][1])}</b></span>`;
+    const mat=(name,M)=>`<div class="mat"><h4>${name}<span class="k">4×2</span></h4><table>${M.map((row,i)=>`<tr><th>${toks[i]}</th>${row.map(v=>`<td>${fmt(v)}</td>`).join('')}</tr>`).join('')}</table></div>`;$('#tr-w').innerHTML=mat('W<sub>Q</sub>',WQ)+mat('W<sub>K</sub>',WK);}
+  function stop(){playing=false;clearInterval(timer);$('#tr-play').setAttribute('aria-pressed',false);$('#tr-play').textContent='▶ train';}
+  $('#tr-step').onclick=()=>{for(let k=0;k<10;k++)step();draw();};$('#tr-reset').onclick=()=>{stop();seed++;init();draw();};
+  $('#tr-play').onclick=e=>{if(playing){stop();return;}playing=true;e.currentTarget.setAttribute('aria-pressed',true);e.currentTarget.textContent='⏸ pause';timer=setInterval(()=>{for(let k=0;k<3;k++)step();draw();if(it>=600)stop();},60);};
+  $('#tr-lr').oninput=draw;init();reg(draw);
+})();
+
+/* ---------- 04 equation ---------- */
+(function(){
+  const toks=['the','cat','sat','down'];
+  const Q=[[2.4,0,0,0],[0.8,2.2,0,0],[0.3,3.0,1.0,0],[0,0.8,2.6,1.0]];
+  const K=[[1,0,0,0],[0,1.5,0,0],[0,0,1,0],[0,0,0,1.2]];
+  const V=[[0.1,0.2,0,0],[1,0,0.3,0],[0,1,0,0.2],[0,0,1,0.5]];
+  const d=4,sq=Math.sqrt(d);
+  const mm=(A,B)=>A.map(r=>B[0].map((_,j)=>r.reduce((s,v,k)=>s+v*B[k][j],0)));
+  const T=A=>A[0].map((_,j)=>A.map(r=>r[j]));
+  const S=mm(Q,T(K)),Sc=S.map(r=>r.map(v=>v/sq)),P=Sc.map(softmax),O=mm(P,V);
+  const hints=['Row i, column j is the dot product of query i with key j: how much "sat" wants "cat". Big where the vectors align.','Same numbers divided by √4 = 2. Looks cosmetic here; at d=128 it is the difference between a model that trains and one that does not.','softmax turns each row into weights that are positive and sum to 1. "sat" now spends 0.71 of its attention on "cat": exp(0.15, 2.25, 0.50, 0) = (1.16, 9.49, 1.65, 1.00), sum 13.3, and 9.49 / 13.3 = 0.71.','Each output row is a weighted average of the value rows. The output for "sat" is mostly the value of "cat" plus a bit of itself.'];
+  const host=$('#eq-mats');let step=0;
+  const mat=(name,M,k,rowLab,colLab,heatIt,lit,dim)=>`<div class="mat ${lit?'lit':''} ${dim?'dim':''}"><h4>${name}${k?`<span class="k">${k}</span>`:''}</h4><div style="overflow-x:auto"><table><tr><th></th>${colLab.map(c=>`<th style="text-align:right">${c}</th>`).join('')}</tr>${M.map((r,i)=>`<tr><th>${rowLab[i]}</th>${r.map(v=>`<td style="${heatIt?`background:${heat(v)}`:''}">${fmt(v)}</td>`).join('')}</tr>`).join('')}</table></div></div>`;
+  const dims=['d₁','d₂','d₃','d₄'];
+  function draw(){host.innerHTML=mat('Q · queries',Q,'4×4',toks,dims,false,false,step>0)+mat('K · keys',K,'4×4',toks,dims,false,false,step>0)+mat('S = QKᵀ',S,'scores',toks,toks,false,step===0,step>1)+mat('S / √d',Sc,'scaled',toks,toks,false,step===1,step===0||step>2)+mat('softmax(S/√d)',P,'weights',toks,toks,true,step===2,step<2)+mat('V · values',V,'4×4',toks,dims,false,false,step<3)+mat('output = PV',O,'4×4',toks,dims,false,step===3,step<3);$('#eq-hint').textContent=hints[step];}
+  $$('#eq-steps .btn').forEach(b=>b.onclick=()=>{step=+b.dataset.s;$$('#eq-steps .btn').forEach(x=>x.classList.toggle('on',x===b));draw();});
+  reg(draw);
+  /* sqrt(d) demo */
+  const dvals=[2,4,8,16,32,64,128,256,512,1024];
+  function sd(){const dk=dvals[+$('#sd-d').value-1];$('#sd-d-v').textContent=dk;const r=rng(1234+dk);let mr=0,ms=0,rawStd=0;const T=400;let sampleR,sampleS;
+    for(let t=0;t<T;t++){const q=Array.from({length:dk},()=>gauss(r));const sc=[];for(let k=0;k<8;k++){let s=0;for(let i=0;i<dk;i++)s+=q[i]*gauss(r);sc.push(s);rawStd+=s*s;}const pr=softmax(sc),ps=softmax(sc.map(x=>x/Math.sqrt(dk)));mr+=Math.max(...pr);ms+=Math.max(...ps);if(t===0){sampleR=pr;sampleS=ps;}}
+    const bar=(p,i)=>`<span class="lab">k${i+1}</span><div class="bar" style="width:${Math.max(1,p*100)}%"></div><span>${fmt(p)}</span>`;
+    $('#sd-raw').innerHTML=sampleR.map(bar).join('');$('#sd-sc').innerHTML=sampleS.map(bar).join('');
+    $('#sd-raw-r').innerHTML=`<span>score std <b>${fmt(Math.sqrt(rawStd/(T*8)),1)}</b> (≈√${dk})</span><span>avg top weight <b>${fmt(mr/T)}</b></span>`;
+    $('#sd-sc-r').innerHTML=`<span>score std <b>${fmt(Math.sqrt(rawStd/(T*8))/Math.sqrt(dk),1)}</b></span><span>avg top weight <b>${fmt(ms/T)}</b></span>`;}
+  $('#sd-d').oninput=sd;sd();
+})();
+
+/* ---------- 05 heads + mask ---------- */
+(function(){
+  const toks="Harry gave Ron the map and Ron gave Harry a wand".split(' ');const n=toks.length;
+  const cv=$('#hd-cv'),read=$('#hd-read');let pat='ind',causal=true,hover=null;
+  function pattern(){const M=Array.from({length:n},()=>Array(n).fill(0));
+    for(let i=0;i<n;i++){if(pat==='prev'){M[i][i>0?i-1:0]=1;}
+      else if(pat==='self'){M[i][i]=1;}
+      else if(pat==='bow'){for(let j=0;j<n;j++)M[i][j]=1;}
+      else if(pat==='sink'){for(let j=0;j<n;j++)M[i][j]=0.3;M[i][0]=6;}
+      else if(pat==='ind'){let hit=false;for(let j=0;j<n;j++){if(j!==i&&toks[j]===toks[i]&&j+1<n){M[i][j+1]+=1;hit=true;}}if(!hit){M[i][i>0?i-1:0]=0.6;M[i][i]=0.4;}}}
+    return M.map((r,i)=>{const m=r.map((v,j)=>causal&&j>i?0:v);const s=m.reduce((a,b)=>a+b,0)||1;return m.map(v=>v/s);});}
+  function draw(){const {ctx,w,h}=fit(cv);const M=pattern();const L=Math.min(w,h)*0.14;const size=Math.min(w,h)-L;const c=size/n;
+    ctx.font='11px '+css('--font-mono');ctx.fillStyle=css('--muted');
+    for(let i=0;i<n;i++){ctx.textAlign='right';ctx.fillText(toks[i],L-6,L+i*c+c/2+4);ctx.save();ctx.translate(L+i*c+c/2+4,L-6);ctx.rotate(-Math.PI/3);ctx.textAlign='left';ctx.fillText(toks[i],0,0);ctx.restore();}
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){const x=L+j*c,y=L+i*c;const masked=causal&&j>i;ctx.fillStyle=masked?css('--surface'):heat(M[i][j]);ctx.fillRect(x,y,c,c);
+      if(masked){ctx.save();ctx.beginPath();ctx.rect(x,y,c,c);ctx.clip();ctx.strokeStyle=css('--mask');ctx.lineWidth=1;ctx.globalAlpha=.5;for(let k=-c;k<c*2;k+=6){ctx.beginPath();ctx.moveTo(x+k,y);ctx.lineTo(x+k+c,y+c);ctx.stroke();}ctx.restore();}
+      ctx.strokeStyle=css('--line');ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,c-1,c-1);
+      if(!masked&&M[i][j]>0.2&&c>26){ctx.fillStyle=M[i][j]>0.55?'#fff':css('--fg');ctx.textAlign='center';ctx.font='10px '+css('--font-mono');ctx.fillText(fmt(M[i][j]),x+c/2,y+c/2+3);}}
+    if(hover){const [i,j]=hover;ctx.strokeStyle=css('--accent');ctx.lineWidth=2.5;ctx.strokeRect(L+j*c+1,L+i*c+1,c-2,c-2);read.innerHTML=`<span>query <b>${toks[i]}</b> (${i})</span><span>key <b>${toks[j]}</b> (${j})</span><span>weight <b>${causal&&j>i?'masked (−∞)':fmt(M[i][j])}</b></span>`;}
+    cv.dataset.geo=JSON.stringify({L,c});}
+  cv.addEventListener('pointermove',e=>{const g=JSON.parse(cv.dataset.geo||'{}');const r=cv.getBoundingClientRect();const j=Math.floor((e.clientX-r.left-g.L)/g.c),i=Math.floor((e.clientY-r.top-g.L)/g.c);hover=(i>=0&&j>=0&&i<n&&j<n)?[i,j]:null;draw();});
+  cv.addEventListener('pointerleave',()=>{hover=null;draw();});
+  $('#hd-pat').onchange=e=>{pat=e.target.value;draw();};$('#hd-mask').onclick=e=>{causal=!causal;e.currentTarget.setAttribute('aria-pressed',causal);draw();};
+  reg(draw);
+})();
+
+/* ---------- 06 RoPE ---------- */
+(function(){
+  const cv=$('#rp-cv'),read=$('#rp-read');const d=8;const th=[0,1,2,3].map(i=>Math.pow(10000,-2*i/d));
+  const g=id=>+$(id).value;
+  function draw(){const {ctx,w,h}=fit(cv);const m=g('#rp-m'),nn=g('#rp-n'),s=g('#rp-s');$('#rp-m-v').textContent=m;$('#rp-n-v').textContent=nn;$('#rp-s-v').textContent=s;
+    const cols=4;const cw=w/cols;const R=Math.min(cw*0.32,h*0.3);const cy=h*0.42;let tot=0;
+    th.forEach((t,i)=>{const cx=cw*i+cw/2;const am=(m+s)*t,an=(nn+s)*t;const dot=Math.cos(am-an);tot+=dot;
+      ctx.strokeStyle=css('--line-strong');ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.stroke();
+      const arrow=(a,col,lab)=>{const x=cx+R*Math.cos(-a),y=cy+R*Math.sin(-a);ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x,y);ctx.stroke();ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();ctx.font='700 11px '+css('--font-display');ctx.textAlign='center';ctx.fillText(lab,x+(x-cx)*0.18,y+(y-cy)*0.18+4);};
+      ctx.strokeStyle=css('--heat-hi');ctx.lineWidth=5;ctx.globalAlpha=.6;ctx.beginPath();ctx.arc(cx,cy,R*0.55,-Math.max(am,an),-Math.min(am,an));ctx.stroke();ctx.globalAlpha=1;
+      arrow(an,css('--muted'),'k');arrow(am,css('--accent'),'q');
+      ctx.fillStyle=css('--fg');ctx.font='12px '+css('--font-mono');ctx.textAlign='center';ctx.fillText(`θ${i} = ${t>=0.01?t.toFixed(2):t.toFixed(3)} rad/pos`,cx,cy+R+20);ctx.fillText(`q·k = cos(${(m-nn)}·θ${i}) = ${fmt(dot)}`,cx,cy+R+38);});
+    read.innerHTML=`<span>relative offset m − n <b>${m-nn}</b></span><span>mean q·k over bands <b>${fmt(tot/4,3)}</b></span><span>absolute positions <b>${m+s}</b>, <b>${nn+s}</b> (irrelevant)</span>`;}
+  ['#rp-m','#rp-n','#rp-s'].forEach(id=>$(id).oninput=draw);reg(draw);
+})();
+
+/* ---------- 07 induction ---------- */
+(function(){
+  const inp=$('#in-text'),svg=$('#in-svg'),inner=$('#in-inner'),pred=$('#in-pred');let els=[],words=[];
+  function build(){words=inp.value.trim().split(/\s+/).filter(Boolean).slice(0,24);els=tokenRow($('#in-toks'),words,()=>{});draw();}
+  function draw(){if(!words.length){svg.innerHTML='';pred.innerHTML='';return;}const last=words.length-1;const R=inner.getBoundingClientRect();const Wd=Math.max(inner.scrollWidth,R.width);const H=svg.clientHeight||120;svg.setAttribute('viewBox',`0 0 ${Wd} ${H}`);svg.style.width=Wd+'px';
+    const cx=i=>{const r=els[i].getBoundingClientRect();return r.left-R.left+r.width/2;};let s='';const mu=css('--muted'),ac=css('--accent');
+    for(let i=1;i<words.length;i++){const a=cx(i),b=cx(i-1);s+=`<path d="M${a} ${H} Q${(a+b)/2} ${H-26} ${b} ${H}" fill="none" stroke="${mu}" stroke-width="1.3" stroke-opacity=".55"/>`;}
+    let hit=-1;for(let j=last-1;j>=0;j--){if(words[j]===words[last]&&j+1<=last){hit=j;break;}}
+    els.forEach((e,i)=>{e.classList.toggle('q',i===last);e.style.background='';});
+    if(hit>=0&&hit+1<last){const a=cx(last),b=cx(hit+1);s+=`<path d="M${a} ${H} Q${(a+b)/2} ${H-Math.min(H-8,40+Math.abs(a-b)*0.3)} ${b} ${H}" fill="none" stroke="${ac}" stroke-width="7" stroke-opacity=".9" stroke-linecap="round"/>`;els[hit].style.background=heat(.35);els[hit+1].style.background=heat(.9);
+      pred.innerHTML=`Earlier copy of <span class="pill">${words[last]}</span> at position ${hit}, followed by <span class="pill">${words[hit+1]}</span>. The induction head predicts next: <span class="pill" style="background:var(--accent);color:var(--accent-ink)">${words[hit+1]}</span>`;}
+    else pred.innerHTML=`No earlier copy of <span class="pill">${words[last]}</span> in context. The induction head is idle; prediction falls back to what the weights memorised.`;
+    svg.innerHTML=s;}
+  inp.addEventListener('input',build);reg(()=>{if(!els.length)build();else draw();});
+})();
+
+/* ---------- 08 KV cost ---------- */
+(function(){
+  const presets=[{n:'Llama 2 7B (MHA)',L:32,H:32,Hkv:32,dh:128},{n:'Mistral 7B (GQA 8)',L:32,H:32,Hkv:8,dh:128},{n:'Llama 3 70B (GQA 8)',L:80,H:64,Hkv:8,dh:128},{n:'Llama 3.1 405B (GQA 8)',L:126,H:128,Hkv:8,dh:128},{n:'DeepSeek-V3 671B (MLA)',L:61,H:128,Hkv:128,dh:128,mla:576}];
+  const sel=$('#kc-preset');presets.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.textContent=p.n;sel.appendChild(o);});sel.value=2;
+  const cv=$('#kc-cv'),read=$('#kc-read');
+  const nOf=v=>Math.round(Math.pow(10,3+v/1000*3));
+  function perTok(p,layout,bytes){if(layout==='mla')return p.L*576*bytes;const hkv=layout==='mha'?p.H:layout==='gqa'?Math.min(8,p.H):1;return 2*p.L*hkv*p.dh*bytes;}
+  function draw(){const p=presets[+sel.value];const bytes=+$('#kc-dtype').value;const n=nOf(+$('#kc-n').value);$('#kc-n-v').textContent=fmtN(n);
+    const {ctx,w,h}=fit(cv);const pad={l:58,r:14,t:14,b:34};const X=v=>pad.l+(Math.log10(v)-3)/3*(w-pad.l-pad.r);
+    const layouts=[['mha','MHA (all heads)',css('--bad')],['gqa','GQA (8 kv heads)',css('--heat-hi')],['mqa','MQA (1 kv head)',css('--accent')],['mla','MLA (576-d latent)',css('--ok')]];
+    const ymin=1e8,ymax=1e13;const Y=b=>pad.t+(1-(Math.log10(clamp(b,ymin,ymax))-8)/5)*(h-pad.t-pad.b);
+    ctx.font='11px '+css('--font-mono');ctx.fillStyle=css('--muted');ctx.strokeStyle=css('--line');ctx.lineWidth=1;
+    [1e8,1e9,1e10,1e11,1e12,1e13].forEach(b=>{ctx.beginPath();ctx.moveTo(pad.l,Y(b));ctx.lineTo(w-pad.r,Y(b));ctx.stroke();ctx.textAlign='right';ctx.fillText(fmtB(b),pad.l-6,Y(b)+4);});
+    [1e3,1e4,1e5,1e6].forEach(v=>{ctx.beginPath();ctx.moveTo(X(v),pad.t);ctx.lineTo(X(v),h-pad.b);ctx.stroke();ctx.textAlign='center';ctx.fillText(fmtN(v)+' tok',X(v),h-pad.b+16);});
+    layouts.forEach(([k,lab,col])=>{if(k==='mla'&&!p.mla&&false)return;ctx.strokeStyle=col;ctx.lineWidth=2.2;ctx.beginPath();for(let v=1e3;v<=1e6;v*=1.2){const y=Y(perTok(p,k,bytes)*v);v===1e3?ctx.moveTo(X(v),y):ctx.lineTo(X(v),y);}ctx.stroke();});
+    ctx.strokeStyle=css('--fg');ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(X(n),pad.t);ctx.lineTo(X(n),h-pad.b);ctx.stroke();ctx.setLineDash([]);
+    const own=p.mla?'mla':p.Hkv===p.H?'mha':p.Hkv===1?'mqa':'gqa';
+    layouts.forEach(([k,lab,col],i)=>{const y=Y(perTok(p,k,bytes)*n);ctx.fillStyle=col;ctx.beginPath();ctx.arc(X(n),y,k===own?6:3.5,0,Math.PI*2);ctx.fill();if(k===own){ctx.strokeStyle=css('--surface');ctx.lineWidth=2;ctx.stroke();}
+      ctx.fillStyle=col;ctx.font='600 11px '+css('--font-display');ctx.textAlign='left';ctx.fillText(lab+(k===own?' ← this model':''),pad.l+8,pad.t+14+i*14);});
+    const dm=p.H*p.dh;const attn=4*n*dm;const lin=(8+16)*dm*dm;const share=attn/(attn+lin);
+    read.innerHTML=`<span>this model at ${fmtN(n)} tokens <b>${fmtB(perTok(p,own,bytes)*n)}</b> KV</span><span>per token <b>${fmtB(perTok(p,own,bytes))}</b></span><span>if MHA <b>${fmtB(perTok(p,'mha',bytes)*n)}</b></span><span>attention share of prefill FLOPs ≈ <b>${Math.round(share*100)}%</b></span>`;}
+  sel.onchange=draw;$('#kc-n').oninput=draw;$('#kc-dtype').onchange=draw;reg(draw);
+})();
+
+/* ---------- 09 flash ---------- */
+(function(){
+  const cv=$('#fa-cv'),st=$('#fa-state'),mem=$('#fa-mem');const T=6;let i=0,j=0,playing=false,timer=null,m=-Infinity,l=0,done=false;
+  const r=rng(77);const tiles=Array.from({length:T},(_,a)=>Array.from({length:T},(_,b)=>Array.from({length:4},()=>(gauss(r)*1.4+(a===b?1.2:0)))));
+  const visited=new Set();
+  function reset(){i=0;j=0;m=-Infinity;l=0;visited.clear();done=false;draw();}
+  function step(){if(done)return;const s=tiles[i][j];const mn=Math.max(m,...s);l=l*Math.exp(m-mn)+s.reduce((a,x)=>a+Math.exp(x-mn),0);m=mn;visited.add(i+','+j);
+    if(j<i){j++;}else{if(i===T-1){done=true;playing=false;$('#fa-play').setAttribute('aria-pressed',false);$('#fa-play').textContent='▶ play';}else{i++;j=0;m=-Infinity;l=0;}}draw();}
+  function draw(){const {ctx,w,h}=fit(cv);const pad=16;const g=Math.min(w-pad*2-120,h-pad*2);const c=g/T;const ox=pad+70,oy=pad+10;
+    ctx.font='11px '+css('--font-mono');ctx.fillStyle=css('--muted');ctx.textAlign='right';for(let a=0;a<T;a++)ctx.fillText('Q'+a,ox-8,oy+a*c+c/2+4);ctx.textAlign='center';for(let b=0;b<T;b++)ctx.fillText('K'+b+'V'+b,ox+b*c+c/2,oy-6);
+    for(let a=0;a<T;a++)for(let b=0;b<T;b++){const x=ox+b*c,y=oy+a*c;const masked=b>a;const v=visited.has(a+','+b);const cur=a===i&&b===j&&!done;
+      ctx.fillStyle=masked?css('--bg'):v?heat(0.55):css('--surface');ctx.fillRect(x,y,c,c);
+      if(masked){ctx.save();ctx.beginPath();ctx.rect(x,y,c,c);ctx.clip();ctx.strokeStyle=css('--mask');ctx.globalAlpha=.4;for(let k=-c;k<c*2;k+=7){ctx.beginPath();ctx.moveTo(x+k,y);ctx.lineTo(x+k+c,y+c);ctx.stroke();}ctx.restore();}
+      ctx.strokeStyle=css('--line');ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,c-1,c-1);
+      if(cur){ctx.strokeStyle=css('--accent');ctx.lineWidth=3;ctx.strokeRect(x+1.5,y+1.5,c-3,c-3);}}
+    if(!done){ctx.fillStyle=css('--accent');ctx.globalAlpha=.18;ctx.fillRect(ox,oy+i*c,g,c);ctx.globalAlpha=1;}
+    ctx.fillStyle=css('--muted');ctx.font='11px '+css('--font-display');ctx.textAlign='left';ctx.fillText(done?'all query blocks finished · output exact':'row = one query block held in SRAM; key/value blocks stream through',ox,oy+g+16);
+    const s=tiles[i][j];st.innerHTML=`<div class="row"><span>query block</span><b>Q${i}</b></div><div class="row"><span>streaming</span><b>${done?'—':'K'+j+', V'+j}</b></div><div class="row"><span>block scores</span><b>${done?'—':s.map(x=>fmt(x,1)).join(' ')}</b></div><div class="row"><span>running max m</span><b>${m===-Infinity?'−∞':fmt(m)}</b></div><div class="row"><span>running sum ℓ</span><b>${fmt(l)}</b></div><div class="row"><span>O rescale factor</span><b>${m===-Infinity?'—':fmt(Math.exp(m-Math.max(m,...s)))}</b></div>`;
+    const n=Math.pow(2,+$('#fa-n').value);$('#fa-n-v').textContent=fmtN(n);const naive=n*n*2;const tile=128*128*4;
+    mem.innerHTML=`<div class="row"><span>n</span><b>${fmtN(n)}</b></div><div class="row"><span>full n×n scores (bf16, 1 head)</span><b>${fmtB(naive)}</b></div><div class="row"><span>× 32 heads</span><b>${fmtB(naive*32)}</b></div><div class="row"><span>Flash working tile 128×128</span><b>${fmtB(tile)}</b></div><div class="row"><span>H100 SRAM per SM</span><b>228 KB</b></div><div class="row"><span>H100 HBM</span><b>80 GB</b></div>`;}
+  $('#fa-step').onclick=()=>{if(done)reset();else step();};$('#fa-reset').onclick=reset;
+  $('#fa-play').onclick=e=>{playing=!playing;if(playing&&done)reset();e.currentTarget.setAttribute('aria-pressed',playing);e.currentTarget.textContent=playing?'⏸ pause':'▶ play';clearInterval(timer);if(playing)timer=setInterval(()=>{if(!playing){clearInterval(timer);return;}step();},420);};
+  $('#fa-n').oninput=draw;reg(draw);
+})();
+
+/* ---------- 10 timeline + cards ---------- */
+(function(){
+  const tl=[['2014','Additive attention','Bahdanau et al. let a translator look back at source words instead of one context vector.'],['2017','Transformer','Vaswani et al.: attention is all you need. Multi-head, scaled dot product, no recurrence.'],['2019','MQA · Sparse Transformer','Shazeer shares one K/V head across queries; Child et al. fix sparse patterns.'],['2020','Longformer · BigBird','Sliding windows plus a few global tokens; linear in n.'],['2021','RoPE','Su et al. rotate q and k so dot products depend on relative offset.'],['2022','Induction heads · FlashAttention','Olsson et al. find the in-context learning circuit; Dao et al. tile attention through SRAM.'],['2023','GQA · PagedAttention · sinks · Ring','Grouped KV heads; vLLM pages the cache; StreamingLLM keeps the first tokens; Ring splits context across devices.'],['2024','MLA · FlashAttention-3','DeepSeek-V2 compresses KV to a latent; FA3 overlaps matmul and softmax, runs FP8 on Hopper.'],['2025','NSA · DSA · hybrids · FA4','DeepSeek native sparse attention and the V3.2 lightning indexer; Gemma 3 and GPT-OSS alternate local and global; Qwen3-Next and Kimi Linear mix linear layers with full attention; gated attention removes sinks; FlashAttention-4 targets Blackwell.'],['2026','Consolidation','Sparse and hybrid attention reach flagship scale; the new ideas sit beside attention (conditional memory, rewired residuals) rather than inside it.']];
+  $('#tl').innerHTML=tl.map(([y,t,d])=>`<div class="ev"><div class="y">${y}</div><div class="t">${t}</div><div class="d">${d}</div></div>`).join('');
+  const cards=[
+    ['KV cache','inference, 2019→','Store every layer\'s K and V for past tokens so each new token only computes its own q, k, v and attends over the cache.','Decode goes from O(n²) per token to O(n). Makes long chats possible at all.','Cache grows linearly; at long contexts it is the dominant memory and bandwidth consumer.'],
+    ['MQA and GQA','2019 / 2023','Share one (MQA) or a few (GQA) key/value heads across all query heads. Llama 3 uses 8 KV heads for 64 query heads.','Cuts KV cache and the bytes read per decode step by 4–8× with little quality loss.','Fewer distinct K/V subspaces; too aggressive sharing hurts quality, hence groups rather than one.'],
+    ['Multi-head latent attention (MLA)','DeepSeek-V2, 2024','Project each token to a small latent (512-d in V3) plus a 64-d RoPE key; up-project to full K and V at use time. The up-projections fold into the query and output weights.','KV per token drops to 576 values per layer regardless of head count. Enables 128 heads without a 128-head cache.','Extra matmuls at decode; RoPE needs a separate decoupled key because rotation does not commute with the low-rank factor.'],
+    ['Sliding window and local/global hybrids','Longformer 2020 · Mistral 2023 · Gemma 3 2025 · GPT-OSS 2025','Most layers attend only to the last w tokens (Gemma 3: 1024; GPT-OSS: 128); every k-th layer is full. Information still propagates across the stack.','Cache for local layers is bounded by w. Gemma 3 runs 5 local layers per global layer; GPT-OSS alternates.','Needs some full layers for genuine long-range retrieval; window must be tuned to the task.'],
+    ['Attention sinks','StreamingLLM 2023 · GPT-OSS 2025','Models dump excess attention on the first tokens. Keep those tokens forever when evicting, or give softmax a learned extra logit so a head can attend to nothing.','Stable streaming past the training length; GPT-OSS bakes a learned sink per head into the kernel.','Explains why naive window eviction collapses; a diagnosis as much as a technique.'],
+    ['FlashAttention 1 → 3','2022 · 2023 · 2024','Tile Q, K, V through SRAM with online softmax; never materialise n×n. FA2 fixes work partitioning across warps; FA3 uses Hopper async copies, warp specialisation and FP8.','Exact attention at 50–75% of peak matmul throughput on H100; memory linear in n.','Hardware-specific kernels; each GPU generation needs a rewrite.'],
+    ['PagedAttention','vLLM, 2023','Treat the KV cache like virtual memory: fixed-size blocks, a page table per sequence, blocks shared across requests with the same prefix.','Near-zero fragmentation; batch many requests; prefix caching for shared system prompts.','Kernel must gather from non-contiguous blocks; serving-side complexity.'],
+    ['Ring attention and context parallelism','2023→','Split the sequence across devices. Each device holds a Q block and passes K/V blocks around a ring while computing with online softmax, so communication overlaps compute.','Context length scales with the number of devices: million-token training and prefill.','Communication-bound if blocks are small; needs careful causal load balancing.'],
+    ['Native sparse attention and DSA','DeepSeek 2025','NSA learns three branches per head: compressed blocks, selected top-k blocks and a sliding window, with hardware-aligned block sizes. DeepSeek-V3.2 uses a cheap "lightning indexer" to pick the top-2048 tokens for each query before full attention.','Sparsity that is trainable end-to-end and actually faster on GPUs, not just in FLOP counts. Long-context cost drops several-fold at ~equal quality.','Indexer adds a small cost; selection quality bounds the ceiling; still young.'],
+    ['Gated attention','Qwen, 2025','Multiply each head\'s output by a learned sigmoid gate computed from the same token before W<sub>O</sub>. One extra matmul per layer.','Lets a head emit nothing, so it no longer has to park weight on the first token. Removes attention sinks, cuts activation outliers, improves length extrapolation. Shipped in Qwen3-Next.','Small parameter and compute cost; interacts with how sinks were previously relied on.'],
+    ['FlashAttention-4','Blackwell, 2025','Exponentials are the bottleneck once matmul moves to 5th-gen tensor cores, so FA4 computes some of them with a cubic polynomial on the CUDA cores, skips rescaling unless the running max moves enough, and pipelines everything with warp specialisation.','Reported around 1.2 PFLOPS on B200, roughly 20% over cuDNN; keeps exact attention competitive with the new matmul throughput.','Another generation-specific rewrite; the gap between \"the equation\" and \"the kernel\" keeps widening.'],
+    ['Linear attention and hybrids','Mamba 2023 · Jamba 2024 · Qwen3-Next and Kimi Linear 2025 · Nemotron 3 2025','Replace softmax with a kernel or a recurrent state (Gated DeltaNet, Kimi Delta Attention, Mamba-2) so the state is constant-size; interleave with a few full-attention layers, typically 3:1.','O(n) time and O(1) state per layer; the few full layers keep exact retrieval. Kimi Linear reports up to 75% less KV cache and ~6× decode throughput at 1M tokens.','Pure linear variants lose exact recall; MiniMax went back to full attention for M2 after M1\'s lightning attention, citing retrieval and agentic-task quality. The argument is not settled.'],
+    ['Beside attention, not inside it','early 2026','The newest work leaves softmax(QKᵀ)V alone and changes what surrounds it: DeepSeek\'s Engram adds an O(1) hashed n-gram memory lookup next to attention and its mHC rewires the residual stream across layers; Moonshot\'s Attention Residuals let a layer attend over earlier layers\' outputs instead of summing them.','Attention stays the retrieval primitive; static knowledge and depth-wise routing move to cheaper structures. Early results claim better scaling at equal FLOPs.','Months old as of this page\'s writing (training data to mid-2026). Treat as direction of travel, not settled practice.']
+  ];
+  $('#cards').innerHTML=cards.map(([t,y,w,why,cost])=>`<div class="card"><h3>${t} <span class="yr">${y}</span></h3><p>${w}</p><div class="kv"><span>why</span><span>${why}</span><span>cost</span><span>${cost}</span></div></div>`).join('');
+})();
+
+/* ---------- 12 quiz ---------- */
+(function(){
+  const qs=[
+    ['Why divide the scores by √d<sub>k</sub>?',['So the raw score variance stays near 1 and softmax does not saturate','To make the matmul faster','To normalise the value vectors','Only to avoid floating-point overflow'],0,'Dot products of width-d vectors have variance d. Without the scale, softmax becomes a hard argmax and its gradient vanishes.'],
+    ['What does the KV cache store?',['Queries for every past token','Keys and values for every past token, per layer','The attention weight matrices','The output logits'],1,'Past queries are never needed again; past keys and values are needed by every future token, so those are cached.'],
+    ['Grouped-query attention mainly reduces…',['The FLOPs of QKᵀ','KV-cache memory and the bytes read per decode step','The number of layers','The vocabulary size'],1,'Query heads still all exist; only K and V heads are shared, so the cache and its bandwidth shrink.'],
+    ['FlashAttention is faster chiefly because it…',['Uses fewer floating-point operations','Never writes the n×n score matrix to slow memory','Approximates softmax','Drops some heads'],1,'It is exact and does slightly more FLOPs. The win is IO: tiling through SRAM with online softmax removes the n² HBM traffic.'],
+    ['An induction head…',['Attends only to the previous token','Finds an earlier copy of the current token and attends to what followed it','Attends uniformly over the context','Encodes position'],1,'It composes with a previous-token head from an earlier layer. The result copies patterns forward, the core of in-context learning.'],
+    ['RoPE encodes position by…',['Adding a learned vector per position','Rotating q and k pairs by position-dependent angles so q·k depends on the relative offset','Masking future tokens','A separate position network'],1,'Rotation turns absolute positions into a relative-offset dependence inside the dot product itself.'],
+    ['DeepSeek\'s MLA shrinks the KV cache by…',['Dropping half the heads','Storing a small latent per token and up-projecting to K and V when needed','Quantising to int4','Using a sliding window'],1,'The cache holds a 512-d latent plus a 64-d RoPE key per layer, independent of how many heads the model has.']
+  ];
+  let answered=0,right=0;const host=$('#quiz');
+  host.innerHTML=qs.map((q,i)=>`<div class="qq" data-i="${i}"><p class="qt">${i+1}. ${q[0]}</p><div class="opts">${q[1].map((o,k)=>`<button type="button" class="opt" data-k="${k}">${o}</button>`).join('')}</div><p class="why" hidden>${q[3]}</p></div>`).join('');
+  host.addEventListener('click',e=>{const b=e.target.closest('.opt');if(!b)return;const box=b.closest('.qq');if(box.dataset.done)return;box.dataset.done=1;const i=+box.dataset.i,k=+b.dataset.k;const ok=k===qs[i][2];answered++;if(ok)right++;
+    box.querySelectorAll('.opt').forEach(o=>{if(+o.dataset.k===qs[i][2])o.classList.add('right');else if(o===b)o.classList.add('wrong');o.disabled=true;});box.querySelector('.why').hidden=false;
+    $('#q-score').textContent=`${right} correct of ${answered} answered · ${qs.length} total`+(answered===qs.length?(right===qs.length?' · clean sweep':' · re-read the chapters you missed'):'');});
+})();
+
+/* ---------- nav + progress ---------- */
+(function(){
+  const links=$$('nav.rail a');const secs=links.map(a=>$(a.getAttribute('href'))).filter(Boolean);
+  const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+en.target.id));}});},{rootMargin:'-30% 0px -60% 0px'});
+  secs.forEach(s=>io.observe(s));
+  const bar=$('#progress');const onS=()=>{const d=document.documentElement;const p=d.scrollTop/(d.scrollHeight-d.clientHeight);bar.style.width=(p*100).toFixed(1)+'%';};addEventListener('scroll',onS,{passive:true});onS();
+})();
+})();
+</script>
+
+</body></html>

@@ -3,31 +3,15 @@ import Hero from './components/Hero'
 import Projects from './components/Projects'
 import Contact from './components/Contact'
 import Honeypot from './components/Honeypot'
-import { useState, useEffect } from 'react'
+import SiteNav from './components/SiteNav'
+import Learn from './components/learn/Learn'
+import GuideLibrary from './components/learn/GuideLibrary'
+import GuideReader from './components/learn/GuideReader'
 
 function Portfolio() {
-  const [scrolled, setScrolled] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
   return (
     <div className="min-h-screen selection:bg-blue-500/30">
-      {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-md border-b border-gray-200 py-4 shadow-sm' : 'bg-transparent py-6'
-        }`}>
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
-          <a href="#" className="text-xl font-bold tracking-tighter text-gray-900">SC.</a>
-          <div className="flex items-center gap-8">
-            <a href="#about" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">About</a>
-            <a href="#projects" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Projects</a>
-<a href="#contact" className="text-sm px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-colors">Contact</a>
-          </div>
-        </div>
-      </nav>
+      <SiteNav />
 
       <main>
         <Hero />
@@ -68,6 +52,10 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Portfolio />} />
+        <Route path="/learn" element={<Learn />}>
+          <Route index element={<GuideLibrary />} />
+          <Route path=":slug" element={<GuideReader />} />
+        </Route>
         {/* Multiple honeypot routes with different trap types */}
         <Route path="/sitemap-hidden.xml" element={<Honeypot />} />
         <Route path="/admin-login" element={<Honeypot />} />

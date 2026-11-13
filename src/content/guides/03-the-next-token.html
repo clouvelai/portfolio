@@ -1,0 +1,1122 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>The Next Token</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@87.5,500;87.5,700;87.5,800;100,500;100,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sticky chapter rail (desktop) beside one ~68ch reading column; each chapter pairs short prose with one "instrument" the reader operates (a toy tokenizer trained in the page, a sampler, a grammar stepper). Same token system as the attention and speed guides so the three read as one series. */
+:root{
+  --bg:#F4F5F7; --surface:#FFFFFF; --fg:#121521; --muted:#5B6275; --line:#D9DCE6; --line-strong:#B3B9CB;
+  --accent:#2A78D6; --accent-soft:#E3EDFB; --accent-ink:#FFFFFF;
+  --s1:#2A78D6; --s2:#EB6834; --s3:#1BAF7A; --s4:#6250D6;
+  --ok:#1F7A4E; --warn:#B8640A; --bad:#B4321A; --mask:#8C93A8;
+  --font-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --font-body:"Newsreader",Georgia,"Times New Roman",serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1118; --surface:#161A24; --fg:#E8EAF1; --muted:#9AA2B6; --line:#272D3C; --line-strong:#3D4558;
+    --accent:#3987E5; --accent-soft:#1B2A45; --accent-ink:#0E1118;
+    --s1:#3987E5; --s2:#D95926; --s3:#199E70; --s4:#9085E9;
+    --ok:#4BC38A; --warn:#F5A524; --bad:#F08A72; --mask:#4A5270; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1118; --surface:#161A24; --fg:#E8EAF1; --muted:#9AA2B6; --line:#272D3C; --line-strong:#3D4558;
+  --accent:#3987E5; --accent-soft:#1B2A45; --accent-ink:#0E1118;
+  --s1:#3987E5; --s2:#D95926; --s3:#199E70; --s4:#9085E9;
+  --ok:#4BC38A; --warn:#F5A524; --bad:#F08A72; --mask:#4A5270; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} *{animation:none!important;transition:none!important} }
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:17.5px;line-height:1.6;margin:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+#progress{position:fixed;left:0;top:env(safe-area-inset-top,0px);height:3px;width:0;background:var(--accent);z-index:50;transition:width .1s linear}
+.frame{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:0 40px}
+@media (min-width:980px){ .frame{grid-template-columns:200px minmax(0,1fr)} }
+nav.rail{display:none}
+@media (min-width:980px){
+  nav.rail{display:block;position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;padding-top:28px;font-family:var(--font-display);font-size:13px}
+  nav.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+  nav.rail li a{display:block;padding:6px 0 6px 14px;color:var(--muted);text-decoration:none;border-left:2px solid transparent;margin-left:-1px;line-height:1.3}
+  nav.rail li a.active{color:var(--fg);border-left-color:var(--accent)}
+  nav.rail li a:hover{color:var(--fg)}
+  nav.rail .n{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-right:6px}
+}
+main{min-width:0}
+.hero{padding-block:56px 24px}
+.eyebrow{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:var(--muted);margin:0 0 14px}
+h1{font-family:var(--font-display);font-weight:800;font-stretch:87.5%;font-size:clamp(38px,6vw,68px);line-height:1;letter-spacing:-.02em;margin:0 0 18px;text-wrap:balance}
+h2{font-family:var(--font-display);font-weight:700;font-stretch:87.5%;font-size:clamp(26px,3.4vw,36px);line-height:1.1;letter-spacing:-.012em;margin:0 0 12px;text-wrap:balance}
+h3{font-family:var(--font-display);font-weight:700;font-size:18px;margin:0 0 8px}
+.lede{font-size:21px;line-height:1.5;max-width:62ch;margin:0 0 26px}
+p{max-width:68ch;margin:0 0 14px}
+section.ch{padding-block:36px;border-top:1px solid var(--line)}
+.chn{font-family:var(--font-mono);font-size:12px;color:var(--accent);letter-spacing:.08em;margin:0 0 10px}
+.inst{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin:22px 0 12px;min-width:0}
+.inst .hint{font-family:var(--font-display);font-size:13px;color:var(--muted);margin:10px 0 0;max-width:none}
+.ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;font-family:var(--font-display);font-size:13px;margin:0 0 14px}
+.ctl label{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.ctl input[type=range]{accent-color:var(--accent);width:150px;max-width:40vw}
+.ctl select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;max-width:60vw}
+.ctl .v{font-family:var(--font-mono);color:var(--fg);min-width:3.5ch;font-variant-numeric:tabular-nums}
+.btn{font-family:var(--font-display);font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn[aria-pressed="true"],.btn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;gap:4px;flex-wrap:wrap}
+.read{font-family:var(--font-mono);font-size:13px;color:var(--muted);margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 22px;font-variant-numeric:tabular-nums}
+.read b{color:var(--fg);font-weight:600}
+canvas{display:block;width:100%;max-width:100%}
+.eq{font-family:var(--font-body);font-size:22px;text-align:center;margin:18px 0;line-height:1.4}
+.eq .op{font-style:normal;font-family:var(--font-display);font-weight:500}
+.eq i{font-style:italic}
+.mono{font-family:var(--font-mono);font-size:.85em}
+.grid2{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:760px){ .grid2{grid-template-columns:1fr 1fr} }
+.grid2>*{min-width:0}
+.bars{display:grid;grid-template-columns:auto 1fr auto;gap:5px 10px;align-items:center;font-family:var(--font-mono);font-size:12px;font-variant-numeric:tabular-nums}
+.bars .bar{height:12px;border-radius:0 4px 4px 0;background:var(--s1);min-width:1px}
+.bars .bar.lit{background:var(--s2)}
+.bars .lab{color:var(--muted);white-space:nowrap}
+.cards{display:grid;grid-template-columns:1fr;gap:12px;margin-top:18px}
+@media (min-width:700px){ .cards{grid-template-columns:1fr 1fr} }
+.card{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface);min-width:0}
+.card h3{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.card h3 .yr{font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:400}
+.card p{font-size:15px;margin:0 0 8px;max-width:none}
+.card .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:14px;margin-top:6px}
+.card .kv span:first-child{font-family:var(--font-display);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:3px}
+.timeline{overflow-x:auto;margin:18px 0 4px;padding-bottom:8px}
+.tl{display:flex;gap:0;min-width:max-content;position:relative;padding-top:10px}
+.tl::before{content:"";position:absolute;left:0;right:0;top:19px;height:1px;background:var(--line-strong)}
+.tl .ev{width:160px;padding:0 10px 0 0;position:relative}
+.tl .ev::before{content:"";position:absolute;left:0;top:4px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
+.tl .ev .y{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin:20px 0 2px}
+.tl .ev .t{font-family:var(--font-display);font-size:13px;font-weight:700;line-height:1.25}
+.tl .ev .d{font-size:12.5px;color:var(--muted);line-height:1.35;margin-top:2px}
+.quiz{display:grid;gap:14px}
+.qq{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface)}
+.qq .qt{font-family:var(--font-display);font-weight:700;margin:0 0 10px;font-size:16px;max-width:none}
+.qq .opts{display:grid;gap:6px}
+.qq .opt{text-align:left;font:inherit;font-size:15px;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.qq .opt:hover{border-color:var(--line-strong)}
+.qq .opt.right{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.qq .opt.wrong{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+.qq .why{font-size:14.5px;color:var(--muted);margin:10px 0 0;max-width:none}
+.score{font-family:var(--font-display);font-size:14px;color:var(--muted)}
+.note{font-size:15px;color:var(--muted);border-left:2px solid var(--line-strong);padding-left:12px;margin:12px 0;max-width:68ch}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:12px;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--fg)}
+.panel{border:1px dashed var(--line-strong);border-radius:8px;padding:10px 12px;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums;min-width:0}
+.panel h4{font-family:var(--font-display);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}
+.panel .row{display:flex;justify-content:space-between;gap:8px;padding:2px 0;border-bottom:1px solid var(--line)}
+.panel .row:last-child{border-bottom:0}
+.panel .row b{font-weight:600;text-align:right}
+.gloss{display:grid;grid-template-columns:1fr;gap:10px 22px;margin-top:18px}
+@media (min-width:760px){ .gloss{grid-template-columns:1fr 1fr} }
+.g{padding:10px 0;border-top:1px solid var(--line);min-width:0}
+.g dt{font-family:var(--font-display);font-weight:700;font-size:16px;margin:0 0 4px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.g dt .sym{font-family:var(--font-mono);font-size:12px;color:var(--muted);font-weight:400}
+.g dd{margin:0;font-size:15px;line-height:1.5}
+.g dd .ana{display:block;color:var(--muted);margin-top:4px;font-size:14px}
+a.term{color:inherit;text-decoration:none;border-bottom:1px dotted var(--accent)}
+a.term:hover{color:var(--accent)}
+.legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-family:var(--font-display);font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.stream{font-family:var(--font-body);font-size:18px;line-height:1.55;min-height:7.5em;max-height:7.5em;overflow-y:auto;position:relative;border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--bg)}
+.stream .cur{display:inline-block;width:.55em;height:1.1em;background:var(--accent);vertical-align:-3px;margin-left:1px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.stream.wait .cur{animation:none;opacity:.35}
+.tokrow{display:flex;flex-wrap:wrap;gap:4px;font-family:var(--font-mono);font-size:12.5px;margin-top:10px;min-height:2.4em}
+.tokrow span{padding:3px 6px;border-radius:4px;border:1px solid var(--line);background:var(--surface)}
+.tokrow .acc{background:var(--accent-soft);border-color:var(--accent)}
+.tokrow .rej{text-decoration:line-through;color:var(--muted);opacity:.6}
+.tokrow .fix{border-color:var(--s2);box-shadow:inset 0 0 0 1px var(--s2)}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums;width:100%;min-width:520px}
+.tbl th,.tbl td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line)}
+.tbl th{font-family:var(--font-display);font-weight:700;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.tbl td:first-child,.tbl th:first-child{text-align:left}
+.tbl tr.lit td{background:var(--accent-soft)}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--font-mono);font-size:13px;margin:14px 0}
+.flow span{padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--muted)}
+.flow .op{color:var(--fg);border-color:var(--line-strong)}
+.flow .arrow{border:none;padding:0 2px;color:var(--accent)}
+footer{font-family:var(--font-display);font-size:13px;color:var(--muted);padding-top:28px;border-top:1px solid var(--line);margin-top:30px}
+.textin{font:inherit;font-family:var(--font-mono);font-size:14px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);color:var(--fg);width:100%;min-width:0}
+
+/* Figures: hand-drawn inline SVG mechanism diagrams + stat tiles. Strokes/text inherit currentColor; series classes carry meaning. */
+.fig{margin:22px 0 14px;max-width:none}
+.fig svg{display:block;width:100%;height:auto;max-width:100%;color:var(--fg);font-family:var(--font-display);font-size:12px;overflow:visible}
+.fig svg text{fill:currentColor}
+.fig figcaption{font-family:var(--font-display);font-size:13px;color:var(--muted);margin-top:8px;max-width:68ch;line-height:1.45}
+.fig .box{fill:var(--surface);stroke:var(--line-strong);stroke-width:1}
+.fig .soft{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1}
+.fig .ghost{fill:none;stroke:var(--line-strong);stroke-dasharray:4 4}
+.fig .f1{fill:var(--s1)} .fig .f2{fill:var(--s2)} .fig .f3{fill:var(--s3)} .fig .f4{fill:var(--s4)} .fig .fm{fill:var(--mask)} .fig .fl{fill:var(--line)}
+.fig .l1{stroke:var(--s1)} .fig .l2{stroke:var(--s2)} .fig .l3{stroke:var(--s3)} .fig .l4{stroke:var(--s4)}
+.fig .ln{stroke:currentColor;fill:none;stroke-width:1.2}
+.fig .mu{fill:var(--muted)} .fig .mono{font-family:var(--font-mono);font-size:11px} .fig .b{font-weight:700}
+.fig .sm{font-size:10.5px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:18px 0}
+.tile{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface);min-width:0}
+.tile .n{font-family:var(--font-display);font-weight:800;font-stretch:87.5%;font-size:30px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile .n small{font-size:14px;font-weight:600;color:var(--muted);margin-left:4px;letter-spacing:0}
+.tile .l{font-family:var(--font-display);font-size:12px;color:var(--muted);margin-top:6px;line-height:1.3}
+.tile.a .n{color:var(--accent)}
+@media (max-width:700px){ .fig{overflow-x:auto;-webkit-overflow-scrolling:touch} .fig svg{min-width:600px} }
+.tok{display:inline-block;padding:2px 5px;margin:2px 1px;border-radius:4px;font-family:var(--font-mono);font-size:13px;line-height:1.3;border:1px solid var(--line);background:var(--surface);white-space:pre}
+.tok.t0{background:color-mix(in srgb,var(--s1) 18%,var(--surface))} .tok.t1{background:color-mix(in srgb,var(--s2) 18%,var(--surface))} .tok.t2{background:color-mix(in srgb,var(--s3) 18%,var(--surface))} .tok.t3{background:color-mix(in srgb,var(--s4) 18%,var(--surface))}
+.tok.byte{border-style:dashed;color:var(--muted)}
+.tokwrap{line-height:1.9;min-height:3.2em;font-size:0}
+.tokwrap .tok{font-size:13px}
+.dist{display:grid;grid-template-columns:minmax(70px,auto) 1fr auto;gap:4px 10px;align-items:center;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.dist .lab{white-space:pre;color:var(--fg);text-align:right}
+.dist .trk{position:relative;height:14px;background:color-mix(in srgb,var(--line) 55%,transparent);border-radius:0 4px 4px 0;min-width:0}
+.dist .trk i{position:absolute;left:0;top:0;bottom:0;background:var(--s1);border-radius:0 4px 4px 0;min-width:1px}
+.dist .trk i.cut{background:var(--mask);opacity:.45}
+.dist .trk i.pick{background:var(--s2)}
+.dist .trk em{position:absolute;left:0;top:0;bottom:0;background:var(--s3);opacity:.55;border-radius:0 4px 4px 0}
+.dist .pv{color:var(--muted);text-align:right;min-width:5ch}
+.dist .lab.cut,.dist .pv.cut{color:var(--mask);text-decoration:line-through}
+.outs{display:grid;gap:8px;margin-top:10px}
+.out{font-family:var(--font-body);font-size:16px;line-height:1.5;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg);min-width:0;overflow-wrap:anywhere}
+.out .pre{color:var(--muted)}
+.out .div{background:color-mix(in srgb,var(--s2) 22%,transparent);border-radius:3px}
+.lp{display:flex;flex-wrap:wrap;gap:3px;font-family:var(--font-mono);font-size:13px;margin-top:10px}
+.lp span{padding:3px 5px;border-radius:4px;white-space:pre}
+.json{font-family:var(--font-mono);font-size:14px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:2.6em;overflow-wrap:anywhere}
+.json .nx{display:inline-block;width:.55em;height:1.1em;background:var(--accent);vertical-align:-3px;margin-left:1px}
+.kvrow{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--font-display);font-size:13px;color:var(--muted);margin-top:8px}
+.kvrow b{color:var(--fg);font-weight:600}
+.scale{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:12px;color:var(--muted);margin-top:8px}
+.scale i{display:inline-block;height:10px;width:90px;border-radius:3px;background:linear-gradient(90deg,var(--bad),var(--warn),var(--ok))}
+.ctl input[type=number]{font:inherit;font-family:var(--font-mono);color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;width:9ch}
+.ctl input[type=text]{font:inherit;font-family:var(--font-mono);font-size:13px;color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;min-width:0}
+.fig .fo{fill:var(--bg)}
+</style>
+
+<div id="progress"></div>
+<div class="frame">
+<nav class="rail" aria-label="Chapters">
+  <ol>
+    <li><a href="#c0"><span class="n">00</span>Plain words</a></li>
+    <li><a href="#c1"><span class="n">01</span>What a token is</a></li>
+    <li><a href="#c2"><span class="n">02</span>Building a vocabulary</a></li>
+    <li><a href="#c3"><span class="n">03</span>The bill</a></li>
+    <li><a href="#c4"><span class="n">04</span>Numbers in, numbers out</a></li>
+    <li><a href="#c5"><span class="n">05</span>Temperature</a></li>
+    <li><a href="#c6"><span class="n">06</span>Cutting the tail</a></li>
+    <li><a href="#c7"><span class="n">07</span>The wobble</a></li>
+    <li><a href="#c8"><span class="n">08</span>The other knobs</a></li>
+    <li><a href="#c9"><span class="n">09</span>Structured output</a></li>
+    <li><a href="#c10"><span class="n">10</span>Reading confidence</a></li>
+    <li><a href="#c11"><span class="n">11</span>Traps and the frontier</a></li>
+    <li><a href="#c12"><span class="n">12</span>Why it matters to me</a></li>
+    <li><a href="#c13"><span class="n">13</span>Check yourself</a></li>
+  </ol>
+</nav>
+<main>
+
+<header class="hero">
+  <p class="eyebrow">An interactive field guide</p>
+  <h1>Tokens, and how the model picks the next one</h1>
+  <p class="lede">A language model does not read letters or write words. It reads a list of numbered pieces called tokens, and at every step it produces one score for every piece it knows, then something rolls a die weighted by those scores. Everything you pay for, every speed limit, every "temperature" setting and every JSON-that-came-back-broken lives in those two facts. This page builds both from scratch.</p>
+  <div class="inst" id="hero-inst">
+    <div class="ctl"><span class="mono">The capital of France is</span><label>temperature <input type="range" id="h-T" min="0" max="200" value="100"><span class="v" id="h-T-v">1.0</span></label><button class="btn" id="h-one">roll once</button><button class="btn" id="h-many">roll 100×</button><button class="btn" id="h-reset">clear</button></div>
+    <div class="dist" id="h-dist"></div>
+    <div class="read" id="h-read"></div>
+    <p class="hint">Blue is what the model believes: its probability for each candidate next token. Green is what actually came out of the die so far. At temperature 0 the die has one face. Push temperature up and watch belief flatten until " Lyon" starts winning some rolls. (Candidate probabilities here are hand-set to look like a real model's; the arithmetic on them is the real thing.)</p>
+  </div>
+<div class="tiles"><div class="tile a"><div class="n">1</div><div class="l">token picked per forward pass</div></div><div class="tile"><div class="n">100k–260k</div><div class="l">tokens in a modern vocabulary</div></div><div class="tile"><div class="n">~4<small>chars</small></div><div class="l">per English token</div></div><div class="tile"><div class="n">0.75<small>words</small></div><div class="l">per token, English prose</div></div></div>
+</header>
+
+<section class="ch" id="c0">
+  <p class="chn">00 · PLAIN WORDS</p>
+<figure class="fig"><svg viewBox="0 0 760 250" role="img" aria-label="Text goes through a tokenizer into integer ids, each id becomes a vector, the transformer turns the vectors into one final vector, the LM head scores every token in the vocabulary, softmax with temperature turns scores into probabilities, truncation drops the tail, a sample picks one id, and that id is decoded back to text and appended to the input for the next step.">
+<defs><marker id="m0a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="m0c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f2"/></marker></defs>
+<path d="M14 22v-6h276v6" class="ln"/><text x="152" y="12" text-anchor="middle" class="mono">chapters 01–04 · text ↔ numbers</text>
+<path d="M330 22v-6h416v6" class="ln"/><text x="538" y="12" text-anchor="middle" class="mono">chapters 05–09 · the pick</text>
+<rect x="14" y="40" width="86" height="60" rx="8" class="box"/><text x="57" y="64" text-anchor="middle" class="b">text</text><text x="57" y="82" text-anchor="middle" class="mu sm">"The cat sat"</text>
+<line x1="100" y1="70" x2="124" y2="70" class="ln" marker-end="url(#m0a)"/>
+<rect x="126" y="40" width="86" height="60" rx="8" class="soft"/><text x="169" y="64" text-anchor="middle" class="b">tokenizer</text><text x="169" y="82" text-anchor="middle" class="mu sm">split + look up</text>
+<line x1="212" y1="70" x2="236" y2="70" class="ln" marker-end="url(#m0a)"/>
+<rect x="238" y="40" width="80" height="60" rx="8" class="box"/><text x="278" y="64" text-anchor="middle" class="b">ids</text><text x="278" y="82" text-anchor="middle" class="mono sm">791 8415 7731</text>
+<line x1="318" y1="70" x2="342" y2="70" class="ln" marker-end="url(#m0a)"/>
+<rect x="344" y="40" width="110" height="60" rx="8" class="box"/><text x="399" y="64" text-anchor="middle" class="b">transformer</text><text x="399" y="82" text-anchor="middle" class="mu sm">attention + MLP layers</text>
+<line x1="454" y1="70" x2="478" y2="70" class="ln" marker-end="url(#m0a)"/>
+<rect x="480" y="40" width="110" height="60" rx="8" class="soft"/><text x="535" y="64" text-anchor="middle" class="b">LM head</text><text x="535" y="82" text-anchor="middle" class="mu sm">one score per token</text>
+<line x1="590" y1="70" x2="614" y2="70" class="ln" marker-end="url(#m0a)"/>
+<rect x="616" y="40" width="130" height="60" rx="8" class="box"/><text x="681" y="60" text-anchor="middle" class="b">logits</text><text x="681" y="76" text-anchor="middle" class="mu sm">100,000 raw scores</text>
+<rect x="628" y="84" width="4" height="10" class="f1"/><rect x="634" y="90" width="4" height="4" class="fm"/><rect x="640" y="86" width="4" height="8" class="f1"/><rect x="646" y="91" width="4" height="3" class="fm"/><rect x="652" y="92" width="4" height="2" class="fm"/><rect x="658" y="89" width="4" height="5" class="fm"/><rect x="664" y="92" width="4" height="2" class="fm"/><rect x="670" y="91" width="4" height="3" class="fm"/><rect x="676" y="93" width="4" height="1" class="fm"/><rect x="682" y="92" width="4" height="2" class="fm"/><rect x="688" y="93" width="4" height="1" class="fm"/><rect x="694" y="92" width="4" height="2" class="fm"/><rect x="700" y="93" width="4" height="1" class="fm"/><rect x="706" y="93" width="4" height="1" class="fm"/><rect x="712" y="92" width="4" height="2" class="fm"/><rect x="718" y="93" width="4" height="1" class="fm"/><rect x="724" y="93" width="4" height="1" class="fm"/><rect x="730" y="93" width="4" height="1" class="fm"/>
+<path d="M681 100v22" class="ln" marker-end="url(#m0a)"/>
+<rect x="596" y="124" width="150" height="48" rx="8" class="soft"/><text x="671" y="144" text-anchor="middle" class="b">softmax ÷ temperature</text><text x="671" y="162" text-anchor="middle" class="mu sm">scores → probabilities</text>
+<line x1="596" y1="148" x2="572" y2="148" class="ln" marker-end="url(#m0a)"/>
+<rect x="422" y="124" width="150" height="48" rx="8" class="soft"/><text x="497" y="144" text-anchor="middle" class="b">truncate</text><text x="497" y="162" text-anchor="middle" class="mu sm">top-k · top-p · min-p · grammar</text>
+<line x1="422" y1="148" x2="398" y2="148" class="ln" marker-end="url(#m0a)"/>
+<rect x="296" y="124" width="102" height="48" rx="8" class="soft"/><text x="347" y="144" text-anchor="middle" class="b">sample</text><text x="347" y="162" text-anchor="middle" class="mu sm">roll one die</text>
+<line x1="296" y1="148" x2="272" y2="148" class="ln" marker-end="url(#m0a)"/>
+<rect x="190" y="124" width="82" height="48" rx="8" class="box"/><text x="231" y="144" text-anchor="middle" class="b">one id</text><text x="231" y="162" text-anchor="middle" class="mono sm">389</text>
+<line x1="190" y1="148" x2="166" y2="148" class="ln" marker-end="url(#m0a)"/>
+<rect x="60" y="124" width="106" height="48" rx="8" class="box"/><text x="113" y="144" text-anchor="middle" class="b">detokenize</text><text x="113" y="162" text-anchor="middle" class="mu sm">id → " on"</text>
+<path d="M113 172v14h-56v-84" class="ln l2" stroke-width="1.5" marker-end="url(#m0c)"/>
+<text x="122" y="190" class="mono sm" style="fill:var(--s2)">append the new token to the text, go round again</text>
+<text x="14" y="206" class="b">Every output token is one trip around this loop.</text>
+<text x="14" y="226" class="mu sm">The left half is fixed when the model is trained. The right half is decided per request, by whoever sets the sampling parameters.</text>
+<text x="14" y="242" class="mu sm">Chapter 10 reads the probabilities back out; chapter 11 is what goes wrong at the seams.</text>
+</svg><figcaption>The map every term on this page lives on. Text becomes ids, ids become one score per vocabulary entry, and a short pipeline of arithmetic turns those scores into a single chosen id that gets glued onto the input for the next round.</figcaption></figure>
+
+  <h2>Every term, in one breath</h2>
+  <p>The chapters use these words freely. Each entry is a one-sentence definition and a picture to hold it by. Dotted-underlined terms in the chapters link back here. Nothing on this page assumes you know any of them already.</p>
+  <dl class="gloss">
+  <div class="g" id="g-token"><dt>Token</dt><dd>The unit a model reads and writes: a whole word, a piece of a word, a run of digits, a punctuation mark, sometimes a single byte. "Tokenization" is the deterministic rule that chops text into these.<span class="ana">Lego bricks of text. The model only ever sees bricks, never the plastic they are made of.</span></dd></div>
+  <div class="g" id="g-vocab"><dt>Vocabulary <span class="sym">V</span></dt><dd>The fixed list of every token a model knows, each with an integer id. GPT-2 had 50,257; GPT-4 about 100k; GPT-4o and Llama 3 about 200k and 128k; Gemma 3 about 262k.<span class="ana">The brick catalogue. Bigger catalogue, fewer bricks per sentence, bigger box to search.</span></dd></div>
+  <div class="g" id="g-bpe"><dt>Byte-pair encoding <span class="sym">BPE</span></dt><dd>The recipe most vocabularies are built with: start from single bytes, repeatedly find the most frequent neighbouring pair in a training corpus, glue it into a new token, repeat tens of thousands of times.<span class="ana">Watching which bricks always get snapped together and selling them pre-glued.</span></dd></div>
+  <div class="g" id="g-merge"><dt>Merge, merge rank</dt><dd>One glueing step in BPE. Merges are numbered in the order they were learned, and that order is replayed exactly when new text is tokenized, so tokenization is deterministic.<span class="ana">The recipe card, numbered. Follow it in order and everyone gets the same bricks.</span></dd></div>
+  <div class="g" id="g-byte"><dt>Byte, UTF-8, byte fallback</dt><dd>Text in a computer is bytes; UTF-8 writes an English letter in one byte and most other scripts in two to four. Byte-level BPE keeps all 256 single bytes as tokens, so any string can be tokenized, just inefficiently.<span class="ana">A floor of 256 tiny bricks that can build anything, slowly.</span></dd></div>
+  <div class="g" id="g-pretok"><dt>Pre-tokenization</dt><dd>A regular expression that splits text into chunks (words with their leading space, runs of digits, punctuation) before BPE runs inside each chunk. It is why tokens rarely cross a space and why numbers come out in 1–3 digit pieces.<span class="ana">Cutting the dough into rough lumps before the real cutter runs.</span></dd></div>
+  <div class="g" id="g-special"><dt>Special tokens, chat template</dt><dd>Reserved ids that never come from text: beginning-of-sequence, end-of-turn, role markers. The chat template is the fixed way a conversation is laid out with them before the model sees it.<span class="ana">Stage directions printed in a different ink than the dialogue.</span></dd></div>
+  <div class="g" id="g-fert"><dt>Fertility <span class="sym">tokens per word</span></dt><dd>How many tokens a word costs on average. About 1.3 for English prose; 2–3 for many European and Asian languages; 5–10 for scripts the vocabulary was barely trained on. Also called the token premium.<span class="ana">Exchange rate between words and bricks. It is not the same in every country.</span></dd></div>
+  <div class="g" id="g-embed"><dt>Embedding</dt><dd>The table that turns each token id into a vector of a few thousand numbers; the first thing the model does with a token. Learned during training; row <i>i</i> is the model's idea of token <i>i</i>.<span class="ana">Looking a word up in a dictionary whose definitions are coordinates.</span></dd></div>
+  <div class="g" id="g-head"><dt>LM head <span class="sym">unembedding</span></dt><dd>The last matrix: it takes the model's final vector for the current position and produces one score per vocabulary entry. In many models it is the embedding table reused backwards.<span class="ana">The same dictionary, read in reverse: from coordinates back to every word, with a distance to each.</span></dd></div>
+  <div class="g" id="g-logit"><dt>Logit</dt><dd>One raw score the LM head gives a token. Unbounded, meaningless alone; only differences between logits matter. There are V of them per step.<span class="ana">Points on a scoreboard before anyone has turned them into odds.</span></dd></div>
+  <div class="g" id="g-softmax"><dt>Softmax</dt><dd>The function that turns logits into probabilities: raise <i>e</i> to each logit, divide by the total. Big logits get most of the mass; the gaps between logits set the ratios between probabilities.<span class="ana">Turning the scoreboard into betting odds that add to 100%.</span></dd></div>
+  <div class="g" id="g-dist"><dt>Probability distribution</dt><dd>The full list of V probabilities for the next token, summing to 1. It is the model's actual output. "The model said Paris" means the die landed on Paris.<span class="ana">The weighted die itself, before it is thrown.</span></dd></div>
+  <div class="g" id="g-temp"><dt>Temperature <span class="sym">T</span></dt><dd>A number every logit is divided by before softmax. Below 1 sharpens the distribution toward the favourite; above 1 flattens it toward uniform; 0 means always take the top one.<span class="ana">Loading the die. Low temperature glues it to one face.</span></dd></div>
+  <div class="g" id="g-greedy"><dt>Greedy decoding <span class="sym">argmax</span></dt><dd>Always pick the highest-probability token. Equivalent to temperature 0. Repetitive on open-ended text, ideal for code, extraction and tool calls.<span class="ana">Never rolling, just reading the heaviest face.</span></dd></div>
+  <div class="g" id="g-sample"><dt>Sampling</dt><dd>Drawing a token at random in proportion to its probability. With a random number generator seeded the same way, the same draw repeats; otherwise each call is a new roll.<span class="ana">Actually throwing the die.</span></dd></div>
+  <div class="g" id="g-topk"><dt>Top-k</dt><dd>Before sampling, keep only the k most likely tokens and renormalize. Simple, but k is blind to shape: 40 is too many when the model is sure, too few when it is torn.<span class="ana">Only the first k horses are allowed to run, whatever the odds.</span></dd></div>
+  <div class="g" id="g-topp"><dt>Top-p <span class="sym">nucleus</span></dt><dd>Keep the smallest set of top tokens whose probabilities add up to p (often 0.9–0.95), then renormalize. Adapts: a confident step keeps one token, a torn step keeps dozens.<span class="ana">Let horses run until the odds in the field add up to 90%.</span></dd></div>
+  <div class="g" id="g-minp"><dt>Min-p</dt><dd>Keep every token whose probability is at least a fraction (say 0.1) of the top token's. Scales with confidence like top-p, and behaves well at high temperature where top-p lets junk in.<span class="ana">Anyone within a tenth of the favourite's odds may run.</span></dd></div>
+  <div class="g" id="g-seed"><dt>Seed</dt><dd>The starting value of the random number generator used for sampling. Same seed, same model, same hardware path: same rolls. It controls the dice, not the scores.<span class="ana">Shuffling a deck the same way twice.</span></dd></div>
+  <div class="g" id="g-nondet"><dt>Nondeterminism</dt><dd>Why identical requests at temperature 0 can still differ: floating-point sums come out slightly differently depending on how the server batched the work, and a near-tie flips. Fixable with batch-invariant kernels, at some speed cost.<span class="ana">Two accountants adding the same column in different orders and disagreeing in the last cent.</span></dd></div>
+  <div class="g" id="g-pen"><dt>Repetition, frequency, presence penalties</dt><dd>Adjustments that lower the logits of tokens already in the text. Frequency scales with how often; presence is a flat hit once a token has appeared; repetition penalty divides or multiplies the logit instead.<span class="ana">Charging a fee each time the model reaches for the same brick.</span></dd></div>
+  <div class="g" id="g-bias"><dt>Logit bias</dt><dd>A number you add to a specific token's logit on every step. Large negative forbids it; large positive forces it. The bluntest possible steering.<span class="ana">A thumb on one face of the die.</span></dd></div>
+  <div class="g" id="g-stop"><dt>Stop sequence, max tokens, EOS</dt><dd>Three ways a generation ends: the model emits its end-of-sequence token, a string you listed appears, or the output hits the length cap. A cap hit is a truncation, not an ending.<span class="ana">The author stops, the editor stops them, or the paper runs out.</span></dd></div>
+  <div class="g" id="g-constr"><dt>Constrained decoding <span class="sym">structured output · grammar</span></dt><dd>Zeroing out every token the grammar (a JSON schema, a regex, a tool signature) would not allow at this position, before sampling. The output is then valid by construction, every time.<span class="ana">A stencil over the die: faces outside the stencil cannot land.</span></dd></div>
+  <div class="g" id="g-logprob"><dt>Logprob</dt><dd>The natural log of a token's probability. 0 means certain; −0.69 is a coin flip; −4.6 is 1%. Returned per token by most APIs on request. Summing them gives the probability of the whole sequence.<span class="ana">The odds, written on a scale where multiplying becomes adding.</span></dd></div>
+  <div class="g" id="g-entropy"><dt>Entropy</dt><dd>How spread out a distribution is, in nats or bits. Zero when one token holds all the mass; ln V when every token is equally likely. High entropy steps are where sampling decisions actually matter.<span class="ana">How many faces the die effectively has.</span></dd></div>
+  <div class="g" id="g-ppl"><dt>Perplexity</dt><dd>e to the average negative logprob over a text: the effective number of equally likely choices the model felt it had per token. A model that scores 5 on a text was, on average, choosing among five.<span class="ana">Average number of plausible next bricks. Lower means the text felt more predictable.</span></dd></div>
+  <div class="g" id="g-beam"><dt>Beam search</dt><dd>Keep the b most probable partial sequences at every step instead of one. Finds higher-probability wholes; produces bland, repetitive text for open prompts. Rare in chat, common in translation.<span class="ana">Exploring the b best paths through the maze at once.</span></dd></div>
+  <div class="g" id="g-heal"><dt>Token healing, prompt boundary</dt><dd>A prompt that ends mid-token (a trailing space, half a URL) forces the model onto a path training rarely showed it. Token healing backs up one token and lets the model regenerate it with the boundary free.<span class="ana">Unsnapping the last brick so the next one can attach where it naturally would.</span></dd></div>
+  <div class="g" id="g-glitch"><dt>Glitch tokens</dt><dd>Vocabulary entries that appeared in the tokenizer's training text but almost never in the model's, so their embeddings were never really trained. Feed one in and the model behaves strangely.<span class="ana">A brick in the catalogue that no one ever built with.</span></dd></div>
+  <div class="g" id="g-spec"><dt>Speculative decoding</dt><dd>A fast draft model proposes several tokens; the big model checks them in one pass and keeps the ones it would have sampled. Exactly the same distribution as sampling from the big model alone, by a rejection-sampling rule.<span class="ana">A junior finishing your sentences; you nod through the right ones.</span></dd></div>
+  <div class="g" id="g-mtp"><dt>Multi-token prediction <span class="sym">MTP</span></dt><dd>Training the model with extra heads that predict tokens 2, 3, 4 steps ahead. Used as a built-in draft for speculative decoding, and arguably as a better training signal.<span class="ana">Writing the next three words in pencil, then checking them in ink.</span></dd></div>
+  <div class="g" id="g-bytelevel"><dt>Tokenizer-free models <span class="sym">MegaByte · BLT · H-Net</span></dt><dd>Architectures that read raw bytes and learn their own grouping as they go, instead of using a fixed vocabulary. Research-stage in 2025–2026, aimed at every trap in chapter 11.<span class="ana">Letting the builder decide the brick sizes per job.</span></dd></div>
+  </dl>
+</section>
+
+<section class="ch" id="c1">
+  <p class="chn">01 · WHAT A TOKEN IS</p>
+  <h2>The model never sees letters</h2>
+  <p>Type a sentence into a chat box and the first thing that happens is not intelligence. A small, fixed program called the <a class="term" href="#g-token">tokenizer</a> chops your text into pieces from a list it was given years earlier, and replaces each piece with its number in that list. The model receives the numbers. It never sees the letters inside a piece, which is why a frontier system can write a sonnet and still miscount the r's in "strawberry".</p>
+<figure class="fig"><svg viewBox="0 0 760 196" role="img" aria-label="The word strawberry is ten letters and ten bytes, but the tokenizer hands the model three tokens, str, aw and berry, as three ids. The model sees ids and must infer the letters inside them from training.">
+<defs><marker id="m1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<text x="14" y="18" class="b">what you typed</text>
+<rect x="14" y="28" width="26" height="30" rx="4" class="box"/><text x="27" y="48" text-anchor="middle" class="mono">s</text>
+<rect x="42" y="28" width="26" height="30" rx="4" class="box"/><text x="55" y="48" text-anchor="middle" class="mono">t</text>
+<rect x="70" y="28" width="26" height="30" rx="4" class="box"/><text x="83" y="48" text-anchor="middle" class="mono">r</text>
+<rect x="98" y="28" width="26" height="30" rx="4" class="box"/><text x="111" y="48" text-anchor="middle" class="mono">a</text>
+<rect x="126" y="28" width="26" height="30" rx="4" class="box"/><text x="139" y="48" text-anchor="middle" class="mono">w</text>
+<rect x="154" y="28" width="26" height="30" rx="4" class="box"/><text x="167" y="48" text-anchor="middle" class="mono">b</text>
+<rect x="182" y="28" width="26" height="30" rx="4" class="box"/><text x="195" y="48" text-anchor="middle" class="mono">e</text>
+<rect x="210" y="28" width="26" height="30" rx="4" class="box"/><text x="223" y="48" text-anchor="middle" class="mono">r</text>
+<rect x="238" y="28" width="26" height="30" rx="4" class="box"/><text x="251" y="48" text-anchor="middle" class="mono">r</text>
+<rect x="266" y="28" width="26" height="30" rx="4" class="box"/><text x="279" y="48" text-anchor="middle" class="mono">y</text>
+<text x="153" y="76" text-anchor="middle" class="mu sm">10 letters · 10 bytes in UTF-8 · three r's</text>
+<line x1="310" y1="43" x2="350" y2="43" class="ln" marker-end="url(#m1a)"/>
+<text x="330" y="34" text-anchor="middle" class="sm mu">tokenizer</text>
+<text x="366" y="18" class="b">what the model receives</text>
+<rect x="366" y="28" width="84" height="30" rx="4" class="soft"/><text x="408" y="48" text-anchor="middle" class="mono">str</text>
+<rect x="454" y="28" width="68" height="30" rx="4" class="soft"/><text x="488" y="48" text-anchor="middle" class="mono">aw</text>
+<rect x="526" y="28" width="98" height="30" rx="4" class="soft"/><text x="575" y="48" text-anchor="middle" class="mono">berry</text>
+<text x="408" y="76" text-anchor="middle" class="mono sm">id 496</text><text x="488" y="76" text-anchor="middle" class="mono sm">id 675</text><text x="575" y="76" text-anchor="middle" class="mono sm">id 15717</text>
+<text x="495" y="96" text-anchor="middle" class="mu sm">3 tokens · 3 integers · no letters anywhere</text>
+<rect x="14" y="116" width="732" height="66" rx="8" class="ghost"/>
+<text x="30" y="138" class="b">To count the r's the model must already know, from training, which letters hide inside id 496 and id 15717.</text>
+<text x="30" y="156" class="mu sm">It usually does for common pieces and often does not for rare ones. Spelling, rhyming, character counts, reversing strings and arithmetic on long</text>
+<text x="30" y="172" class="mu sm">numbers are all tasks where the tokenizer, not the model, is the thing being tested. Reasoning models get around it by spelling the word out token by token.</text>
+</svg><figcaption>Ten letters in, three ids out. GPT-4's tokenizer splits "strawberry" as str · aw · berry (ids shown as that tokenizer numbers them). The model's only route to the letters is memory of what those ids tended to mean.</figcaption></figure>
+  <p>The pieces are chosen by frequency, not by meaning. Common words are one token, often with their leading space glued on (" the" and "the" are different tokens). Rare words break into familiar fragments. Anything the vocabulary has never seen falls back to raw <a class="term" href="#g-byte">bytes</a>, one token each, so nothing is ever untokenizable, just expensive. Try it: the box below holds a tiny real tokenizer, trained from scratch in your browser on the three kilobytes of text in this page's script, so it behaves like a big one at one-thousandth the scale.</p>
+  <div class="inst">
+    <div class="ctl"><input type="text" class="textin" id="t1-in" value="Tokenizers split strawberry into pieces; numbers like 1234567 and words like antidisestablishmentarianism cost more." aria-label="text to tokenize"></div>
+    <div class="tokwrap" id="t1-toks"></div>
+    <div class="read" id="t1-read"></div>
+    <p class="hint">Each box is one token; a dashed box is a raw byte fallback the toy vocabulary had no merge for. Spaces ride along as "␣" at the front of a word, exactly as in GPT-style tokenizers. Real vocabularies are 100k–260k entries trained on terabytes, so real splits are coarser than these, but the mechanism is identical. Type something in another language, or paste some code.</p>
+  </div>
+  <p>Two habits worth building now. First, think in tokens whenever you think about cost or length: a context window, a price, a speed are all per token. Second, when a model fails at something that looks trivially easy, ask whether the failure is in the model or in the pieces it was handed.</p>
+</section>
+
+<section class="ch" id="c2">
+  <p class="chn">02 · BUILDING A VOCABULARY</p>
+  <h2>Glue the most common pair, repeat fifty thousand times</h2>
+  <p>Nobody writes the vocabulary by hand. <a class="term" href="#g-bpe">Byte-pair encoding</a> starts with the 256 possible bytes as its only tokens, runs over a huge pile of text, and asks one question: which two neighbouring tokens occur together most often? It glues that pair into a new token, replaces every occurrence, and asks again. Each answer is a <a class="term" href="#g-merge">merge</a>, and the merges are numbered.</p>
+<figure class="fig"><svg viewBox="0 0 760 236" role="img" aria-label="BPE on a tiny corpus of the words low, lower, lowest, newer and wider. Step one counts neighbouring byte pairs and glues the most frequent, l o, into lo. Step two glues lo w into low. Step three glues e r into er. Each step adds one token to the vocabulary and shortens the corpus.">
+<defs><marker id="m2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<text x="14" y="18" class="b">corpus</text><text x="80" y="18" class="mono">low ×5 · lower ×2 · lowest ×2 · newer ×6 · wider ×3</text>
+<text x="14" y="52" class="mono sm mu">start</text>
+<text x="80" y="52" class="mono">l·o·w   l·o·w·e·r   l·o·w·e·s·t   n·e·w·e·r   w·i·d·e·r</text>
+<text x="560" y="52" class="mono sm">vocab 256 · 72 tokens</text>
+<line x1="380" y1="60" x2="380" y2="76" class="ln" marker-end="url(#m2a)"/>
+<text x="396" y="72" class="sm mu">most frequent pair: e+r (11) → merge 1 = "er"</text>
+<text x="14" y="98" class="mono sm mu">merge 1</text>
+<text x="80" y="98" class="mono">l·o·w   l·o·w·<tspan class="b" style="fill:var(--s1)">er</tspan>   l·o·w·e·s·t   n·e·w·<tspan class="b" style="fill:var(--s1)">er</tspan>   w·i·d·<tspan class="b" style="fill:var(--s1)">er</tspan></text>
+<text x="560" y="98" class="mono sm">vocab 257 · 61 tokens</text>
+<line x1="380" y1="106" x2="380" y2="122" class="ln" marker-end="url(#m2a)"/>
+<text x="396" y="118" class="sm mu">next: l+o (9) → merge 2 = "lo"</text>
+<text x="14" y="144" class="mono sm mu">merge 2</text>
+<text x="80" y="144" class="mono"><tspan class="b" style="fill:var(--s1)">lo</tspan>·w   <tspan class="b" style="fill:var(--s1)">lo</tspan>·w·er   <tspan class="b" style="fill:var(--s1)">lo</tspan>·w·e·s·t   n·e·w·er   w·i·d·er</text>
+<text x="560" y="144" class="mono sm">vocab 258 · 52 tokens</text>
+<line x1="380" y1="152" x2="380" y2="168" class="ln" marker-end="url(#m2a)"/>
+<text x="396" y="164" class="sm mu">next: lo+w (9) → merge 3 = "low"</text>
+<text x="14" y="190" class="mono sm mu">merge 3</text>
+<text x="80" y="190" class="mono"><tspan class="b" style="fill:var(--s1)">low</tspan>   <tspan class="b" style="fill:var(--s1)">low</tspan>·er   <tspan class="b" style="fill:var(--s1)">low</tspan>·e·s·t   n·e·w·er   w·i·d·er</text>
+<text x="560" y="190" class="mono sm">vocab 259 · 43 tokens</text>
+<text x="14" y="224" class="mu sm">Each merge adds one vocabulary entry and removes every occurrence of the pair. Stop when the vocabulary reaches the size you chose: 50k, 100k, 256k.</text>
+</svg><figcaption>Three merges on a toy corpus. "er" wins first because it appears in four of the five words. The merge list (er, lo, low, …) is the entire tokenizer: to tokenize new text you replay it in order.</figcaption></figure>
+  <p>Stop after 50,000 merges and you have GPT-2's vocabulary; after 100,000, something like GPT-4's. The numbered merge list is the whole tokenizer. New text is tokenized by replaying the merges in order inside each chunk, so the same text always yields the same tokens. Drag the slider to replay the training that happened when this page loaded.</p>
+  <div class="inst">
+    <div class="ctl"><label>merges learned <input type="range" id="t2-k" min="0" max="400" value="0"><span class="v" id="t2-k-v">0</span></label><button class="btn" id="t2-play">▶ train</button></div>
+    <div class="tokwrap" id="t2-toks"></div>
+    <div class="read" id="t2-read"></div>
+    <div class="kvrow" id="t2-last"></div>
+    <p class="hint">The sample sentence is re-tokenized with only the first <i>k</i> merges. Watch the byte count stay fixed while the token count falls: compression is the whole point. The merges learned first are the ones you would guess (" the", "ing", "tion"); the last ones are rare and specific. Real tokenizers add one trick before all this, a regular expression that pre-splits text so merges never cross a space and digits group in threes.</p>
+  </div>
+  <p>Three consequences. The vocabulary mirrors its training text: English and code are compressed beautifully, Burmese barely at all. The merge order is frozen forever, so a model's tokenizer is older than the model and cannot learn new words after launch. And vocabulary size is a trade: bigger vocabularies give fewer tokens per sentence and a faster, cheaper model per word, but a larger output layer and rarer, worse-trained entries at the tail.</p>
+</section>
+
+<section class="ch" id="c3">
+  <p class="chn">03 · THE BILL</p>
+  <h2>You are charged per piece, and the pieces are not the same size everywhere</h2>
+  <p>Prices, context windows, rate limits and speeds are all quoted per token, so the real unit cost of your text is tokens per word, the <a class="term" href="#g-fert">fertility</a>. For English prose it is about 1.3. For most other languages it is higher, because the vocabulary spent most of its merges on English and code. The same paragraph can cost twice as much in German, three times in Hindi, and ten times in a script the tokenizer barely saw, in money, in context space and in time.</p>
+<figure class="fig"><svg viewBox="0 0 760 232" role="img" aria-label="The same sentence in five languages drawn as rows of token boxes. English takes 8 tokens, Spanish 12, Russian 17, Hindi 29 and Burmese about 70, so each row is longer, and the cost, context and time for identical meaning scale with it.">
+<text x="14" y="16" class="b">"The meeting is moved to Thursday afternoon." · same meaning, different token count</text>
+<text x="14" y="44" class="mono sm">English</text><text x="100" y="44" class="mono sm mu">8</text>
+<rect x="124" y="34" width="36" height="14" rx="3" class="f1"/><rect x="162" y="34" width="36" height="14" rx="3" class="f1"/><rect x="200" y="34" width="36" height="14" rx="3" class="f1"/><rect x="238" y="34" width="36" height="14" rx="3" class="f1"/><rect x="276" y="34" width="36" height="14" rx="3" class="f1"/><rect x="314" y="34" width="36" height="14" rx="3" class="f1"/><rect x="352" y="34" width="36" height="14" rx="3" class="f1"/><rect x="390" y="34" width="36" height="14" rx="3" class="f1"/>
+<text x="440" y="45" class="mu sm">1.0× · about 4 characters per token</text>
+<text x="14" y="74" class="mono sm">Spanish</text><text x="100" y="74" class="mono sm mu">12</text>
+<g class="f1"><rect x="124" y="64" width="22" height="14" rx="3"/><rect x="148" y="64" width="22" height="14" rx="3"/><rect x="172" y="64" width="22" height="14" rx="3"/><rect x="196" y="64" width="22" height="14" rx="3"/><rect x="220" y="64" width="22" height="14" rx="3"/><rect x="244" y="64" width="22" height="14" rx="3"/><rect x="268" y="64" width="22" height="14" rx="3"/><rect x="292" y="64" width="22" height="14" rx="3"/><rect x="316" y="64" width="22" height="14" rx="3"/><rect x="340" y="64" width="22" height="14" rx="3"/><rect x="364" y="64" width="22" height="14" rx="3"/><rect x="388" y="64" width="22" height="14" rx="3"/></g>
+<text x="440" y="75" class="mu sm">≈1.5×</text>
+<text x="14" y="104" class="mono sm">Russian</text><text x="100" y="104" class="mono sm mu">17</text>
+<g class="f1"><rect x="124" y="94" width="18" height="14" rx="3"/><rect x="144" y="94" width="18" height="14" rx="3"/><rect x="164" y="94" width="18" height="14" rx="3"/><rect x="184" y="94" width="18" height="14" rx="3"/><rect x="204" y="94" width="18" height="14" rx="3"/><rect x="224" y="94" width="18" height="14" rx="3"/><rect x="244" y="94" width="18" height="14" rx="3"/><rect x="264" y="94" width="18" height="14" rx="3"/><rect x="284" y="94" width="18" height="14" rx="3"/><rect x="304" y="94" width="18" height="14" rx="3"/><rect x="324" y="94" width="18" height="14" rx="3"/><rect x="344" y="94" width="18" height="14" rx="3"/><rect x="364" y="94" width="18" height="14" rx="3"/><rect x="384" y="94" width="18" height="14" rx="3"/><rect x="404" y="94" width="18" height="14" rx="3"/><rect x="424" y="94" width="18" height="14" rx="3"/><rect x="444" y="94" width="18" height="14" rx="3"/></g>
+<text x="476" y="105" class="mu sm">≈2× · Cyrillic letters are 2 bytes each</text>
+<text x="14" y="134" class="mono sm">Hindi</text><text x="100" y="134" class="mono sm mu">29</text>
+<g class="f2"><rect x="124" y="124" width="10" height="14" rx="2"/><rect x="136" y="124" width="10" height="14" rx="2"/><rect x="148" y="124" width="10" height="14" rx="2"/><rect x="160" y="124" width="10" height="14" rx="2"/><rect x="172" y="124" width="10" height="14" rx="2"/><rect x="184" y="124" width="10" height="14" rx="2"/><rect x="196" y="124" width="10" height="14" rx="2"/><rect x="208" y="124" width="10" height="14" rx="2"/><rect x="220" y="124" width="10" height="14" rx="2"/><rect x="232" y="124" width="10" height="14" rx="2"/><rect x="244" y="124" width="10" height="14" rx="2"/><rect x="256" y="124" width="10" height="14" rx="2"/><rect x="268" y="124" width="10" height="14" rx="2"/><rect x="280" y="124" width="10" height="14" rx="2"/><rect x="292" y="124" width="10" height="14" rx="2"/><rect x="304" y="124" width="10" height="14" rx="2"/><rect x="316" y="124" width="10" height="14" rx="2"/><rect x="328" y="124" width="10" height="14" rx="2"/><rect x="340" y="124" width="10" height="14" rx="2"/><rect x="352" y="124" width="10" height="14" rx="2"/><rect x="364" y="124" width="10" height="14" rx="2"/><rect x="376" y="124" width="10" height="14" rx="2"/><rect x="388" y="124" width="10" height="14" rx="2"/><rect x="400" y="124" width="10" height="14" rx="2"/><rect x="412" y="124" width="10" height="14" rx="2"/><rect x="424" y="124" width="10" height="14" rx="2"/><rect x="436" y="124" width="10" height="14" rx="2"/><rect x="448" y="124" width="10" height="14" rx="2"/><rect x="460" y="124" width="10" height="14" rx="2"/></g>
+<text x="484" y="135" class="mu sm">≈3.5× · many tokens are 1–2 bytes</text>
+<text x="14" y="164" class="mono sm">Burmese</text><text x="100" y="164" class="mono sm mu">~70</text>
+<rect x="124" y="154" width="620" height="14" rx="3" class="f2"/>
+<line x1="134" y1="154" x2="134" y2="168" class="ln" style="stroke:var(--surface)"/><line x1="144" y1="154" x2="144" y2="168" class="ln" style="stroke:var(--surface)"/><line x1="154" y1="154" x2="154" y2="168" class="ln" style="stroke:var(--surface)"/><line x1="164" y1="154" x2="164" y2="168" class="ln" style="stroke:var(--surface)"/><line x1="174" y1="154" x2="174" y2="168" class="ln" style="stroke:var(--surface)"/><line x1="184" y1="154" x2="184" y2="168" class="ln" style="stroke:var(--surface)"/>
+<text x="434" y="165" text-anchor="middle" class="sm" style="fill:var(--accent-ink)">mostly single-byte fallbacks · ≈9× and off the chart</text>
+<text x="14" y="198" class="mu sm">Ratios are order-of-magnitude figures for GPT-4-era (100k) tokenizers, from Petrov et al. 2023 and tokenizer comparisons. 200k+ vocabularies roughly halve</text>
+<text x="14" y="214" class="mu sm">the premium for most scripts but do not remove it. Orange rows are where single bytes dominate: the chapter 01 fallback floor, paid for at full price per token.</text>
+</svg><figcaption>Identical meaning, five bills. Each box is one token the provider charges for, the model must read, and the context window must hold. Fertility is the exchange rate between the words you think in and the tokens you pay in.</figcaption></figure>
+<div class="tiles"><div class="tile a"><div class="n">1.3</div><div class="l">tokens per word, English prose</div></div><div class="tile"><div class="n">2–3×</div><div class="l">premium for most non-English languages</div></div><div class="tile"><div class="n">1–3</div><div class="l">digits per token in GPT-4 and Llama 3</div></div><div class="tile"><div class="n">~1.5×</div><div class="l">JSON vs the same facts as prose</div></div></div>
+  <p>Two other places the bill surprises people. Numbers: most tokenizers chunk digits in groups of up to three, so 1234567 is three tokens and 1,234,567 is five, and arithmetic across chunk boundaries is a known weak spot. And structure: JSON, XML and Markdown tables spend tokens on quotes, braces, indentation and repeated keys, so a structured answer costs about half again what its facts would cost as prose. Estimate your own bill below.</p>
+  <div class="inst">
+    <div class="ctl"><label>words <input type="range" id="t3-w" min="50" max="5000" step="50" value="800"><span class="v" id="t3-w-v">800</span></label><label>language <select id="t3-lang"><option value="1.3">English</option><option value="1.9">Spanish / French</option><option value="2.1">German</option><option value="2.6">Russian</option><option value="2.8">Japanese</option><option value="4.5">Hindi</option><option value="12">Burmese</option></select></label><label>format <select id="t3-fmt"><option value="1">prose</option><option value="1.5">JSON</option><option value="1.3">Markdown table</option><option value="1.15">code comments</option></select></label><label>$ per million tokens <input type="number" id="t3-price" value="3.00" min="0" step="0.25"></label></div>
+    <div class="bars" id="t3-bars"></div>
+    <div class="read" id="t3-read"></div>
+    <p class="hint">Multipliers are approximate, for 100k-class vocabularies. The bar for English is the same text at fertility 1.3; the gap is the token premium, paid on every request and again in the context window. For a long-running agent the premium compounds, because the same system prompt and history are re-sent every turn.</p>
+  </div>
+</section>
+
+<section class="ch" id="c4">
+  <p class="chn">04 · NUMBERS IN, NUMBERS OUT</p>
+  <h2>A row in, a score for every row out</h2>
+  <p>Inside the model a token id does one thing: it selects a row of the <a class="term" href="#g-embed">embedding</a> table, a vector of a few thousand learned numbers. That vector, and the vectors of every earlier token, are what the layers of attention and feed-forward work on (the subject of the first guide in this series). At the end, the position you are predicting from has one final vector. The <a class="term" href="#g-head">LM head</a> multiplies that vector against every row of a second table, one row per vocabulary entry, and the result is one <a class="term" href="#g-logit">logit</a> per token: 100,000 raw scores.</p>
+<figure class="fig"><svg viewBox="0 0 760 250" role="img" aria-label="Left: a token id selects one row of the embedding table, a vector of d numbers. Middle: the transformer layers mix it with earlier tokens into one final vector. Right: that vector is dotted against every row of the LM head table, producing a column of V logits, with a few tall entries and a long tail.">
+<defs><marker id="m4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<text x="14" y="18" class="b">in: one id selects one row</text>
+<text x="14" y="40" class="mono">id 7731 (" sat")</text>
+<rect x="14" y="52" width="150" height="150" rx="6" class="box"/>
+<text x="89" y="68" text-anchor="middle" class="mu sm">embedding table · V rows × d</text>
+<line x1="24" y1="80" x2="154" y2="80" class="ln" style="stroke:var(--line)"/><line x1="24" y1="92" x2="154" y2="92" class="ln" style="stroke:var(--line)"/><line x1="24" y1="104" x2="154" y2="104" class="ln" style="stroke:var(--line)"/><line x1="24" y1="116" x2="154" y2="116" class="ln" style="stroke:var(--line)"/>
+<rect x="24" y="124" width="130" height="10" rx="2" class="f1"/>
+<line x1="24" y1="146" x2="154" y2="146" class="ln" style="stroke:var(--line)"/><line x1="24" y1="158" x2="154" y2="158" class="ln" style="stroke:var(--line)"/><line x1="24" y1="170" x2="154" y2="170" class="ln" style="stroke:var(--line)"/><line x1="24" y1="182" x2="154" y2="182" class="ln" style="stroke:var(--line)"/>
+<text x="89" y="196" text-anchor="middle" class="mu sm">⋮ 100k rows</text>
+<text x="195" y="122" text-anchor="middle" class="mono sm">row 7731</text>
+<line x1="164" y1="129" x2="226" y2="129" class="ln" marker-end="url(#m4a)"/>
+<rect x="228" y="52" width="150" height="150" rx="8" class="soft"/>
+<text x="303" y="110" text-anchor="middle" class="b">transformer</text>
+<text x="303" y="128" text-anchor="middle" class="mu sm">mixes this row with</text><text x="303" y="142" text-anchor="middle" class="mu sm">every earlier token's</text>
+<text x="303" y="162" text-anchor="middle" class="mu sm">→ one final vector, d numbers</text>
+<line x1="378" y1="129" x2="440" y2="129" class="ln" marker-end="url(#m4a)"/>
+<rect x="384" y="118" width="50" height="10" rx="2" class="f1"/>
+<text x="409" y="112" text-anchor="middle" class="mono sm">h</text>
+<text x="442" y="18" class="b">out: dot h against every row</text>
+<rect x="442" y="52" width="150" height="150" rx="6" class="box"/>
+<text x="517" y="68" text-anchor="middle" class="mu sm">LM head · V rows × d</text>
+<rect x="452" y="78" width="130" height="8" rx="2" class="fl"/><rect x="452" y="90" width="130" height="8" rx="2" class="fl"/><rect x="452" y="102" width="130" height="8" rx="2" class="fl"/><rect x="452" y="114" width="130" height="8" rx="2" class="fl"/><rect x="452" y="126" width="130" height="8" rx="2" class="fl"/><rect x="452" y="138" width="130" height="8" rx="2" class="fl"/><rect x="452" y="150" width="130" height="8" rx="2" class="fl"/><rect x="452" y="162" width="130" height="8" rx="2" class="fl"/><rect x="452" y="174" width="130" height="8" rx="2" class="fl"/>
+<text x="517" y="196" text-anchor="middle" class="mu sm">⋮ same 100k rows</text>
+<text x="608" y="82" class="mono sm">h·row₁ = 2.1</text>
+<text x="608" y="94" class="mono sm">h·row₂ = −3.4</text>
+<text x="608" y="106" class="mono sm b" style="fill:var(--s1)">h·row₃ = 9.7</text>
+<text x="608" y="118" class="mono sm">h·row₄ = 0.2</text>
+<text x="608" y="130" class="mono sm">h·row₅ = −1.1</text>
+<text x="608" y="142" class="mono sm b" style="fill:var(--s1)">h·row₆ = 7.9</text>
+<text x="608" y="154" class="mono sm">h·row₇ = −6.0</text>
+<text x="608" y="166" class="mono sm">h·row₈ = 1.4</text>
+<text x="608" y="178" class="mono sm">h·row₉ = −2.2</text>
+<text x="608" y="196" class="mu sm">⋮ V logits</text>
+<text x="14" y="228" class="mu sm">Both tables are V × d: at V = 128k, d = 8,192 that is about a billion parameters each. Small models share one table for both; large ones keep two.</text>
+<text x="14" y="244" class="mu sm">Nothing here is a probability yet. A logit of 9.7 next to one of 7.9 only means "about e¹·⁸ ≈ 6 times more likely", and that is chapter 05's job to compute.</text>
+</svg><figcaption>Two table lookups bracket the whole network. Going in, an id picks a row. Coming out, the final vector is compared against every row, and each comparison is one logit. A vocabulary of 128k means 128k dot products per token, every token.</figcaption></figure>
+  <p>Hold on to the shape of that output. It is not a word; it is a column of 100,000 numbers, nearly all of them deeply negative, with a handful of tall spikes near the top. Drag the zoom to see how the column looks at full width and how it looks when you sort it and look only at the top.</p>
+  <div class="inst">
+    <div class="ctl"><label>show the top <input type="range" id="t4-n" min="0" max="100" value="0"><span class="v" id="t4-n-v">all 100,277</span></label></div>
+    <canvas id="t4-cv" style="aspect-ratio:16/5;max-height:220px"></canvas>
+    <div class="read" id="t4-read"></div>
+    <p class="hint">A synthetic logit column with the statistics of a real one: a few tall entries for the plausible continuations, a long flat tail of everything else. Sorted and zoomed to the top 20, the picture becomes the bar chart every other chapter uses. The tail is not noise to be ignored: at high temperature it is where the odd tokens come from.</p>
+  </div>
+</section>
+
+<section class="ch" id="c5">
+  <p class="chn">05 · TEMPERATURE</p>
+  <h2>Scores become odds, and one number sets how sharp</h2>
+  <p>Logits are not probabilities. <a class="term" href="#g-softmax">Softmax</a> makes them so: raise <i>e</i> to each logit, then divide every result by their sum, so they add to one. Because of the exponential, only the gaps between logits matter: a token 2.3 logits below the leader gets a tenth of its probability, 4.6 below gets a hundredth. The <a class="term" href="#g-dist">distribution</a> this produces is the model's real output, before anyone picks anything.</p>
+  <div class="eq"><i>p</i><sub><i>i</i></sub> <span class="op">=</span> <i>e</i><sup><i>z</i><sub><i>i</i></sub> / <i>T</i></sup> <span class="op">÷</span> Σ<sub><i>j</i></sub> <i>e</i><sup><i>z</i><sub><i>j</i></sub> / <i>T</i></sup></div>
+  <p><a class="term" href="#g-temp">Temperature</a> is the <i>T</i> in that formula: every logit is divided by it first. Divide by something small and the gaps widen, so the favourite takes nearly everything. Divide by something large and the gaps shrink toward zero, so every token drifts toward an equal share. At <i>T</i> = 0 the division blows up and, by convention, the top token is simply taken: <a class="term" href="#g-greedy">greedy decoding</a>.</p>
+<figure class="fig"><svg viewBox="0 0 760 232" role="img" aria-label="The same six logits shown at three temperatures. At T 0.3 the top token holds almost all probability. At T 1 the model's own distribution appears, with the leader at about 60 percent. At T 1.6 the bars flatten so the second and third tokens have real weight.">
+<text x="14" y="18" class="b">same six logits · 9.7, 7.9, 7.1, 6.4, 5.8, 4.0 · three temperatures</text>
+<text x="88" y="46" text-anchor="middle" class="mono">T = 0.3</text>
+<rect x="30" y="56" width="18" height="120" rx="3" class="f1"/><rect x="52" y="175.7" width="18" height="0.3" rx="0" class="f1"/><rect x="74" y="175.9" width="18" height="0.1" class="f1"/>
+<rect x="96" y="176" width="18" height="0.1" class="fm"/><rect x="118" y="176" width="18" height="0.1" class="fm"/><rect x="140" y="176" width="18" height="0.1" class="fm"/>
+<text x="39" y="52" text-anchor="middle" class="mono sm">1.00</text>
+<line x1="24" y1="176" x2="164" y2="176" class="ln"/>
+<text x="88" y="194" text-anchor="middle" class="mu sm">one face · entropy ≈ 0</text>
+<text x="88" y="210" text-anchor="middle" class="mu sm">"always Paris"</text>
+<text x="330" y="46" text-anchor="middle" class="mono">T = 1.0</text>
+<rect x="272" y="104" width="18" height="72" rx="3" class="f1"/><rect x="294" y="164" width="18" height="12" rx="2" class="f1"/><rect x="316" y="170.6" width="18" height="5.4" rx="1" class="f1"/><rect x="338" y="173.3" width="18" height="2.7" class="f1"/><rect x="360" y="174.5" width="18" height="1.5" class="f1"/><rect x="382" y="175.7" width="18" height="0.3" class="fm"/>
+<text x="281" y="99" text-anchor="middle" class="mono sm">.60</text><text x="303" y="160" text-anchor="middle" class="mono sm">.10</text><text x="325" y="166" text-anchor="middle" class="mono sm">.05</text>
+<line x1="266" y1="176" x2="406" y2="176" class="ln"/>
+<text x="330" y="194" text-anchor="middle" class="mu sm">the model's own belief</text>
+<text x="330" y="210" text-anchor="middle" class="mu sm">entropy ≈ 1.1 nats · ~3 effective faces</text>
+<text x="572" y="46" text-anchor="middle" class="mono">T = 1.6</text>
+<rect x="514" y="130" width="18" height="46" rx="3" class="f1"/><rect x="536" y="160" width="18" height="16" rx="2" class="f1"/><rect x="558" y="166" width="18" height="10" rx="2" class="f1"/><rect x="580" y="169.5" width="18" height="6.5" rx="1" class="f1"/><rect x="602" y="171.3" width="18" height="4.7" class="f1"/><rect x="624" y="174" width="18" height="2" class="f1"/>
+<text x="523" y="125" text-anchor="middle" class="mono sm">.38</text><text x="545" y="156" text-anchor="middle" class="mono sm">.13</text><text x="567" y="162" text-anchor="middle" class="mono sm">.08</text>
+<line x1="508" y1="176" x2="648" y2="176" class="ln"/>
+<text x="572" y="194" text-anchor="middle" class="mu sm">gaps shrink · tail rises</text>
+<text x="572" y="210" text-anchor="middle" class="mu sm">entropy ≈ 1.6 nats · ~5 effective faces</text>
+<text x="380" y="228" text-anchor="middle" class="mu sm">The ranking never changes with temperature. Only how much the ranking matters does.</text>
+</svg><figcaption>Temperature reshapes the same scores. It cannot promote a token the model ranked low; it can only decide how often the die lands off the favourite. The six bars never swap places.</figcaption></figure>
+  <div class="inst">
+    <div class="ctl"><span class="mono">The capital of France is</span><label>temperature <input type="range" id="t5-T" min="0" max="250" value="100"><span class="v" id="t5-T-v">1.0</span></label></div>
+    <div class="dist" id="t5-dist"></div>
+    <div class="read" id="t5-read"></div>
+    <p class="hint">Twelve candidates and their logits, held fixed; only <i>T</i> moves. Watch the entropy readout: it is the honest measure of how much the pick will vary. "Effective choices" is <i>e</i> to the entropy, the number of equally likely faces this die behaves like. Most chat products run between 0.7 and 1.0; code and extraction run at 0 to 0.3.</p>
+  </div>
+  <p>Temperature is the most misunderstood knob in the API. It does not make the model smarter or more creative; the scores are fixed before it acts. It decides how often the output departs from the single most likely path. Low is safe and repetitive; high is varied and, past about 1.2 with no other filter, increasingly nonsensical, because the hundred-thousand-token tail starts to win rolls.</p>
+</section>
+
+<section class="ch" id="c6">
+  <p class="chn">06 · CUTTING THE TAIL</p>
+  <h2>Three ways to stop the die landing on nonsense</h2>
+  <p>Softmax never gives any token exactly zero. With 100,000 entries, even if each tail token has one chance in a million, the tail as a whole can hold a few percent of the mass, and at temperature 1 you will roll into it every few dozen tokens. One nonsense token derails everything after it. So before the roll, almost every system cuts the tail off and renormalizes what is left. Three rules are in use.</p>
+<figure class="fig"><svg viewBox="0 0 760 262" role="img" aria-label="Two sorted distributions. Left, a confident step: one tall bar then a steep drop. Right, a torn step: many medium bars. Top-k with k 5 keeps five bars in both cases, too many on the left and too few on the right. Top-p 0.9 keeps one bar on the left and twelve on the right. Min-p 0.1 keeps one on the left and nine on the right.">
+<defs><marker id="m6a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<text x="14" y="18" class="b">a confident step</text><text x="14" y="34" class="mu sm">"The capital of France is" → one obvious answer</text>
+<g class="f1"><rect x="14" y="56" width="12" height="110" rx="2"/><rect x="29" y="150" width="12" height="16" rx="1"/><rect x="44" y="158" width="12" height="8" rx="1"/><rect x="59" y="161" width="12" height="5"/><rect x="74" y="163" width="12" height="3"/></g>
+<g class="fm"><rect x="89" y="164" width="12" height="2"/><rect x="104" y="164.5" width="12" height="1.5"/><rect x="119" y="165" width="12" height="1"/><rect x="134" y="165" width="12" height="1"/><rect x="149" y="165" width="12" height="1"/><rect x="164" y="165.3" width="12" height="0.7"/><rect x="179" y="165.3" width="12" height="0.7"/><rect x="194" y="165.5" width="12" height="0.5"/><rect x="209" y="165.5" width="12" height="0.5"/><rect x="224" y="165.5" width="12" height="0.5"/><rect x="239" y="165.5" width="12" height="0.5"/><rect x="254" y="165.5" width="12" height="0.5"/><rect x="269" y="165.5" width="12" height="0.5"/><rect x="284" y="165.5" width="12" height="0.5"/><rect x="299" y="165.5" width="12" height="0.5"/><rect x="314" y="165.5" width="12" height="0.5"/><rect x="329" y="165.5" width="12" height="0.5"/></g>
+<line x1="14" y1="166" x2="346" y2="166" class="ln"/>
+<text x="20" y="52" class="mono sm">.78</text>
+<line x1="88" y1="44" x2="88" y2="168" class="ln l2" stroke-dasharray="4 3"/><text x="92" y="52" class="mono sm" style="fill:var(--s2)">top-k 5 keeps 5</text>
+<line x1="28" y1="88" x2="28" y2="168" class="ln l3" stroke-dasharray="4 3"/><line x1="28" y1="92" x2="92" y2="92" class="ln l3" stroke-dasharray="2 3"/><text x="96" y="96" class="mono sm" style="fill:var(--s3)">top-p .9 keeps 1</text>
+<line x1="28" y1="120" x2="28" y2="168" class="ln l4" stroke-dasharray="2 3"/><line x1="28" y1="124" x2="92" y2="124" class="ln l4" stroke-dasharray="2 3"/><text x="96" y="128" class="mono sm" style="fill:var(--s4)">min-p .1 keeps 1</text>
+<text x="14" y="186" class="mu sm">k = 5 lets four weak tokens in: 5% of rolls go wrong.</text>
+<text x="14" y="200" class="mu sm">p and min-p see the shape and keep only the obvious answer.</text>
+<text x="400" y="18" class="b">a torn step</text><text x="400" y="34" class="mu sm">"My favourite colour is" → many fair answers</text>
+<g class="f1"><rect x="400" y="130" width="12" height="36" rx="2"/><rect x="415" y="134" width="12" height="32" rx="2"/><rect x="430" y="137" width="12" height="29" rx="2"/><rect x="445" y="140" width="12" height="26" rx="2"/><rect x="460" y="142" width="12" height="24" rx="2"/><rect x="475" y="144" width="12" height="22" rx="1"/><rect x="490" y="146" width="12" height="20" rx="1"/><rect x="505" y="148" width="12" height="18" rx="1"/><rect x="520" y="150" width="12" height="16" rx="1"/><rect x="535" y="154" width="12" height="12" rx="1"/><rect x="550" y="157" width="12" height="9" rx="1"/><rect x="565" y="159" width="12" height="7"/></g>
+<g class="fm"><rect x="580" y="161" width="12" height="5"/><rect x="595" y="162.5" width="12" height="3.5"/><rect x="610" y="163.5" width="12" height="2.5"/><rect x="625" y="164" width="12" height="2"/><rect x="640" y="164.5" width="12" height="1.5"/><rect x="655" y="165" width="12" height="1"/><rect x="670" y="165" width="12" height="1"/><rect x="685" y="165.3" width="12" height="0.7"/><rect x="700" y="165.3" width="12" height="0.7"/><rect x="715" y="165.5" width="12" height="0.5"/><rect x="730" y="165.5" width="12" height="0.5"/></g>
+<line x1="400" y1="166" x2="746" y2="166" class="ln"/>
+<text x="406" y="126" class="mono sm">.12</text>
+<line x1="474" y1="44" x2="474" y2="168" class="ln l2" stroke-dasharray="4 3"/><text x="478" y="52" class="mono sm" style="fill:var(--s2)">top-k 5 keeps 5</text>
+<line x1="579" y1="76" x2="579" y2="168" class="ln l3" stroke-dasharray="4 3"/><text x="583" y="84" class="mono sm" style="fill:var(--s3)">top-p .9 keeps 12</text>
+<line x1="534" y1="108" x2="534" y2="168" class="ln l4" stroke-dasharray="2 3"/><line x1="534" y1="112" x2="583" y2="112" class="ln l4" stroke-dasharray="2 3"/><text x="587" y="116" class="mono sm" style="fill:var(--s4)">min-p .1 keeps 9</text>
+<text x="400" y="186" class="mu sm">k = 5 throws away seven perfectly good colours.</text>
+<text x="400" y="200" class="mu sm">p and min-p widen with the model's uncertainty.</text>
+<rect x="14" y="216" width="732" height="38" rx="6" class="ghost"/>
+<text x="380" y="232" text-anchor="middle" class="sm">The grey tail is where derailments come from. A fixed k ignores the shape of the distribution; top-p and min-p read it.</text>
+<text x="380" y="247" text-anchor="middle" class="mu sm">Min-p's threshold is relative to the top bar, so it survives high temperature better than top-p, whose 90% cumulative sweep lets the flattened tail in.</text>
+</svg><figcaption>Same three rules, two very different steps. Top-k keeps a fixed count whatever the shape. Top-p keeps enough bars to reach 90% of the mass. Min-p keeps every bar at least a tenth as tall as the first. Only the last two adapt.</figcaption></figure>
+  <p><a class="term" href="#g-topk">Top-k</a> keeps the k most likely and drops the rest; simple, but blind to how confident the model is. <a class="term" href="#g-topp">Top-p</a>, also called nucleus sampling, keeps the smallest set of top tokens whose probabilities add up to p, so it keeps one token when the model is sure and dozens when it is torn. <a class="term" href="#g-minp">Min-p</a> keeps every token whose probability is at least some fraction of the leader's, which does the same adapting but holds up better at high temperature. Set them, then roll.</p>
+  <div class="inst">
+    <div class="ctl"><label>temperature <input type="range" id="t6-T" min="10" max="250" value="120"><span class="v" id="t6-T-v">1.2</span></label><label>top-k <input type="range" id="t6-k" min="0" max="12" value="0"><span class="v" id="t6-k-v">off</span></label><label>top-p <input type="range" id="t6-p" min="10" max="100" value="100"><span class="v" id="t6-p-v">off</span></label><label>min-p <input type="range" id="t6-m" min="0" max="50" value="0"><span class="v" id="t6-m-v">off</span></label><button class="btn" id="t6-roll">roll 200×</button><button class="btn" id="t6-clear">clear</button></div>
+    <div class="dist" id="t6-dist"></div>
+    <div class="read" id="t6-read"></div>
+    <p class="hint">Struck-through rows are cut before the roll; their mass is handed to the survivors (that is the renormalizing). Green is what 200 rolls produced. Start at temperature 1.2 with everything off and notice how often " Lyon" and " not" land. Then switch on min-p 0.1 and roll again. Providers apply these in a fixed order, usually temperature, then top-k, then top-p, then min-p, and most expose only two or three of them.</p>
+  </div>
+  <p>Practical defaults have converged. For chat, temperature 0.7–1.0 with top-p 0.9–0.95, or min-p 0.05–0.1. For anything a machine will parse, temperature 0 and no sampling knobs at all. Combining top-k 40 and top-p 0.95 is a common belt-and-braces setting; the top-k rarely bites. And note what none of these can do: they filter the model's ranking, they never improve it.</p>
+</section>
+
+<section class="ch" id="c7">
+  <p class="chn">07 · THE WOBBLE</p>
+  <h2>Why "temperature 0" is not quite deterministic</h2>
+  <p>Greedy decoding should be a pure function: same prompt, same model, same top token every time. In practice the same request to the same API at temperature 0 occasionally returns different text. The reason is not randomness in the sampler. It is in the <a class="term" href="#g-logit">logits</a>.</p>
+<figure class="fig"><svg viewBox="0 0 760 236" role="img" aria-label="Two near-tied logits for tokens A and B, 4.213 and 4.211. Floating-point sums on the GPU differ in the last digits depending on how many other requests were batched with yours, so on one run A edges ahead and on another B does. The two continuations then diverge into different sentences.">
+<defs><marker id="m7a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<text x="14" y="18" class="b">step 7 of your answer · two tokens almost tied</text>
+<rect x="14" y="30" width="200" height="54" rx="8" class="box"/>
+<text x="24" y="50" class="mono">" which"   logit 4.213</text>
+<text x="24" y="70" class="mono">" that"    logit 4.211</text>
+<text x="226" y="50" class="mu sm">a gap of 0.002, well inside the</text><text x="226" y="64" class="mu sm">noise of a bf16 sum of 8,192 terms</text>
+<text x="14" y="112" class="b">same request, different server moment</text>
+<rect x="14" y="122" width="300" height="46" rx="6" class="soft"/>
+<text x="24" y="140" class="sm b">run 1 · batched with 3 other users</text>
+<text x="24" y="158" class="mono sm">reduction order ① → " which" 4.2131 wins</text>
+<rect x="14" y="178" width="300" height="46" rx="6" class="soft"/>
+<text x="24" y="196" class="sm b">run 2 · batched with 57 other users</text>
+<text x="24" y="214" class="mono sm">reduction order ② → " that" 4.2118 wins</text>
+<line x1="314" y1="145" x2="354" y2="145" class="ln" marker-end="url(#m7a)"/>
+<line x1="314" y1="201" x2="354" y2="201" class="ln" marker-end="url(#m7a)"/>
+<text x="360" y="149" class="mono sm">… the clause <tspan class="b" style="fill:var(--s1)">which</tspan> follows refers to the</text>
+<text x="360" y="163" class="mono sm">earlier definition, so the test passes.</text>
+<text x="360" y="205" class="mono sm">… the clause <tspan class="b" style="fill:var(--s2)">that</tspan> we added earlier has</text>
+<text x="360" y="219" class="mono sm">a different scope, and the test fails.</text>
+<text x="360" y="112" class="b">one flipped token, two different answers</text>
+<text x="360" y="128" class="mu sm">Every later token conditions on the flipped one, so the paths never rejoin.</text>
+<path d="M300 100 h446" class="ln" style="stroke:var(--line)"/>
+<text x="14" y="98" class="mu sm">greedy picks the max, so the flip needs no dice at all</text>
+</svg><figcaption>Greedy is deterministic; the scores it chooses between are not. GPU kernels add floating-point numbers in an order that depends on the batch they are part of, and the last-digit difference is enough to flip a near-tie. After that the two answers are conditioned on different histories.</figcaption></figure>
+  <p>A GPU computes each logit as a sum of thousands of products in reduced precision, and the order it adds them in depends on how the server batched your request with other people's. Different order, different rounding, different last digits. Almost always harmless, but when two tokens are within a hair of each other the winner flips, and every token after that is conditioned on a different history. Mixture-of-experts routing adds the same effect at every layer. The fix, batch-invariant kernels that add in a fixed order, exists since 2025 and costs some throughput, so most providers do not run it. Add real sampling on top and you get the second kind of variation, the one that is supposed to be there. The box below generates from a tiny model (a trigram model over the toy tokens from chapter 01, so the text is nonsense, but the sampling arithmetic is the real one) three times with the same settings.</p>
+  <div class="inst">
+    <div class="ctl"><label>start <select id="t7-start"><option>A token is</option><option>The model</option><option>Temperature</option><option>Every merge</option></select></label><label>temperature <input type="range" id="t7-T" min="0" max="200" value="80"><span class="v" id="t7-T-v">0.8</span></label><label>min-p <input type="range" id="t7-m" min="0" max="50" value="5"><span class="v" id="t7-m-v">0.05</span></label><label>repetition penalty <input type="range" id="t7-r" min="100" max="200" value="100"><span class="v" id="t7-r-v">off</span></label><button class="btn" id="t7-go">▶ generate ×3</button></div>
+    <div class="outs" id="t7-outs"></div>
+    <div class="read" id="t7-read"></div>
+    <p class="hint">Orange marks the first token where a run departs from run 1; everything after it is a different sentence. At temperature 0 all three are identical (this page has no GPU batching to wobble). Push temperature to 1.6 with min-p off and watch raw byte tokens appear: the tail winning rolls. Push repetition penalty up at low temperature and watch the loops break.</p>
+  </div>
+  <p>What to do about it. If you need reproducibility, fix temperature at 0 and a seed, and still design for the occasional flip: compare outputs semantically, not byte for byte. If you are evaluating a model, run each prompt several times and report the spread; a single run at temperature 0 is one sample, not the truth. And if two runs disagree at a near-tie, that is useful information: the model was genuinely unsure there.</p>
+</section>
+
+<section class="ch" id="c8">
+  <p class="chn">08 · THE OTHER KNOBS</p>
+  <h2>Everything else in the request, and where it acts</h2>
+  <p>The sampling parameters in an API request all act on the same column of logits, in a fixed order, between the LM head and the die. Knowing the order tells you what each can and cannot do. Penalties act first, on raw logits, using the text so far. Then logit bias. Then temperature, then the truncation rules of chapter 06, then the roll. Stop sequences and the token limit watch the output after the roll.</p>
+<figure class="fig"><svg viewBox="0 0 760 212" role="img" aria-label="A left-to-right pipeline from the LM head's logits through penalties, logit bias, temperature, top-k, top-p and min-p, to the sample, then to stop checks. Each stage shows which request parameter controls it and what it reads: penalties read the output so far, the stop check reads the text just produced.">
+<defs><marker id="m8a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="m8c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f2"/></marker></defs>
+<rect x="14" y="40" width="80" height="54" rx="8" class="box"/><text x="54" y="62" text-anchor="middle" class="b">logits</text><text x="54" y="80" text-anchor="middle" class="mu sm">from LM head</text>
+<line x1="94" y1="67" x2="112" y2="67" class="ln" marker-end="url(#m8a)"/>
+<rect x="114" y="40" width="104" height="54" rx="8" class="soft"/><text x="166" y="62" text-anchor="middle" class="b">penalties</text><text x="166" y="80" text-anchor="middle" class="mono sm">frequency · presence</text>
+<line x1="218" y1="67" x2="236" y2="67" class="ln" marker-end="url(#m8a)"/>
+<rect x="238" y="40" width="86" height="54" rx="8" class="soft"/><text x="281" y="62" text-anchor="middle" class="b">logit bias</text><text x="281" y="80" text-anchor="middle" class="mono sm">±100 per id</text>
+<line x1="324" y1="67" x2="342" y2="67" class="ln" marker-end="url(#m8a)"/>
+<rect x="344" y="40" width="96" height="54" rx="8" class="soft"/><text x="392" y="62" text-anchor="middle" class="b">÷ temperature</text><text x="392" y="80" text-anchor="middle" class="mono sm">then softmax</text>
+<line x1="440" y1="67" x2="458" y2="67" class="ln" marker-end="url(#m8a)"/>
+<rect x="460" y="40" width="110" height="54" rx="8" class="soft"/><text x="515" y="62" text-anchor="middle" class="b">truncate</text><text x="515" y="80" text-anchor="middle" class="mono sm">top_k · top_p · min_p</text>
+<line x1="570" y1="67" x2="588" y2="67" class="ln" marker-end="url(#m8a)"/>
+<rect x="590" y="40" width="70" height="54" rx="8" class="soft"/><text x="625" y="62" text-anchor="middle" class="b">roll</text><text x="625" y="80" text-anchor="middle" class="mono sm">seed</text>
+<line x1="660" y1="67" x2="678" y2="67" class="ln" marker-end="url(#m8a)"/>
+<rect x="680" y="40" width="66" height="54" rx="8" class="box"/><text x="713" y="62" text-anchor="middle" class="b">token</text><text x="713" y="80" text-anchor="middle" class="mu sm">appended</text>
+<rect x="14" y="130" width="300" height="40" rx="6" class="box"/><text x="164" y="147" text-anchor="middle" class="b">the output so far</text><text x="164" y="162" text-anchor="middle" class="mu sm">which tokens have appeared, how often</text>
+<path d="M166 130v-36" class="ln l2" stroke-width="1.5" marker-end="url(#m8c)"/>
+<text x="172" y="118" class="mono sm" style="fill:var(--s2)">reads</text>
+<path d="M713 94v56h-399" class="ln l2" stroke-width="1.5" marker-end="url(#m8c)"/>
+<text x="520" y="144" text-anchor="middle" class="mono sm" style="fill:var(--s2)">appended, then checked</text>
+<rect x="420" y="160" width="326" height="40" rx="6" class="box"/><text x="583" y="177" text-anchor="middle" class="b">stop check</text><text x="583" y="192" text-anchor="middle" class="mono sm">EOS token · stop sequences · max_tokens</text>
+<text x="14" y="22" class="mu sm">Order is fixed by the server. A parameter earlier in the line changes what every later one sees; nothing downstream can resurrect a token that was cut upstream.</text>
+<text x="14" y="200" class="mu sm">Grammar masks (chapter 09) slot into "truncate".</text>
+</svg><figcaption>Every request parameter is a hand on one stage of this line. Penalties and bias move scores; temperature reshapes them; truncation removes candidates; the seed fixes the roll; the stop check ends the loop.</figcaption></figure>
+  <div class="cards" id="knob-cards"></div>
+  <p>A caution on penalties. They were designed for small models that looped. Modern models rarely loop at sensible temperatures, and a frequency penalty on a 2,000-token code file punishes every repeated variable name and bracket. Default them to zero; reach for them only when you see actual repetition, and prefer a small <a class="term" href="#g-pen">presence penalty</a> over a frequency one.</p>
+</section>
+
+<section class="ch" id="c9">
+  <p class="chn">09 · STRUCTURED OUTPUT</p>
+  <h2>Valid JSON every time, because the invalid tokens were never allowed</h2>
+  <p>Asking a model nicely for JSON works most of the time. "Most" is the problem: one stray sentence before the brace, one trailing comma, one unescaped quote, and the parser downstream fails. <a class="term" href="#g-constr">Constrained decoding</a> removes the "most". Before each roll, a grammar compiled from your schema computes which tokens are legal at this exact position, and every other token's probability is set to zero. The die cannot land on an invalid face.</p>
+<figure class="fig"><svg viewBox="0 0 760 232" role="img" aria-label="At the first position the model's raw preferences favour the tokens Sure, Here and a code fence, with the opening brace fourth. The JSON grammar allows only the brace, so a mask zeroes the other three and the brace is chosen with probability one. Later, inside the age field, the grammar allows only digit tokens, so a quote or a word cannot appear.">
+<defs><marker id="m9a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<text x="14" y="18" class="b">position 1 · what the model wants to say</text>
+<text x="14" y="44" class="mono">"Sure"</text><rect x="110" y="34" width="150" height="12" rx="2" class="fm"/><text x="266" y="44" class="mono sm mu">.42</text>
+<text x="14" y="64" class="mono">"Here"</text><rect x="110" y="54" width="86" height="12" rx="2" class="fm"/><text x="202" y="64" class="mono sm mu">.24</text>
+<text x="14" y="84" class="mono">"```"</text><rect x="110" y="74" width="68" height="12" rx="2" class="fm"/><text x="184" y="84" class="mono sm mu">.19</text>
+<text x="14" y="104" class="mono">"{"</text><rect x="110" y="94" width="50" height="12" rx="2" class="f1"/><text x="166" y="104" class="mono sm">.14</text>
+<text x="14" y="124" class="mono">⋮</text><rect x="110" y="114" width="4" height="12" rx="1" class="fm"/><text x="120" y="124" class="mono sm mu">.01 across 100k others</text>
+<line x1="300" y1="80" x2="340" y2="80" class="ln" marker-end="url(#m9a)"/>
+<text x="320" y="70" text-anchor="middle" class="sm mu">mask</text>
+<rect x="342" y="24" width="150" height="112" rx="8" class="soft"/>
+<text x="417" y="44" text-anchor="middle" class="b">grammar says</text>
+<text x="417" y="64" text-anchor="middle" class="mono sm">object → "{" members "}"</text>
+<text x="417" y="84" text-anchor="middle" class="mono sm">legal now: { "{" }</text>
+<text x="417" y="104" text-anchor="middle" class="mono sm">1 of 100,277 tokens</text>
+<text x="417" y="124" text-anchor="middle" class="mu sm">everything else → probability 0</text>
+<line x1="492" y1="80" x2="532" y2="80" class="ln" marker-end="url(#m9a)"/>
+<text x="540" y="18" class="b">what can come out</text>
+<text x="540" y="44" class="mono cut mu" style="text-decoration:line-through">"Sure"</text><text x="640" y="44" class="mono sm mu">0</text>
+<text x="540" y="64" class="mono mu" style="text-decoration:line-through">"Here"</text><text x="640" y="64" class="mono sm mu">0</text>
+<text x="540" y="84" class="mono mu" style="text-decoration:line-through">"```"</text><text x="640" y="84" class="mono sm mu">0</text>
+<text x="540" y="104" class="mono b">"{"</text><rect x="600" y="94" width="130" height="12" rx="2" class="f1"/><text x="736" y="104" class="mono sm">1.00</text>
+<text x="540" y="124" class="mu sm">renormalized: all the mass on legal faces</text>
+<rect x="14" y="156" width="732" height="62" rx="6" class="ghost"/>
+<text x="30" y="178" class="b">Later, after "age":</text><text x="170" y="178" class="mono sm">legal = { "0"…"9", "10"…"999", "-" }   ·   illegal = quotes, words, newlines, "}"</text>
+<text x="30" y="198" class="mu sm">The grammar is a state machine that advances with every token. Engines such as Outlines, XGrammar and llguidance precompute the legal set per state,</text>
+<text x="30" y="212" class="mu sm">so the mask costs microseconds. The ranking among legal tokens is untouched, which is why the output stays sensible as well as valid.</text>
+</svg><figcaption>The model would rather chat. The grammar lets it say only what the schema allows at this position, so the brace wins with probability one. The same mask, state by state, forces digits after "age" and a closing brace at the end.</figcaption></figure>
+  <p>Step through a small schema below. At each position the left column shows what the model wants to say; struck-through rows are what the grammar forbids right now. The output on the right can only ever be a document that matches the schema.</p>
+  <div class="inst">
+    <div class="ctl"><span class="mono">schema: {"name": string, "age": integer, "member": boolean}</span><button class="btn" id="t9-step">step →</button><button class="btn" id="t9-run">▶ run to end</button><button class="btn" id="t9-reset">reset</button></div>
+    <div class="grid2"><div><div class="dist" id="t9-dist"></div></div><div><div class="json" id="t9-out"><span class="nx"></span></div><div class="kvrow" id="t9-state"></div></div></div>
+    <p class="hint">Each step: the grammar's state names the legal tokens, the mask zeroes the rest, the renormalized distribution is sampled at low temperature. Notice how often the model's favourite is illegal at the start and legal later: constraint mostly bites at boundaries (opening, between fields, closing), and lets the model speak freely inside a string.</p>
+  </div>
+  <p>Two caveats that matter in practice. Constraint guarantees shape, not truth: a forced integer can still be the wrong integer, and an over-tight schema can push a model into confident nonsense because its honest answer ("unknown") was not a legal token. And the order of fields in your schema is the order the model must commit to them, so put the fields that need reasoning last and consider a free-text "reasoning" field first. Tool calls in modern APIs are this same mechanism with the tool signature as the grammar.</p>
+</section>
+
+<section class="ch" id="c10">
+  <p class="chn">10 · READING CONFIDENCE</p>
+  <h2>The probabilities are a free signal most people throw away</h2>
+  <p>Every token the model emits came out of a distribution, and most APIs will hand you that distribution's numbers if you ask: the <a class="term" href="#g-logprob">logprob</a> of the chosen token and of the top few alternatives. A logprob is just the natural log of the probability, so 0 is certainty, −0.69 is a coin flip, −2.3 is one in ten, −4.6 is one in a hundred. On a log scale multiplying becomes adding, which is why the probability of a whole answer is the sum of its tokens' logprobs.</p>
+<figure class="fig"><svg viewBox="0 0 760 222" role="img" aria-label="A sentence shown token by token with each token's probability. Function words and obvious continuations sit near probability one; the token Thursday has probability 0.31 and the token 4 in a time has 0.22. The average negative logprob over the sentence is 0.9 nats, so its perplexity is about 2.5: the model felt it was choosing among two or three options per token.">
+<text x="14" y="18" class="b">one sentence, scored token by token</text>
+<rect x="14" y="30" width="48" height="26" rx="4" class="f3" opacity=".9"/><text x="38" y="47" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">The</text><text x="38" y="72" text-anchor="middle" class="mono sm mu">.96</text>
+<rect x="66" y="30" width="78" height="26" rx="4" class="f3" opacity=".75"/><text x="105" y="47" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">␣meeting</text><text x="105" y="72" text-anchor="middle" class="mono sm mu">.61</text>
+<rect x="148" y="30" width="40" height="26" rx="4" class="f3" opacity=".9"/><text x="168" y="47" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">␣is</text><text x="168" y="72" text-anchor="middle" class="mono sm mu">.88</text>
+<rect x="192" y="30" width="66" height="26" rx="4" class="f2" opacity=".8"/><text x="225" y="47" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">␣moved</text><text x="225" y="72" text-anchor="middle" class="mono sm mu">.18</text>
+<rect x="262" y="30" width="40" height="26" rx="4" class="f3" opacity=".9"/><text x="282" y="47" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">␣to</text><text x="282" y="72" text-anchor="middle" class="mono sm mu">.93</text>
+<rect x="306" y="30" width="86" height="26" rx="4" class="f2" opacity=".6"/><text x="349" y="47" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">␣Thursday</text><text x="349" y="72" text-anchor="middle" class="mono sm mu">.31</text>
+<rect x="396" y="30" width="36" height="26" rx="4" class="f3" opacity=".8"/><text x="414" y="47" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">␣at</text><text x="414" y="72" text-anchor="middle" class="mono sm mu">.70</text>
+<rect x="436" y="30" width="30" height="26" rx="4" class="f2" opacity=".75"/><text x="451" y="47" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">␣4</text><text x="451" y="72" text-anchor="middle" class="mono sm mu">.22</text>
+<rect x="470" y="30" width="44" height="26" rx="4" class="f3" opacity=".85"/><text x="492" y="47" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">␣pm</text><text x="492" y="72" text-anchor="middle" class="mono sm mu">.77</text>
+<rect x="518" y="30" width="24" height="26" rx="4" class="f3" opacity=".95"/><text x="530" y="47" text-anchor="middle" class="mono sm" style="fill:var(--accent-ink)">.</text><text x="530" y="72" text-anchor="middle" class="mono sm mu">.98</text>
+<text x="560" y="40" class="mu sm">green: expected</text><text x="560" y="54" class="mu sm">orange: surprised</text>
+<text x="14" y="104" class="b">turn probabilities into one number</text>
+<text x="14" y="126" class="mono sm">logprobs   −.04  −.49  −.13  −1.71  −.07  −1.17  −.36  −1.51  −.26  −.02</text>
+<text x="14" y="146" class="mono sm">sum = −5.76   ·   ÷ 10 tokens = −0.58 average   ·   perplexity = e<tspan baseline-shift="super" font-size="8">0.58</tspan> ≈ 1.8</text>
+<rect x="14" y="160" width="732" height="54" rx="6" class="ghost"/>
+<text x="30" y="180" class="sm">Perplexity 1.8 means the model felt, on average, that it was choosing among fewer than two equally likely tokens. The sentence was easy for it.</text>
+<text x="30" y="198" class="mu sm">The same sentence in a language it barely knows might score 12; random digits score about 10 by construction. The per-token view is the useful one:</text>
+<text x="30" y="210" class="mu sm">the three orange tokens are exactly where the content lives, and exactly where a wrong answer would come from.</text>
+</svg><figcaption>Logprobs per token, then one summary. Low-probability tokens cluster where the information is; the function words are nearly free. Perplexity compresses a whole text into "how many choices per token did this feel like".</figcaption></figure>
+  <p><a class="term" href="#g-entropy">Entropy</a> is the same idea applied to the whole distribution at one step rather than to the token that happened to win: how spread out the model's belief was. <a class="term" href="#g-ppl">Perplexity</a> averages the chosen tokens' negative logprobs over a text and exponentiates, giving the effective number of choices per token. Type a sentence to have the toy model from chapter 07 score it.</p>
+  <div class="inst">
+    <div class="ctl"><input type="text" class="textin" id="t10-in" value="The model picks the next token from a probability distribution." aria-label="text to score"></div>
+    <div class="lp" id="t10-lp"></div>
+    <div class="scale"><span>surprised</span><i></i><span>expected</span></div>
+    <div class="read" id="t10-read"></div>
+    <p class="hint">The toy trigram model knows only this page's three kilobytes, so its perplexity is far higher than a real model's on anything it has not seen; what transfers is the shape. Hover a token for its logprob. Tokens the toy model has never seen get a floor probability and show as the darkest orange.</p>
+  </div>
+  <p>Uses, in rough order of value. Classification confidence: ask for one token and read its probability instead of its text. Hallucination triage: a run of low-probability tokens inside a factual claim is a flag worth a second look. Routing: an easy prompt has low entropy throughout and can go to a cheaper model. Evaluation: perplexity on held-out text is how pretraining progress is measured. And speculative decoding from the speed guide is nothing but these probabilities compared between two models.</p>
+</section>
+
+<section class="ch" id="c11">
+  <p class="chn">11 · TRAPS AND THE FRONTIER</p>
+  <h2>Thirty years of the same idea, and the places it leaks</h2>
+  <div class="timeline"><div class="tl" id="tl"></div></div>
+  <p>The tokenizer is the oldest part of a modern model's stack, and the seams between it and everything else are where the odd failures live. The best-known seam is the prompt boundary.</p>
+<figure class="fig"><svg viewBox="0 0 760 212" role="img" aria-label="Two prompts differing only by a trailing space. Without the space the prompt ends on the token is and the model's natural next token is space Paris. With the space the prompt ends on a lone space token, so the model must continue with Paris without a leading space, a token it almost never saw in training, and quality drops. Token healing removes the last token and regenerates it with the boundary free.">
+<defs><marker id="m11a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<text x="14" y="18" class="b">prompt ends "…France is"</text>
+<rect x="14" y="30" width="72" height="26" rx="4" class="box"/><text x="50" y="47" text-anchor="middle" class="mono sm">␣France</text>
+<rect x="90" y="30" width="40" height="26" rx="4" class="box"/><text x="110" y="47" text-anchor="middle" class="mono sm">␣is</text>
+<line x1="134" y1="43" x2="166" y2="43" class="ln" marker-end="url(#m11a)"/>
+<rect x="168" y="30" width="66" height="26" rx="4" class="soft"/><text x="201" y="47" text-anchor="middle" class="mono sm b">␣Paris</text>
+<text x="244" y="47" class="mu sm">p = .71 · the token training showed a million times</text>
+<text x="14" y="94" class="b">prompt ends "…France is " (trailing space)</text>
+<rect x="14" y="106" width="72" height="26" rx="4" class="box"/><text x="50" y="123" text-anchor="middle" class="mono sm">␣France</text>
+<rect x="90" y="106" width="40" height="26" rx="4" class="box"/><text x="110" y="123" text-anchor="middle" class="mono sm">␣is</text>
+<rect x="134" y="106" width="26" height="26" rx="4" class="box" style="stroke:var(--s2)"/><text x="147" y="123" text-anchor="middle" class="mono sm">␣</text>
+<line x1="164" y1="119" x2="196" y2="119" class="ln" marker-end="url(#m11a)"/>
+<rect x="198" y="106" width="56" height="26" rx="4" class="soft" style="stroke:var(--s2)"/><text x="226" y="123" text-anchor="middle" class="mono sm b">Paris</text>
+<text x="264" y="123" class="mu sm">p = .09 · "Paris" with no leading space is rare in training;</text>
+<text x="264" y="137" class="mu sm">the lone-space token is rarer still, so the model is off its map</text>
+<rect x="14" y="156" width="732" height="46" rx="6" class="ghost"/>
+<text x="30" y="176" class="b">Token healing:</text><text x="140" y="176" class="sm">delete the last prompt token, then constrain the first generated token to start with the deleted text.</text>
+<text x="30" y="194" class="mu sm">The model regenerates "␣Paris" naturally and the seam disappears. Chat APIs hide this behind the chat template; raw completion endpoints do not.</text>
+</svg><figcaption>One trailing space moves the token boundary and sends the model down a path it rarely trained on. The same seam bites at half-finished URLs, code with unusual whitespace and prompts that end mid-word.</figcaption></figure>
+  <div class="cards" id="cards"></div>
+  <h3>Where 2026 stands</h3>
+  <p>Vocabularies have grown to 200k–260k and the token premium for non-English text has roughly halved, but the architecture is unchanged since GPT-2: a frozen byte-level BPE in front of the model. Constrained decoding is now a first-class API feature rather than a library trick. Min-p has joined top-p in most open inference engines. Deterministic inference exists but is paid for in throughput. The live question is whether tokenizer-free models (byte-level patching in BLT, learned chunking in H-Net) reach frontier quality; if they do, chapters 01 to 03 of this page become history and chapters 05 to 10 stay exactly as they are.</p>
+</section>
+
+<section class="ch" id="c12">
+  <p class="chn">12 · WHY IT MATTERS TO ME</p>
+  <h2>What this has to do with the thing you are talking to</h2>
+  <p>Everything you were told about how to use a model, this page can now explain. Why the advice is "temperature 0 for tools, around 0.7 for writing": tool arguments must be the single most likely path, and prose should wander a little. Why structured-output mode fixed your broken JSON: the grammar mask, not a better model. Why a model can write a sonnet and miscount letters: it never saw letters. Why your non-English users cost more and hit context limits sooner: fertility.</p>
+<figure class="fig"><svg viewBox="0 0 760 236" role="img" aria-label="A grid of five jobs against the sampling settings that fit them. Tool calls and extraction: temperature 0, schema on, retry on tie. Code: temperature 0 to 0.2, min-p off, stop sequences. Chat and drafting: temperature 0.7 to 1, top-p 0.95 or min-p 0.05. Brainstorming and variants: temperature 1 to 1.2, min-p 0.1, several samples. Evaluation: fixed seed, several runs, report spread.">
+<text x="14" y="18" class="b">which knob, for which job</text>
+<text x="200" y="40" text-anchor="middle" class="mono sm mu">temperature</text><text x="330" y="40" text-anchor="middle" class="mono sm mu">truncation</text><text x="470" y="40" text-anchor="middle" class="mono sm mu">structure</text><text x="640" y="40" text-anchor="middle" class="mono sm mu">and also</text>
+<line x1="14" y1="48" x2="746" y2="48" class="ln"/>
+<text x="14" y="68" class="b sm">tool calls · extraction</text>
+<rect x="150" y="56" width="100" height="18" rx="4" class="soft"/><text x="200" y="69" text-anchor="middle" class="mono sm">0</text>
+<text x="330" y="69" text-anchor="middle" class="mono sm">none</text>
+<rect x="400" y="56" width="140" height="18" rx="4" class="soft"/><text x="470" y="69" text-anchor="middle" class="mono sm">schema / tool grammar</text>
+<text x="560" y="69" class="mu sm">reasoning field first, verdict last</text>
+<line x1="14" y1="82" x2="746" y2="82" class="ln" style="stroke:var(--line)"/>
+<text x="14" y="102" class="b sm">code</text>
+<rect x="150" y="90" width="100" height="18" rx="4" class="soft"/><text x="200" y="103" text-anchor="middle" class="mono sm">0 – 0.2</text>
+<text x="330" y="103" text-anchor="middle" class="mono sm">none</text>
+<text x="470" y="103" text-anchor="middle" class="mono sm">stop sequences</text>
+<text x="560" y="103" class="mu sm">penalties off: code repeats on purpose</text>
+<line x1="14" y1="116" x2="746" y2="116" class="ln" style="stroke:var(--line)"/>
+<text x="14" y="136" class="b sm">chat · drafting</text>
+<rect x="150" y="124" width="100" height="18" rx="4" class="soft"/><text x="200" y="137" text-anchor="middle" class="mono sm">0.7 – 1.0</text>
+<rect x="262" y="124" width="136" height="18" rx="4" class="soft"/><text x="330" y="137" text-anchor="middle" class="mono sm">top-p .95 / min-p .05</text>
+<text x="470" y="137" text-anchor="middle" class="mono sm">—</text>
+<text x="560" y="137" class="mu sm">the provider default, usually</text>
+<line x1="14" y1="150" x2="746" y2="150" class="ln" style="stroke:var(--line)"/>
+<text x="14" y="170" class="b sm">brainstorm · variants</text>
+<rect x="150" y="158" width="100" height="18" rx="4" class="soft"/><text x="200" y="171" text-anchor="middle" class="mono sm">1.0 – 1.2</text>
+<rect x="280" y="158" width="100" height="18" rx="4" class="soft"/><text x="330" y="171" text-anchor="middle" class="mono sm">min-p .1</text>
+<text x="470" y="171" text-anchor="middle" class="mono sm">—</text>
+<text x="560" y="171" class="mu sm">n samples, then pick; not one hot run</text>
+<line x1="14" y1="184" x2="746" y2="184" class="ln" style="stroke:var(--line)"/>
+<text x="14" y="204" class="b sm">evaluation</text>
+<rect x="140" y="192" width="120" height="18" rx="4" class="soft"/><text x="200" y="205" text-anchor="middle" class="mono sm">0, or as deployed</text>
+<text x="330" y="205" text-anchor="middle" class="mono sm">as deployed</text>
+<text x="470" y="205" text-anchor="middle" class="mono sm">fixed seed</text>
+<text x="560" y="205" class="mu sm">several runs; report the spread</text>
+<line x1="14" y1="218" x2="746" y2="218" class="ln"/>
+<text x="14" y="232" class="mu sm">Highlighted cells are the ones that change the result. Everything else is the default and can stay there.</text>
+</svg><figcaption>Five jobs, five settings. The pattern is one line: the more a machine will consume the output, the colder and more constrained the sampling; the more a person will, the warmer and freer.</figcaption></figure>
+  <p>Some things to carry into your own work. Budget in tokens, not words, and measure your real fertility on your real inputs: a JSON-heavy agent loop can run at twice the tokens you estimated from the prose. Put the schema on when a parser will read the answer, and put a free-text reasoning field before the fields that need judgement. Use logprobs where a yes/no decision matters; the probability is a better signal than the word. Expect the occasional flip at temperature 0 and compare outputs by meaning. And when a model fails at spelling, counting or arithmetic on long numbers, remember you are watching the tokenizer, not the model, and ask it to spell the thing out.</p>
+  <p>Finally, the connection to the two earlier guides. The attention guide is what happens between the embedding lookup and the LM head. The speed guide is how fast that loop turns. This page is the two ends of the loop: how text becomes the numbers it works on, and how its numbers become the next piece of text. Together they are the whole of inference.</p>
+</section>
+
+<section class="ch" id="c13">
+  <p class="chn">13 · CHECK YOURSELF</p>
+  <h2>Eight questions</h2>
+  <p class="score" id="q-score">0 / 8 answered</p>
+  <div class="quiz" id="quiz"></div>
+</section>
+
+<footer>Sources behind the chapters: Gage 1994 (byte-pair encoding as compression) · Sennrich, Haddow and Birch 2016 (BPE for neural translation) · Kudo 2018 and Kudo and Richardson 2018 (unigram LM, SentencePiece) · Radford et al. 2019 (GPT-2 byte-level BPE) · Fan et al. 2018 (top-k sampling) · Holtzman et al. 2020 (nucleus sampling) · Nguyen et al. 2024 (min-p) · Petrov et al. 2023 (tokenizer unfairness between languages) · Rumbelow and Watkins 2023 (glitch tokens) · Willard and Louf 2023 (Outlines, constrained decoding) · Dong et al. 2024 (XGrammar) · OpenAI 2024 (Structured Outputs) · Tao et al. 2024 (scaling laws with vocabulary) · Gloeckle et al. 2024 and DeepSeek-V3 2024 (multi-token prediction) · Yu et al. 2023 (MegaByte), Pagnoni et al. 2024 (Byte Latent Transformer), Hwang et al. 2025 (H-Net) · He and Thinking Machines 2025 (defeating nondeterminism, batch-invariant kernels) · Leviathan 2022, Chen 2023 (speculative sampling). Vocabulary sizes are the published figures for each tokenizer. Language ratios are order-of-magnitude. Timeline and cards reflect training data through mid-2026.</footer>
+</main>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const root=document.documentElement;
+const css=n=>getComputedStyle(root).getPropertyValue(n).trim();
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function fit(cv){const dpr=window.devicePixelRatio||1;const w=cv.clientWidth,h=cv.clientHeight;if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);return {ctx,w,h};}
+function rng(seed){let a=seed>>>0;return ()=>{a+=0x6D2B79F5;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296;};}
+const fmt=(x,d=2)=>(Math.round(x*10**d)/10**d).toFixed(d);
+const fmtN=n=>n.toLocaleString('en-US');
+const redraws=[];
+function reg(f){redraws.push(f);f();}
+function redrawAll(){redraws.forEach(f=>f());}
+new MutationObserver(redrawAll).observe(root,{attributes:true,attributeFilter:['data-theme']});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redrawAll);
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(redrawAll,80);});
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- the toy corpus: ~3 KB the tokenizer and the trigram model learn from ---------- */
+const CORPUS=`A token is the unit a language model reads and writes. A token is not a word and not a letter; a token is a piece of text that the tokenizer learned to cut out because it was frequent. The model never sees letters. The model sees a list of integers, one integer per token, and the model produces one score for every token in the vocabulary at every step. The vocabulary is a fixed list of tokens with an id for each token. Every merge in byte-pair encoding adds one token to the vocabulary. Every merge glues the most frequent pair of neighbouring tokens into a new token, and every merge is numbered so that the same text is always split the same way.
+
+Temperature is a number that every logit is divided by before the softmax. Temperature below one sharpens the distribution toward the most likely token. Temperature above one flattens the distribution and lets the tail win more rolls. Temperature zero means greedy decoding: the model always picks the top token. Top-p keeps the smallest set of tokens whose probabilities add up to p. Top-k keeps the k most likely tokens. Min-p keeps every token whose probability is at least a fraction of the top token's probability. The sampler then rolls a die weighted by the probabilities that survive.
+
+The model picks the next token from a probability distribution. The probability distribution is the real output of the model; the text is what the die landed on. A logprob is the natural log of a probability, so zero is certain and minus five is rare. Perplexity is the exponential of the average negative logprob, the effective number of choices per token. Low perplexity means the text was predictable to the model. High entropy means the model was unsure at that step, and that is where sampling matters most.
+
+The tokenizer splits text with a regular expression first, so a token rarely crosses a space and digits are grouped in threes: 1234567 becomes 123, 456 and 7. The leading space belongs to the word, so " the" and "the" are different tokens with different ids. Rare words break into common pieces, and anything the vocabulary has never seen falls back to single bytes. English costs about 1.3 tokens per word; other languages cost more because the vocabulary was trained mostly on English and code.
+
+def sample(logits, temperature=1.0, top_p=0.95):
+    probs = softmax(logits / temperature)
+    return draw(truncate(probs, top_p))
+
+Structured output works by masking. A grammar compiled from the schema decides which tokens are legal at this position, and every illegal token gets probability zero before the roll. The output is valid JSON every time because the invalid tokens were never allowed. Speculative decoding uses a small draft model to guess several tokens and the large model to check them in one pass; the accepted tokens follow exactly the distribution of the large model.
+
+The weights are fixed when training ends; the sampling parameters are chosen for every request. The scores are the model's; the pick is yours.`;
+
+/* ---------- byte-level BPE, trained here ---------- */
+const PRE=/'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+/gu;
+const enc=new TextEncoder(), dec=new TextDecoder('utf-8',{fatal:false});
+const pretok=s=>s.match(PRE)||[];
+const MAXM=400;
+const MERGES=[];        // [a,b] token keys, in learned order
+const RANK=new Map();   // "a b" -> rank
+(function train(){
+  const words=new Map();
+  for(const w of pretok(CORPUS)){const toks=[...enc.encode(w)].map(String);const k=toks.join(' ');const e=words.get(k);if(e)e.f++;else words.set(k,{toks,f:1});}
+  const list=[...words.values()];
+  for(let m=0;m<MAXM;m++){
+    const pc=new Map();
+    for(const w of list){for(let i=0;i<w.toks.length-1;i++){const k=w.toks[i]+' '+w.toks[i+1];pc.set(k,(pc.get(k)||0)+w.f);}}
+    let best=null,bc=1;for(const [k,c] of pc){if(c>bc){bc=c;best=k;}}
+    if(!best)break;
+    const [a,b]=best.split(' ');const ab=a+','+b;
+    MERGES.push([a,b]);RANK.set(best,m);
+    for(const w of list){const t=w.toks;if(t.length<2)continue;const out=[];for(let i=0;i<t.length;i++){if(i<t.length-1&&t[i]===a&&t[i+1]===b){out.push(ab);i++;}else out.push(t[i]);}w.toks=out;}
+  }
+})();
+function encodeChunk(w,k){ // k = how many merges to use
+  let toks=[...enc.encode(w)].map(String);
+  while(toks.length>1){let br=Infinity,bi=-1;for(let i=0;i<toks.length-1;i++){const r=RANK.get(toks[i]+' '+toks[i+1]);if(r!==undefined&&r<k&&r<br){br=r;bi=i;}}if(bi<0)break;toks.splice(bi,2,toks[bi]+','+toks[bi+1]);}
+  return toks;
+}
+const encode=(s,k=MERGES.length)=>pretok(s).flatMap(w=>encodeChunk(w,k));
+const keyBytes=k=>Uint8Array.from(k.split(',').map(Number));
+const tokStr=k=>dec.decode(keyBytes(k));
+const isByte=k=>!k.includes(',');
+function tokLabel(k){const s=tokStr(k);if(s.includes('\uFFFD'))return [...keyBytes(k)].map(b=>'·'+b.toString(16).toUpperCase().padStart(2,'0')).join('');return s.replace(/ /g,'␣').replace(/\n/g,'⏎').replace(/\t/g,'⇥');}
+const KEYID=new Map(MERGES.map(([a,b],i)=>[a+','+b,256+i]));
+const tokId=k=>isByte(k)?+k:KEYID.get(k);
+const detok=keys=>dec.decode(Uint8Array.from(keys.flatMap(k=>[...keyBytes(k)])));
+function renderToks(host,keys,{ids=false}={}){
+  host.innerHTML=keys.map((k,i)=>`<span class="tok t${i%4}${isByte(k)?' byte':''}" title="${ids?'id '+tokId(k):esc(tokStr(k))}">${esc(tokLabel(k))}</span>`).join('');
+}
+
+/* ---------- trigram model over the toy tokens ---------- */
+const TOKS=encode(CORPUS);
+const UNI=new Map(),BI=new Map(),TRI=new Map();
+for(let i=0;i<TOKS.length;i++){const t=TOKS[i];UNI.set(t,(UNI.get(t)||0)+1);
+  if(i>0){const p=TOKS[i-1];if(!BI.has(p))BI.set(p,new Map());const m=BI.get(p);m.set(t,(m.get(t)||0)+1);}
+  if(i>1){const p=TOKS[i-2]+'|'+TOKS[i-1];if(!TRI.has(p))TRI.set(p,new Map());const m=TRI.get(p);m.set(t,(m.get(t)||0)+1);}}
+const VOCAB=[...UNI.keys()];
+const sum=m=>{let s=0;for(const v of m.values())s+=v;return s;};
+function nextProbs(h){
+  const p1=h[h.length-1],p2=h[h.length-2];
+  const t=p2!==undefined?TRI.get(p2+'|'+p1):null,b=p1!==undefined?BI.get(p1):null;
+  const tN=t?sum(t):0,bN=b?sum(b):0,uN=TOKS.length;
+  const wt=t?0.6:0,wb=b?(t?0.3:0.75):0,wu=1-wt-wb;
+  return VOCAB.map(v=>wt*(t?(t.get(v)||0)/tN:0)+wb*(b?(b.get(v)||0)/bN:0)+wu*(UNI.get(v)/uN));
+}
+function probOf(h,tok){const i=VOCAB.indexOf(tok);if(i<0)return null;return nextProbs(h)[i];}
+
+/* ---------- sampling arithmetic, shared by every instrument ---------- */
+function softmaxT(logits,T){
+  if(T<=0){let m=-Infinity,mi=0;logits.forEach((l,i)=>{if(l>m){m=l;mi=i;}});return logits.map((_,i)=>i===mi?1:0);}
+  const z=logits.map(l=>l/T);const mx=Math.max(...z);const e=z.map(v=>Math.exp(v-mx));const s=e.reduce((a,b)=>a+b,0);return e.map(v=>v/s);
+}
+function truncate(p,{k=0,topp=1,minp=0}={}){
+  const idx=p.map((_,i)=>i).sort((a,b)=>p[b]-p[a]);const keep=p.map(()=>true);
+  if(k>0)idx.forEach((i,r)=>{if(r>=k)keep[i]=false;});
+  if(topp<1){let c=0;for(const i of idx){if(c>=topp)keep[i]=false;c+=p[i];}}
+  if(minp>0){const mx=p[idx[0]];idx.forEach(i=>{if(p[i]<minp*mx)keep[i]=false;});}
+  return keep;
+}
+function renorm(p,keep){const s=p.reduce((a,v,i)=>a+(keep[i]?v:0),0);return p.map((v,i)=>keep[i]?v/s:0);}
+const entropy=p=>-p.reduce((a,v)=>v>0?a+v*Math.log(v):a,0);
+function draw(p,r){const x=r();let c=0;for(let i=0;i<p.length;i++){c+=p[i];if(x<c)return i;}return p.length-1;}
+
+/* the hand-set distribution used by the hero and chapters 05–06 */
+const PARIS=[[' Paris',.62],[' the',.09],[' a',.05],[' located',.04],[' not',.03],[' Lyon',.02],[' known',.02],[' famous',.02],[' one',.015],[' Marseille',.01],[' also',.01],[' home',.01],['(100k others)',.065]];
+const PLOG=PARIS.map(([t,p])=>Math.log(p));
+const PLAB=PARIS.map(([t])=>t.replace(/^ /,'␣'));
+function renderDist(host,labels,p,{keep,tally,pick,q}={}){
+  const n=tally?tally.reduce((a,b)=>a+b,0):0;
+  host.innerHTML=labels.map((lab,i)=>{const cut=keep&&!keep[i];const w=(p[i]*100).toFixed(2);const tw=n?(tally[i]/n*100).toFixed(2):0;
+    return `<div class="lab${cut?' cut':''}">${esc(lab)}</div><div class="trk"><i class="${cut?'cut':''}${pick===i?' pick':''}" style="width:${w}%"></i>${n?`<em style="width:${tw}%"></em>`:''}</div><div class="pv${cut?' cut':''}">${q?q[i]:(p[i]<.001?'<.001':p[i].toFixed(3))}</div>`;}).join('');
+}
+
+/* ---------- hero ---------- */
+(function(){
+  const T=$('#h-T'),Tv=$('#h-T-v'),host=$('#h-dist'),read=$('#h-read');let tally=PARIS.map(()=>0);let r=rng(7);
+  function cur(){return +T.value/100;}
+  function draw1(){const p=softmaxT(PLOG,cur());Tv.textContent=fmt(cur(),1);renderDist(host,PLAB,p,{tally});const n=tally.reduce((a,b)=>a+b,0);const H=entropy(p);
+    read.innerHTML=`<span>entropy <b>${fmt(H,2)}</b> nats</span><span>effective choices <b>${fmt(Math.exp(H),1)}</b></span><span>rolls <b>${n}</b></span>${n?`<span>landed on ␣Paris <b>${(tally[0]/n*100).toFixed(0)}%</b></span>`:''}`;}
+  function roll(n){const p=softmaxT(PLOG,cur());for(let i=0;i<n;i++)tally[draw(p,r)]++;draw1();}
+  T.addEventListener('input',draw1);$('#h-one').addEventListener('click',()=>roll(1));$('#h-many').addEventListener('click',()=>roll(100));$('#h-reset').addEventListener('click',()=>{tally=PARIS.map(()=>0);draw1();});
+  draw1();
+})();
+
+/* ---------- 01 live tokenizer ---------- */
+(function(){
+  const inp=$('#t1-in'),host=$('#t1-toks'),read=$('#t1-read');
+  function go(){const s=inp.value;const keys=encode(s);renderToks(host,keys,{ids:true});const bytes=enc.encode(s).length;const words=(s.trim().match(/\S+/g)||[]).length;const nb=keys.filter(k=>isByte(k)).length;
+    read.innerHTML=`<span>characters <b>${s.length}</b></span><span>bytes <b>${bytes}</b></span><span>tokens <b>${keys.length}</b></span><span>bytes per token <b>${keys.length?fmt(bytes/keys.length,1):'–'}</b></span><span>tokens per word <b>${words?fmt(keys.length/words,2):'–'}</b></span><span>byte fallbacks <b>${nb}</b></span><span>toy vocab <b>${256+MERGES.length}</b></span>`;}
+  inp.addEventListener('input',go);go();
+})();
+
+/* ---------- 02 merges slider ---------- */
+(function(){
+  const k=$('#t2-k'),kv=$('#t2-k-v'),host=$('#t2-toks'),read=$('#t2-read'),last=$('#t2-last');k.max=MERGES.length;
+  const sample='The tokenizer learned that the most frequent pairs become tokens, and the model never sees letters.';
+  function go(){const n=+k.value;kv.textContent=n;const keys=encode(sample,n);renderToks(host,keys);const bytes=enc.encode(sample).length;
+    read.innerHTML=`<span>vocabulary <b>${256+n}</b></span><span>bytes <b>${bytes}</b></span><span>tokens <b>${keys.length}</b></span><span>bytes per token <b>${fmt(bytes/keys.length,2)}</b></span><span>compression <b>${fmt(bytes/keys.length/1,1)}×</b></span>`;
+    if(n>0){const [a,b]=MERGES[n-1];last.innerHTML=`merge ${n}: <b>${esc(tokLabel(a))}</b> + <b>${esc(tokLabel(b))}</b> → <b>${esc(tokLabel(a+','+b))}</b> · first merges: ${MERGES.slice(0,Math.min(n,10)).map(([a,b])=>`<b>${esc(tokLabel(a+','+b))}</b>`).join(' ')}${n>10?' …':''}`;}else last.innerHTML='no merges yet: every byte is its own token';}
+  k.addEventListener('input',go);
+  $('#t2-play').addEventListener('click',()=>{if(reduced){k.value=MERGES.length;go();return;}k.value=0;const t0=performance.now();const dur=4000;(function step(){const t=(performance.now()-t0)/dur;k.value=Math.round(clamp(t,0,1)**0.7*MERGES.length);go();if(t<1)requestAnimationFrame(step);})();});
+  go();
+})();
+
+/* ---------- 03 the bill ---------- */
+(function(){
+  const w=$('#t3-w'),wv=$('#t3-w-v'),lang=$('#t3-lang'),fmtS=$('#t3-fmt'),price=$('#t3-price'),bars=$('#t3-bars'),read=$('#t3-read');
+  function go(){const words=+w.value;wv.textContent=fmtN(words);const f=+lang.value*+fmtS.value;const base=words*1.3;const toks=Math.round(words*f);const $m=+price.value||0;
+    const mx=Math.max(toks,base);
+    bars.innerHTML=`<div class="lab">English prose</div><div class="bar" style="width:${base/mx*100}%"></div><div>${fmtN(Math.round(base))} tok</div><div class="lab">${esc(lang.selectedOptions[0].text)}, ${esc(fmtS.selectedOptions[0].text)}</div><div class="bar lit" style="width:${toks/mx*100}%"></div><div>${fmtN(toks)} tok</div>`;
+    read.innerHTML=`<span>fertility <b>${fmt(f,2)}</b> tok/word</span><span>tokens <b>${fmtN(toks)}</b></span><span>per request <b>$${(toks/1e6*$m).toFixed(4)}</b></span><span>per 1,000 requests <b>$${(toks/1e3*$m).toFixed(2)}</b></span><span>share of a 200k window <b>${(toks/2e5*100).toFixed(1)}%</b></span><span>vs English <b>${fmt(toks/base,1)}×</b></span>`;}
+  [w,lang,fmtS,price].forEach(e=>e.addEventListener('input',go));go();
+})();
+
+/* ---------- 04 the logit column ---------- */
+(function(){
+  const V=100277,cv=$('#t4-cv'),n=$('#t4-n'),nv=$('#t4-n-v'),read=$('#t4-read');
+  const r=rng(11);const z=new Float32Array(V);let S=0;
+  for(let i=0;i<V;i++){const u=r(),v=r();const g=Math.sqrt(-2*Math.log(u+1e-12))*Math.cos(2*Math.PI*v);z[i]=-6+1.5*g;S+=Math.exp(z[i]);}
+  const total=S/0.065;const topIdx=[];PARIS.slice(0,12).forEach(([t,p],j)=>{const i=Math.floor(r()*V);z[i]=Math.log(p*total);topIdx.push(i);});
+  const order=[...z.keys()].sort((a,b)=>z[b]-z[a]);const ez=Array.from(z,v=>Math.exp(v));const Z=ez.reduce((a,b)=>a+b,0);
+  const names=new Map(topIdx.map((i,j)=>[i,PLAB[j]]));
+  function N(){const s=+n.value;return s===0?0:Math.round(Math.exp(Math.log(2000)+(Math.log(5)-Math.log(2000))*(s-1)/99));}
+  function draw(){const {ctx,w,h}=fit(cv);const fg=css('--fg'),mu=css('--muted'),s1=css('--s1'),mask=css('--mask'),line=css('--line-strong');const k=N();const padL=36,padB=22,padT=14;const W=w-padL-8,H=h-padB-padT;
+    ctx.font='11px "IBM Plex Mono",monospace';ctx.fillStyle=mu;ctx.strokeStyle=line;ctx.lineWidth=1;
+    const zmin=-12,zmax=12;const y=v=>padT+H*(1-(v-zmin)/(zmax-zmin));
+    ctx.beginPath();ctx.moveTo(padL,y(0));ctx.lineTo(padL+W,y(0));ctx.stroke();ctx.fillText('0',8,y(0)+4);ctx.fillText('+10',8,y(10)+4);ctx.fillText('−10',8,y(-10)+4);
+    if(k===0){nv.textContent='all '+fmtN(V);ctx.fillStyle=mask;const cols=Math.floor(W);for(let c=0;c<cols;c++){const a=Math.floor(c/cols*V),b=Math.floor((c+1)/cols*V);let lo=Infinity,hi=-Infinity;for(let i=a;i<b;i++){if(z[i]<lo)lo=z[i];if(z[i]>hi)hi=z[i];}ctx.fillRect(padL+c,y(hi),1,Math.max(1,y(lo)-y(hi)));}
+      ctx.fillStyle=s1;for(const i of topIdx){const c=padL+Math.floor(i/V*W);ctx.fillRect(c-1,y(z[i]),3,y(-6)-y(z[i]));}
+      ctx.fillStyle=mu;ctx.fillText('token id 0',padL,h-6);ctx.textAlign='right';ctx.fillText('id '+fmtN(V-1),padL+W,h-6);ctx.textAlign='left';ctx.fillText('in vocabulary order · 12 spikes in a field of 100k',padL+W/2-130,padT+2);
+      read.innerHTML=`<span>entries <b>${fmtN(V)}</b></span><span>tail mean <b>−6.0</b></span><span>top entry <b>${fmt(z[order[0]],1)}</b></span><span>mass in the tail <b>6.5%</b></span>`;}
+    else{nv.textContent='top '+fmtN(k)+' of '+fmtN(V);const bw=W/k;let mass=0;for(let j=0;j<k;j++){const i=order[j];mass+=ez[i]/Z;ctx.fillStyle=names.has(i)?s1:mask;const x=padL+j*bw;ctx.fillRect(x,y(z[i]),Math.max(1,bw-(bw>3?1:0)),y(-6)-y(z[i]));
+        if(k<=30&&names.has(i)){ctx.save();ctx.fillStyle=fg;ctx.translate(x+bw/2+4,y(z[i])-4);ctx.rotate(-Math.PI/4);ctx.fillText(names.get(i),0,0);ctx.restore();}}
+      ctx.fillStyle=mu;ctx.fillText('sorted, highest first',padL,h-6);
+      read.innerHTML=`<span>showing <b>${fmtN(k)}</b> entries</span><span>their share of all probability <b>${(mass*100).toFixed(mass>.999?2:1)}%</b></span><span>everything else <b>${((1-mass)*100).toFixed(2)}%</b></span>`;}
+  }
+  n.addEventListener('input',draw);reg(draw);
+})();
+
+/* ---------- 05 temperature ---------- */
+(function(){
+  const T=$('#t5-T'),Tv=$('#t5-T-v'),host=$('#t5-dist'),read=$('#t5-read');
+  function go(){const t=+T.value/100;Tv.textContent=fmt(t,1);const p=softmaxT(PLOG,t);renderDist(host,PLAB,p);const H=entropy(p);
+    read.innerHTML=`<span>p(␣Paris) <b>${p[0].toFixed(3)}</b></span><span>p(tail bucket) <b>${p[12].toFixed(3)}</b></span><span>entropy <b>${fmt(H,2)}</b> nats</span><span>effective choices <b>${fmt(Math.exp(H),1)}</b></span><span>Paris : Lyon <b>${p[5]>0?fmt(p[0]/p[5],0):'∞'} : 1</b></span>`;}
+  T.addEventListener('input',go);go();
+})();
+
+/* ---------- 06 truncation ---------- */
+(function(){
+  const T=$('#t6-T'),Tv=$('#t6-T-v'),K=$('#t6-k'),Kv=$('#t6-k-v'),P=$('#t6-p'),Pv=$('#t6-p-v'),M=$('#t6-m'),Mv=$('#t6-m-v'),host=$('#t6-dist'),read=$('#t6-read');
+  let tally=PARIS.map(()=>0);let r=rng(3);
+  function params(){return {t:+T.value/100,k:+K.value,topp:+P.value/100,minp:+M.value/100};}
+  function go(){const o=params();Tv.textContent=fmt(o.t,1);Kv.textContent=o.k?o.k:'off';Pv.textContent=o.topp<1?fmt(o.topp,2):'off';Mv.textContent=o.minp?fmt(o.minp,2):'off';
+    const p=softmaxT(PLOG,o.t);const keep=truncate(p,o);const q=renorm(p,keep);renderDist(host,PLAB,q,{keep,tally,q:q.map((v,i)=>keep[i]?v.toFixed(3):'0')});
+    const n=tally.reduce((a,b)=>a+b,0);const tailBefore=p[12]+p[5]+p[4];
+    read.innerHTML=`<span>survivors <b>${keep.filter(Boolean).length}</b> of 13</span><span>mass removed <b>${((1-p.reduce((a,v,i)=>a+(keep[i]?v:0),0))*100).toFixed(1)}%</b></span><span>entropy after <b>${fmt(entropy(q),2)}</b></span><span>rolls <b>${n}</b></span>${n?`<span>landed on Lyon / not / tail <b>${(((tally[5]+tally[4]+tally[12])/n)*100).toFixed(1)}%</b></span>`:''}`;}
+  [T,K,P,M].forEach(e=>e.addEventListener('input',go));
+  $('#t6-roll').addEventListener('click',()=>{const o=params();const p=softmaxT(PLOG,o.t);const q=renorm(p,truncate(p,o));for(let i=0;i<200;i++)tally[draw(q,r)]++;go();});
+  $('#t6-clear').addEventListener('click',()=>{tally=PARIS.map(()=>0);go();});
+  go();
+})();
+
+/* ---------- 07 generate ×3 from the trigram model ---------- */
+(function(){
+  const st=$('#t7-start'),T=$('#t7-T'),Tv=$('#t7-T-v'),M=$('#t7-m'),Mv=$('#t7-m-v'),R=$('#t7-r'),Rv=$('#t7-r-v'),outs=$('#t7-outs'),read=$('#t7-read');let seed=1;
+  function lab(){Tv.textContent=fmt(+T.value/100,1);Mv.textContent=+M.value?fmt(+M.value/100,2):'off';Rv.textContent=+R.value>100?fmt(+R.value/100,2):'off';}
+  function gen(r){const t=+T.value/100,minp=+M.value/100,rep=+R.value/100;const h=encode(st.value);const start=h.length;
+    for(let s=0;s<40;s++){const p=nextProbs(h);let logits=p.map(v=>Math.log(v+1e-12));if(rep>1){const seen=new Set(h);logits=logits.map((l,i)=>seen.has(VOCAB[i])?l*rep:l);}
+      const q=softmaxT(logits,t);const keep=truncate(q,{minp});h.push(VOCAB[draw(renorm(q,keep),r)]);}
+    return {h,start};}
+  function go(){lab();const runs=[gen(rng(seed++)),gen(rng(seed++)),gen(rng(seed++))];const ref=runs[0].h;let same=0;
+    outs.innerHTML=runs.map((run,ri)=>{let dv=-1;if(ri>0){for(let i=run.start;i<run.h.length;i++){if(run.h[i]!==ref[i]){dv=i;break;}}if(dv<0)same++;}
+      return `<div class="out"><span class="pre">${esc(detok(run.h.slice(0,run.start)))}</span>${run.h.slice(run.start).map((k,j)=>{const i=j+run.start;const s=esc(tokStr(k).replace(/\uFFFD/g,'\uFFFD'));return i===dv?`<span class="div">${s}</span>`:s;}).join('')}</div>`;}).join('');
+    const uniq=new Set(ref.slice(ref.length-20)).size;
+    read.innerHTML=`<span>runs identical to run 1 <b>${same}</b> of 2</span><span>distinct tokens in run 1's last 20 <b>${uniq}</b></span><span>vocabulary the toy model knows <b>${VOCAB.length}</b></span>`;}
+  [T,M,R].forEach(e=>e.addEventListener('input',lab));$('#t7-go').addEventListener('click',go);go();
+})();
+
+/* ---------- 08 knob cards ---------- */
+(function(){
+  const knobs=[
+    ['temperature','÷ before softmax','1.0','Lower for anything a parser reads; 0.7–1.0 for prose. Cannot change the ranking, only how often the pick leaves the top.'],
+    ['top_p','truncate, after temperature','1.0 (off) or 0.95','Adaptive tail cut. 0.9–0.95 for chat. Set it or temperature, rarely both aggressively; providers often warn against moving both.'],
+    ['top_k','truncate','off, or 40','Fixed-count cut. Mostly a safety net in open-source engines; rarely the thing that bites.'],
+    ['min_p','truncate','off, or 0.05–0.1','Relative-to-leader cut. Best companion to high temperature. Available in open engines and some APIs, not all.'],
+    ['seed','the roll','random','Repeats the dice, not the scores. Combine with temperature 0 for best-effort reproducibility; still not a guarantee (chapter 07).'],
+    ['max_tokens','stop check','model-specific','A hard cap. Hitting it truncates mid-sentence; check the finish reason and treat "length" as an error, not an answer.'],
+    ['stop','stop check','none','Strings that end generation when they appear. Useful for raw completion prompts and for cutting a model off before it starts a new turn.'],
+    ['frequency_penalty','logits, reads output so far','0','Subtract count × penalty from a token\'s logit. Punishes repeated bracket and variable names in code; leave at 0 unless you see loops.'],
+    ['presence_penalty','logits, reads output so far','0','Flat subtraction once a token has appeared. Gentler way to push toward new topics; 0.1–0.5 when a list keeps circling.'],
+    ['repetition_penalty','logits, reads output so far','1.0 (off)','Open-engine variant: divide positive logits and multiply negative ones by the factor. 1.1 is already strong.'],
+    ['logit_bias','logits, per token id','none','±100 on named ids. Forbid a token, force a classifier\'s answers onto specific ids. Needs the tokenizer\'s ids, so it is tokenizer-specific.'],
+    ['logprobs / top_logprobs','read-out after softmax','off','Returns the chosen token\'s logprob and the top alternatives. Free confidence signal; chapter 10.'],
+    ['response_format / json_schema / tools','grammar mask, in truncate','off','Constrained decoding. Shape guaranteed, content not. Chapter 09.'],
+    ['n','whole pipeline, repeated','1','Several samples from the same prefill. Cheap because prefill is shared; the basis of best-of-n and self-consistency.'],
+  ];
+  $('#knob-cards').innerHTML=knobs.map(([t,s,d,w])=>`<div class="card"><h3><span class="mono">${esc(t)}</span></h3><div class="kv"><span>acts on</span><span>${esc(s)}</span><span>default</span><span>${esc(d)}</span><span>use</span><span>${esc(w)}</span></div></div>`).join('');
+})();
+
+/* ---------- 09 grammar stepper ---------- */
+(function(){
+  const STEPS=[
+    {legal:['{'],raw:[['Sure',.42],['Here',.24],['```',.19],['{',.14],['⋯ 100k others',.01]]},
+    {legal:['"name"'],raw:[['"name"',.40],['⏎',.31],['"age"',.18],['␣',.08],['⋯',.03]]},
+    {legal:[':'],raw:[[':',.88],[',',.05],['}',.04],['⋯',.03]]},
+    {legal:['"'],raw:[['␣"',.52],['"',.33],['Ada',.10],['⋯',.05]]},
+    {legal:['Ada','Grace','Alan','"'],raw:[['Ada',.58],['Grace',.22],['Alan',.11],['"',.06],['⋯',.03]]},
+    {legal:['␣Lovelace','␣King','"'],raw:[['␣Lovelace',.74],['"',.14],['␣King',.07],['⋯',.05]]},
+    {legal:['"','␣(1815','␣the'],raw:[['"',.69],['␣(1815',.19],['␣the',.08],['⋯',.04]]},
+    {legal:[','],raw:[[',',.58],['⏎',.29],['}',.09],['⋯',.04]]},
+    {legal:['"age"'],raw:[['"age"',.66],['⏎',.20],['␣"age"',.11],['⋯',.03]]},
+    {legal:[':'],raw:[[':',.91],['␣',.06],['⋯',.03]]},
+    {legal:['36','3','2','7'],raw:[['␣36',.47],['36',.28],['"36"',.13],['thirty',.07],['3',.03],['⋯',.02]]},
+    {legal:[',','0','5','9'],raw:[[',',.62],['⏎',.18],['}',.12],['0',.05],['⋯',.03]]},
+    {legal:['"member"'],raw:[['"member"',.72],['⏎',.17],['"email"',.08],['⋯',.03]]},
+    {legal:[':'],raw:[[':',.93],['␣',.04],['⋯',.03]]},
+    {legal:['true','false'],raw:[['true',.55],['yes',.21],['false',.14],['"true"',.07],['⋯',.03]]},
+    {legal:['}'],raw:[['}',.61],[',',.24],['⏎',.11],['⋯',.04]]},
+  ];
+  const V=100277;const host=$('#t9-dist'),out=$('#t9-out'),state=$('#t9-state');let i=0,text='',r=rng(5),illegalFav=0;
+  function show(step,pick){const labs=step.raw.map(x=>x[0]);const p=step.raw.map(x=>x[1]);const keep=step.raw.map(x=>step.legal.includes(x[0]));const q=renorm(p,keep);
+    renderDist(host,labs,p,{keep,pick,q:p.map((v,j)=>keep[j]?`${v.toFixed(2)} → ${q[j].toFixed(2)}`:`${v.toFixed(2)} → 0`)});}
+  function render(){const done=i>=STEPS.length;out.innerHTML=esc(text)+(done?'':'<span class="nx"></span>');
+    if(done){state.innerHTML=`<span>done · <b>valid against the schema, by construction</b></span><span>steps where the model's favourite was illegal <b>${illegalFav}</b> of ${STEPS.length}</span>`;host.innerHTML='';return;}
+    const s=STEPS[i];show(s);state.innerHTML=`<span>position <b>${i+1}</b> of ${STEPS.length}</span><span>legal now <b>${s.legal.length}</b> of ${fmtN(V)} tokens</span><span>model's favourite <b>${esc(s.raw[0][0])}</b> · ${s.legal.includes(s.raw[0][0])?'legal':'<b>illegal, masked</b>'}</span>`;}
+  function step(){if(i>=STEPS.length)return;const s=STEPS[i];const p=s.raw.map(x=>x[1]);const keep=s.raw.map(x=>s.legal.includes(x[0]));const q=renorm(softmaxT(p.map(v=>Math.log(v)),0.3),keep);const pick=draw(q,r);
+    if(!keep[0])illegalFav++;show(s,pick);text+=s.raw[pick][0].replace(/␣/g,' ');i++;setTimeout(render,i>=STEPS.length?400:260);}
+  $('#t9-step').addEventListener('click',step);
+  $('#t9-run').addEventListener('click',()=>{(function loop(){if(i<STEPS.length){step();setTimeout(loop,reduced?0:420);}})();});
+  $('#t9-reset').addEventListener('click',()=>{i=0;text='';illegalFav=0;r=rng(5);render();});
+  render();
+})();
+
+/* ---------- 10 score a sentence ---------- */
+(function(){
+  const inp=$('#t10-in'),host=$('#t10-lp'),read=$('#t10-read');const FLOOR=1e-4;
+  function go(){const keys=encode(inp.value);let sumlp=0,unk=0;const h=[];
+    host.innerHTML=keys.map(k=>{let p=probOf(h,k);let u=false;if(p===null){p=FLOOR;u=true;unk++;}const lp=Math.log(p);sumlp+=lp;h.push(k);const t=clamp((lp+7)/7,0,1);
+      return `<span style="background:color-mix(in srgb, color-mix(in srgb,var(--ok) ${Math.round(t*100)}%,var(--bad)) 38%, var(--surface));${u?'outline:1px dashed var(--bad);':''}" title="${esc(tokStr(k))} · p = ${p.toExponential(2)} · logprob ${lp.toFixed(2)}${u?' · never seen by the toy model':''}">${esc(tokLabel(k))}</span>`;}).join('');
+    const n=keys.length||1;const avg=sumlp/n;
+    read.innerHTML=`<span>tokens <b>${keys.length}</b></span><span>sum of logprobs <b>${sumlp.toFixed(1)}</b></span><span>average <b>${avg.toFixed(2)}</b></span><span>perplexity <b>${fmt(Math.exp(-avg),1)}</b></span><span>unseen tokens <b>${unk}</b></span>`;}
+  inp.addEventListener('input',go);go();
+})();
+
+/* ---------- 11 timeline + cards ---------- */
+(function(){
+  const tl=[['1994','BPE as compression','Philip Gage publishes byte-pair encoding to shrink files by replacing frequent byte pairs.'],['2016','BPE for translation','Sennrich et al. apply it to open-vocabulary neural translation; subwords replace word lists.'],['2018','SentencePiece · top-k','Kudo\'s unigram tokenizer and language-independent training; Fan et al. sample from the top k.'],['2019','GPT-2 byte-level BPE','50,257 tokens, regex pre-splitting, 256-byte fallback: the recipe still used in 2026.'],['2020','Nucleus sampling','Holtzman et al. show greedy and beam degenerate; top-p becomes the default filter.'],['2022–23','cl100k · glitch tokens · Outlines','100k vocabulary for GPT-4; SolidGoldMagikarp; grammar-masked decoding as a library.'],['2023','Language unfairness measured','Petrov et al.: up to 15× token premium between languages for the same text.'],['2024','200k vocabularies · Structured Outputs · min-p · BLT','o200k and Gemma 256k; schema-guaranteed JSON in the API; min-p paper; Byte Latent Transformer.'],['2025','Batch-invariant kernels · H-Net','Thinking Machines make temperature 0 actually deterministic; H-Net learns its own chunking end to end.']];
+  $('#tl').innerHTML=tl.map(([y,t,d])=>`<div class="ev"><div class="y">${y}</div><div class="t">${t}</div><div class="d">${d}</div></div>`).join('');
+  const cards=[
+    ['Byte-level BPE','GPT-2, 2019 →','Bytes as the floor, a regex pre-split, then frequency merges to a target size. Used by GPT-4, GPT-4o, Llama 3, Qwen, DeepSeek and most others, differing only in corpus and size.','Any string tokenizes; English and code compress 4:1; training is a few hours over a sample of the pretraining data.','Frozen forever: the model cannot learn a new word as one token. Non-English premium. Digits, whitespace and case all leak into odd splits.'],
+    ['Unigram and SentencePiece','Kudo, 2018','Start with a huge candidate vocabulary and prune tokens whose removal hurts a likelihood objective least. Treats the input as raw Unicode, so no language-specific pre-splitting.','Multiple segmentations per word give a natural regularizer during training; used by T5, Llama 1–2, Gemma, many multilingual models.','Slightly worse compression than BPE at equal size; subword regularization is rarely used at inference.'],
+    ['Bigger vocabularies','50k → 100k → 200k → 256k','Scaling-law work (Tao et al. 2024) shows the best vocabulary size grows with model size; frontier models moved to 200k+ in 2024.','Fewer tokens per sentence, so faster and cheaper per word, and the language premium roughly halves.','The LM head grows (256k × 8k = 2B parameters); rare tokens are under-trained; softmax over 256k costs real compute per token.'],
+    ['Nucleus and min-p sampling','2020 · 2024','Truncate the distribution by cumulative mass (top-p) or relative to the leader (min-p) rather than by a fixed count.','Fixes the degeneration of greedy and beam on open text while filtering the derailing tail; min-p stays sane at temperature 1.5+.','Another knob to tune; interaction with temperature is non-obvious; different providers apply them in different orders.'],
+    ['Constrained decoding','Outlines 2023 · XGrammar 2024 · API-native 2024','Compile a JSON schema or grammar to a state machine, precompute legal token sets per state, mask the logits each step.','Guaranteed parseable output; tool calls that always match the signature; near-zero overhead with modern engines.','Shape, not truth. Field order forces commitment order. Over-tight schemas squeeze out honest "unknown".'],
+    ['Deterministic inference','Thinking Machines, 2025','Write the reduction kernels so that a token\'s logits do not depend on batch composition; same input, same bits, every time.','Temperature 0 becomes genuinely reproducible; on-policy RL and evaluation stop fighting phantom noise.','Measured throughput cost in the tens of percent at launch; few providers run it by default.'],
+    ['Multi-token prediction','Gloeckle et al. 2024 · DeepSeek-V3','Extra heads predict tokens 2–4 ahead during training; at inference they serve as a built-in draft for speculative decoding.','Better sample efficiency on code; 1.5–2× decode speedups with exact sampling when used as a drafter.','More training compute; gains uneven across tasks; adds model-specific complexity to the serving stack.'],
+    ['Token healing and boundary fixes','guidance, 2023','Back up one token at the prompt boundary and constrain the first generated token to extend the deleted text.','Removes the trailing-space and mid-word traps for raw completion prompts, with no change to the model.','Only matters outside chat templates; needs tokenizer access; most hosted chat APIs make it unnecessary.'],
+    ['Tokenizer-free models','MegaByte 2023 · BLT 2024 · H-Net 2025','Read raw bytes and learn to group them: fixed patches (MegaByte), entropy-based patches (BLT) or fully learned chunk boundaries (H-Net), inside a hierarchical transformer.','No vocabulary to freeze, no language premium, spelling and arithmetic by construction; BLT matched Llama 3 at 8B on equal compute.','Unproven at frontier scale in 2026; serving stacks, caches and prices are all built around tokens.'],
+  ];
+  $('#cards').innerHTML=cards.map(([t,y,w,why,cost])=>`<div class="card"><h3>${t} <span class="yr">${y}</span></h3><p>${w}</p><div class="kv"><span>why</span><span>${why}</span><span>cost</span><span>${cost}</span></div></div>`).join('');
+})();
+
+/* ---------- 13 quiz ---------- */
+(function(){
+  const qs=[
+    ['A model miscounts the letters in "strawberry" mainly because…',['It cannot do arithmetic','It receives the word as a few tokens and never sees letters','The temperature is too high','Its context window is too small'],1,'The tokenizer hands the model three ids (str, aw, berry). Which letters hide inside each id is something the model must have memorised; often it has not.'],
+    ['Byte-pair encoding builds a vocabulary by…',['Listing the most common dictionary words','Repeatedly gluing the most frequent neighbouring pair of tokens into a new token','Asking the model which pieces it prefers','Splitting on spaces and punctuation'],1,'Start from 256 bytes, merge the most frequent adjacent pair, repeat until the vocabulary reaches the target size. The numbered merge list is the whole tokenizer.'],
+    ['Why does the same paragraph cost more tokens in Hindi than in English?',['Hindi has more words','The vocabulary spent most of its merges on English and code, so Hindi falls into small pieces and byte fallbacks','Hindi uses more punctuation','API pricing differs by language'],1,'Fertility follows the training corpus of the tokenizer. Scripts it barely saw get 1–2 byte tokens, so the same meaning costs several times as many tokens.'],
+    ['Temperature changes…',['Which token ranks highest','How sharply the probabilities concentrate on the top-ranked tokens','The size of the vocabulary','The length of the answer'],1,'Every logit is divided by T before softmax. The ranking never changes; only the gaps, and so how often the roll lands off the favourite.'],
+    ['Compared with top-k, top-p (nucleus) sampling…',['Is always stricter','Keeps a number of tokens that adapts to how confident the model is at that step','Only works at temperature 1','Ignores probabilities'],1,'Top-p keeps the smallest set whose probabilities reach p: one token when the model is sure, dozens when it is torn. A fixed k ignores the shape.'],
+    ['Identical requests at temperature 0 sometimes return different text because…',['The seed changes','Floating-point sums on the GPU depend on how the server batched the request, and a near-tie flips','The tokenizer is random','Top-p is still applied'],1,'Greedy is deterministic over the logits, but the logits themselves differ in the last digits with batch composition. Batch-invariant kernels fix this at a throughput cost.'],
+    ['Structured output mode returns valid JSON every time because…',['The model was fine-tuned on JSON','A grammar zeroes the probability of every token that would be invalid at that position before sampling','The output is post-processed','Temperature is forced to 0'],1,'Constrained decoding masks the logits per step using a state machine compiled from the schema. The die cannot land on an invalid token.'],
+    ['A text with perplexity 8 under a model means…',['The model got 8 tokens wrong','On average the model felt it was choosing among about 8 equally likely tokens per step','The text is 8 tokens long','The temperature was 8'],1,'Perplexity is e to the average negative logprob: the effective number of choices per token. Lower means the text was more predictable to the model.']
+  ];
+  let answered=0,right=0;const host=$('#quiz');
+  host.innerHTML=qs.map((q,i)=>`<div class="qq" data-i="${i}"><p class="qt">${i+1}. ${q[0]}</p><div class="opts">${q[1].map((o,k)=>`<button type="button" class="opt" data-k="${k}">${o}</button>`).join('')}</div><p class="why" hidden>${q[3]}</p></div>`).join('');
+  host.addEventListener('click',e=>{const b=e.target.closest('.opt');if(!b)return;const box=b.closest('.qq');if(box.dataset.done)return;box.dataset.done=1;const i=+box.dataset.i,k=+b.dataset.k;const ok=k===qs[i][2];answered++;if(ok)right++;
+    box.querySelectorAll('.opt').forEach(o=>{if(+o.dataset.k===qs[i][2])o.classList.add('right');else if(o===b)o.classList.add('wrong');o.disabled=true;});box.querySelector('.why').hidden=false;
+    $('#q-score').textContent=`${right} correct of ${answered} answered · ${qs.length} total`+(answered===qs.length?(right===qs.length?' · clean sweep':' · re-read the chapters you missed'):'');});
+})();
+
+/* ---------- nav + progress ---------- */
+(function(){
+  const links=$$('nav.rail a');const secs=links.map(a=>$(a.getAttribute('href'))).filter(Boolean);
+  const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+en.target.id));}});},{rootMargin:'-30% 0px -60% 0px'});
+  secs.forEach(s=>io.observe(s));
+  const bar=$('#progress');const onS=()=>{const d=document.documentElement;const p=d.scrollTop/(d.scrollHeight-d.clientHeight);bar.style.width=(p*100).toFixed(1)+'%';};addEventListener('scroll',onS,{passive:true});onS();
+})();
+})();
+</script>
+
+</body></html>
