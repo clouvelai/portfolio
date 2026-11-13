@@ -4,49 +4,49 @@ export const guides = [
         number: '01',
         title: 'Attention',
         topic: 'From one dot product to the frontier',
-        load: () => import('./guides/01-attention.html?raw'),
+        file: '01-attention.html',
     },
     {
         slug: 'tokens-per-second',
         number: '02',
         title: 'Tokens Per Second',
         topic: 'Inference speed',
-        load: () => import('./guides/02-tokens-per-second.html?raw'),
+        file: '02-tokens-per-second.html',
     },
     {
         slug: 'the-next-token',
         number: '03',
         title: 'The Next Token',
         topic: 'Tokenization and sampling',
-        load: () => import('./guides/03-the-next-token.html?raw'),
+        file: '03-the-next-token.html',
     },
     {
         slug: 'the-training-run',
         number: '04',
         title: 'The Training Run',
         topic: 'Pretrain, SFT, RLHF, and reasoning RL',
-        load: () => import('./guides/04-the-training-run.html?raw'),
+        file: '04-the-training-run.html',
     },
     {
         slug: 'downhill',
         number: '05',
         title: 'Downhill',
         topic: 'Gradient descent and backpropagation',
-        load: () => import('./guides/05-downhill.html?raw'),
+        file: '05-downhill.html',
     },
     {
         slug: 'weight-space',
         number: '06',
         title: 'Weight Space',
         topic: 'Reading, editing, and writing weights',
-        load: () => import('./guides/06-weight-space.html?raw'),
+        file: '06-weight-space.html',
     },
     {
         slug: 'the-exam',
         number: '07',
         title: 'The Exam',
         topic: 'Evals, judges, contamination, arenas',
-        load: () => import('./guides/07-the-exam.html?raw'),
+        file: '07-the-exam.html',
     },
 ]
 
@@ -73,8 +73,21 @@ export function getGuide(slug) {
     return guides.find((guide) => guide.slug === slug)
 }
 
+function presentGuide(html) {
+    const nested = html.indexOf('<!doctype', 2)
+    if (nested > 0 && nested < 2000 && html.slice(0, nested) === html.slice(nested, nested * 2)) {
+        html = html.slice(nested)
+    }
+    return html
+        .replaceAll('color-scheme:light;', 'color-scheme:light dark;')
+        .replaceAll(
+            'body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}',
+            'html{background:var(--bg,#F4F5F7);min-height:100%}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg,#F4F5F7);color:var(--fg,#121521);min-height:100%}'
+        )
+}
+
 export function prepareGuide(html) {
-    const linked = html.replace(
+    const linked = presentGuide(html).replace(
         /<a href="https:\/\/claude\.ai\/artifact\/[^"]+" target="_blank" rel="noopener">(<span>[^<]*<\/span>)([^<]+)<\/a>/g,
         (match, label, title) => {
             const slug = seriesSlugs[title.trim().toLowerCase()]
